@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In / Register - Zivara</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#F5D77F',
+              400: '#E5C06E',
+              500: '#D4AF37',
+              600: '#AA820A',
+              700: '#856404'
+            },
+            noir: {
+              900: '#0B0B0C',
+              850: '#121214',
+              800: '#18181B',
+              700: '#27272A'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+
+  <!-- TOP LUXURY ANNOUNCEMENT STRIP -->
+  <div class="bg-noir-900 text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
+    ✨ Zivara Privé | Bespoke Member Access & VIP Checkout
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 h-20 px-6 sm:px-12 flex items-center justify-between shadow-sm">
+    <!-- Brand Logo: Matches zivara.html & cart.html -->
+    <a href="../zivara.html" class="flex items-center gap-3">
+      <img 
+        src="../Images/Logo.png" 
+        alt="Zivara Logo" 
+        class="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition transform hover:scale-105"
+      />
+    </a>
+
+    <a href="../zivara.html" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-500 hover:text-gold-600 flex items-center gap-1.5 transition">
+      <i data-lucide="x" class="w-4 h-4"></i>
+      Cancel
+    </a>
+  </header>
+
+  <!-- MAIN AUTH CONTAINER -->
+  <main class="flex-1 flex items-center justify-center p-4 sm:p-6 my-6">
+    <div class="w-full max-w-md bg-white rounded-3xl border border-slate-200/80 shadow-2xl overflow-hidden p-7 sm:p-9 space-y-6">
+
+      <!-- STEP 1: MOBILE NUMBER INPUT -->
+      <section id="stepPhone" class="space-y-6">
+        <div class="text-center space-y-1.5">
+          </span>
+          <h1 class="text-2xl font-serif text-slate-900 tracking-tight pt-1">Welcome to Zivara</h1>
+          <p class="text-xs text-slate-500">Enter your mobile phone number to sign in or register</p>
+        </div>
+
+        <form onsubmit="handleSendOtp(event)" class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">Mobile Phone Number</label>
+            <div class="relative flex items-center">
+              <span class="absolute left-3.5 text-sm font-bold text-slate-500 border-r border-slate-200 pr-2.5">+91</span>
+              <input 
+                type="tel" 
+                id="phoneInput" 
+                required 
+                maxlength="10" 
+                pattern="[6-9][0-9]{9}" 
+                placeholder="Enter 10-digit number" 
+                class="w-full pl-16 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold tracking-wide focus:outline-none focus:border-gold-500 focus:bg-white transition"
+              />
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">A 6-digit OTP will be sent via SMS for verification.</p>
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/40 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
+            <span>Continue</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 text-gold-400"></i>
+          </button>
+        </form>
+
+        <p class="text-[11px] text-slate-400 text-center leading-relaxed">
+          By continuing, you agree to Zivara's 
+		  <a href="T&C.html" class="text-gold-700 font-semibold hover:underline">Conditions of Use</a>
+          <a href="#" class="text-gold-700 font-semibold hover:underline">Privacy Notice</a>.
+        </p>
+      </section>
+
+      <!-- STEP 2: OTP VERIFICATION -->
+      <section id="stepOtp" class="space-y-6 hidden">
+        <div class="text-center space-y-1.5">
+          <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700 bg-gold-50 px-2.5 py-0.5 rounded border border-gold-400/30">
+            Security Check
+          </span>
+          <h2 class="text-2xl font-serif text-slate-900 tracking-tight pt-1">Verify Credentials</h2>
+          <p class="text-xs text-slate-500">
+            Sent to <span id="displayPhone" class="font-bold text-slate-800">+91 XXXXXXXXXX</span> 
+            <button onclick="editPhone()" class="text-gold-700 font-bold ml-1 hover:underline text-[11px]">Edit</button>
+          </p>
+        </div>
+
+        <form onsubmit="handleVerifyOtp(event)" class="space-y-5">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-3 text-center">Enter 6-Digit OTP</label>
+            <div class="flex justify-between gap-2">
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
+            </div>
+            <p id="otpHint" class="text-[11px] text-center text-slate-400 mt-3">Demo OTP is <span class="font-bold text-gold-700">123456</span></p>
+          </div>
+
+          <div class="flex items-center justify-between text-xs">
+            <span id="timerText" class="text-slate-400 font-medium">Resend OTP in <b id="countdown" class="text-slate-700">30</b>s</span>
+            <button type="button" id="resendBtn" onclick="resendOtp()" disabled class="font-bold text-slate-400 cursor-not-allowed">Resend OTP</button>
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/40 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
+            <span>Verify & Enter</span>
+            <i data-lucide="shield-check" class="w-4 h-4 text-gold-400"></i>
+          </button>
+        </form>
+      </section>
+
+      <!-- STEP 3: NEW USER REGISTRATION DETAILS -->
+      <section id="stepRegister" class="space-y-6 hidden">
+        <div class="text-center space-y-1.5">
+          <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700 bg-gold-50 px-2.5 py-0.5 rounded border border-gold-400/30">
+            Create Profile
+          </span>
+          <h2 class="text-2xl font-serif text-slate-900 tracking-tight pt-1">Complete Registration</h2>
+          <p class="text-xs text-slate-500">Provide your credentials to establish your Zivara VIP account</p>
+        </div>
+
+        <form onsubmit="handleCompleteRegistration(event)" class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Full Name</label>
+            <input 
+              type="text" 
+              id="userNameInput" 
+              required 
+              placeholder="e.g. Rahul Sharma" 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-gold-500 focus:bg-white transition"
+            />
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
+            <input 
+              type="email" 
+              id="userEmailInput" 
+              required 
+              placeholder="rahul@example.com" 
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-gold-500 focus:bg-white transition"
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/40 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
+            <span>Join Zivara</span>
+            <i data-lucide="check" class="w-4 h-4 text-gold-400"></i>
+          </button>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- LUXURY FOOTER -->
+  <footer class="bg-noir-900 text-slate-400 text-xs border-t border-gold-500/20 py-5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+      <div class="flex items-center gap-3">
+        <img src="../Images/Logo.png" alt="Zivara Logo" class="h-9 w-auto object-contain brightness-110" />
+        <span class="text-[11px] text-slate-400">Fashion • Style • You</span>
+      </div>
+      <div class="text-[11px] text-slate-500">
+        &copy; 2026 Zivara Technologies Pvt Ltd. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    lucide.createIcons();
+
+    // DOM References
+    const stepPhone = document.getElementById('stepPhone');
+    const stepOtp = document.getElementById('stepOtp');
+    const stepRegister = document.getElementById('stepRegister');
+    const phoneInput = document.getElementById('phoneInput');
+    const displayPhone = document.getElementById('displayPhone');
+    const countdownEl = document.getElementById('countdown');
+    const resendBtn = document.getElementById('resendBtn');
+    const otpInputs = document.querySelectorAll('.otp-digit');
+
+    let currentPhone = '';
+    let timerInterval = null;
+    let timerSeconds = 30;
+
+    // Auto-focus progression for 6-digit OTP fields
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      });
+    });
+
+    // STEP 1: SEND OTP
+    async function handleSendOtp(e) {
+      e.preventDefault();
+      currentPhone = phoneInput.value.trim();
+
+      if (currentPhone.length !== 10) {
+        alert('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+
+      /* 
+       * [SUPABASE / SMS GATEWAY INTEGRATION]:
+       * const { data, error } = await supabase.auth.signInWithOtp({ phone: '+91' + currentPhone });
+       */
+
+      displayPhone.innerText = `+91 ${currentPhone}`;
+      stepPhone.classList.add('hidden');
+      stepOtp.classList.remove('hidden');
+      otpInputs[0].focus();
+      startTimer();
+      lucide.createIcons();
+    }
+
+    // STEP 2: VERIFY OTP
+    async function handleVerifyOtp(e) {
+      e.preventDefault();
+      const enteredOtp = Array.from(otpInputs).map(input => input.value).join('');
+
+      if (enteredOtp.length !== 6) {
+        alert('Please enter the full 6-digit OTP.');
+        return;
+      }
+
+      // Demo OTP Validation (123456)
+      if (enteredOtp === "123456") {
+        clearInterval(timerInterval);
+        
+        const existingUsers = JSON.parse(localStorage.getItem('zivara_users')) || {};
+        
+        if (existingUsers[currentPhone]) {
+          localStorage.setItem('zivara_session', JSON.stringify({
+            phone: currentPhone,
+            name: existingUsers[currentPhone].name,
+            email: existingUsers[currentPhone].email
+          }));
+          alert(`Welcome back to Zivara, ${existingUsers[currentPhone].name}!`);
+          window.location.href = '../zivara.html';
+        } else {
+          stepOtp.classList.add('hidden');
+          stepRegister.classList.remove('hidden');
+          lucide.createIcons();
+        }
+      } else {
+        alert('Invalid OTP. For demo verification, use: 123456');
+      }
+    }
+
+    // STEP 3: COMPLETE REGISTRATION
+    function handleCompleteRegistration(e) {
+      e.preventDefault();
+      const name = document.getElementById('userNameInput').value.trim();
+      const email = document.getElementById('userEmailInput').value.trim();
+
+      const existingUsers = JSON.parse(localStorage.getItem('zivara_users')) || {};
+      existingUsers[currentPhone] = { name, email };
+      localStorage.setItem('zivara_users', JSON.stringify(existingUsers));
+
+      localStorage.setItem('zivara_session', JSON.stringify({ phone: currentPhone, name, email }));
+
+      alert(`Registration Complete! Welcome to Zivara, ${name}!`);
+      window.location.href = '../zivara.html';
+    }
+
+    // Helper: Timer Logic
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerSeconds = 30;
+      resendBtn.disabled = true;
+      resendBtn.className = "font-bold text-slate-400 cursor-not-allowed";
+
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        countdownEl.innerText = timerSeconds;
+
+        if (timerSeconds <= 0) {
+          clearInterval(timerInterval);
+          resendBtn.disabled = false;
+          resendBtn.className = "font-bold text-gold-700 hover:underline cursor-pointer";
+        }
+      }, 1000);
+    }
+
+    function resendOtp() {
+      otpInputs.forEach(i => i.value = '');
+      alert(`OTP resent to +91 ${currentPhone}. Use: 123456`);
+      startTimer();
+      otpInputs[0].focus();
+    }
+
+    function editPhone() {
+      clearInterval(timerInterval);
+      otpInputs.forEach(i => i.value = '');
+      stepOtp.classList.add('hidden');
+      stepPhone.classList.remove('hidden');
+      phoneInput.focus();
+    }
+  </script>
+</body>
+</html>
