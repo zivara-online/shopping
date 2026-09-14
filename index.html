@@ -25,6 +25,7 @@
               700: '#856404'
             },
             noir: {
+              950: '#070708',
               900: '#0B0B0C',
               850: '#121214',
               800: '#18181B',
@@ -37,33 +38,57 @@
   </script>
 
   <style>
-    /* 3D Perspective Scaffolding */
-    .hero-perspective {
-      perspective: 1200px;
+    /* Fixed Full-Page Blurred Cover Scaffolding */
+    .bg-cover-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -20;
+      overflow: hidden;
+      pointer-events: none;
     }
-    .hero-3d-card {
-      transform-style: preserve-3d;
-      transition: transform 0.15s ease-out;
+    .bg-cover-img {
+      width: 110%;
+      height: 110%;
+      position: absolute;
+      top: -5%;
+      left: -5%;
+      background-image: url('Cover.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(14px) brightness(0.4) saturate(1.2);
+      transform: scale(1.05);
+      transition: transform 0.2s ease-out;
       will-change: transform;
     }
-    .hero-bg-layer {
-      transition: transform 0.15s ease-out;
-      will-change: transform;
-    }
-    .content-float-3d {
-      transform: translateZ(50px);
+    /* Dynamic Glassmorphism */
+    .glass-card {
+      background: rgba(18, 18, 20, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 175, 55, 0.2);
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col overflow-x-hidden">
+<body class="text-slate-100 font-sans min-h-screen flex flex-col relative selection:bg-gold-500 selection:text-noir-900">
 
-  <!-- TOP ANNOUNCEMENT BAR -->
-  <div class="bg-noir-900 text-gold-400 text-xs py-2 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
+  <!-- 1. FULLSCREEN FIXED BLURRED BACKGROUND LAYER -->
+  <div class="bg-cover-wrapper">
+    <div id="ambientCoverBg" class="bg-cover-img"></div>
+    <!-- Dark luxury gradient overlay across the whole viewport -->
+    <div class="absolute inset-0 bg-noir-950/70 z-[-10]"></div>
+  </div>
+
+  <!-- TOP LUXURY ANNOUNCEMENT STRIP -->
+  <div class="bg-noir-950/90 backdrop-blur-md text-gold-400 text-xs py-2 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium z-50">
     ✨ Welcome to <span class="font-bold text-white tracking-widest">ZIVARA</span> | Compliments on Orders Above ₹1,499 | Use Code <span class="text-white font-bold bg-gold-600/30 px-2 py-0.5 rounded border border-gold-400/40">ZIVARA10</span>
   </div>
 
   <!-- NAVBAR -->
-  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+  <header class="sticky top-0 z-50 bg-noir-900/85 backdrop-blur-xl border-b border-gold-500/20 shadow-xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
       
       <!-- LOGO -->
@@ -71,7 +96,7 @@
         <img 
           src="Logo.png" 
           alt="Zivara Logo" 
-          class="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition transform hover:scale-105"
+          class="h-14 sm:h-16 w-auto object-contain drop-shadow-md transition transform hover:scale-105"
         />
       </a>
 
@@ -82,10 +107,10 @@
             type="text" 
             id="searchInput" 
             placeholder="Search luxury couture, watches, jewelry, accessories..." 
-            class="w-full pl-10 pr-24 py-2.5 bg-slate-100/90 border border-slate-200 rounded-full text-xs tracking-wide focus:outline-none focus:border-gold-500 focus:bg-white transition placeholder:text-slate-400"
+            class="w-full pl-10 pr-24 py-2.5 bg-noir-800/80 border border-gold-500/30 rounded-full text-xs text-slate-100 tracking-wide focus:outline-none focus:border-gold-400 focus:bg-noir-900 transition placeholder:text-slate-400"
           />
-          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
-          <button onclick="handleSearch()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-noir-900 hover:bg-black text-gold-400 text-xs font-semibold rounded-full border border-gold-500/30 transition">
+          <i data-lucide="search" class="w-4 h-4 text-gold-400/80 absolute left-3.5 top-3"></i>
+          <button onclick="handleSearch()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-900 text-xs font-bold rounded-full transition shadow">
             Search
           </button>
         </div>
@@ -93,22 +118,22 @@
 
       <!-- RIGHT ACTIONS -->
       <div class="flex items-center gap-5 sm:gap-6">
-        <a href="login.html" id="userAuthBtn" class="flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase text-slate-700 hover:text-gold-600 transition">
-          <i data-lucide="user" class="w-4 h-4"></i>
+        <a href="login.html" id="userAuthBtn" class="flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase text-slate-200 hover:text-gold-400 transition">
+          <i data-lucide="user" class="w-4 h-4 text-gold-400"></i>
           <span id="userAuthText" class="hidden sm:inline">Sign In</span>
         </a>
 
-        <a href="#" class="relative text-slate-700 hover:text-gold-600 transition">
+        <a href="#" class="relative text-slate-200 hover:text-gold-400 transition">
           <i data-lucide="heart" class="w-5 h-5"></i>
           <span class="absolute -top-1.5 -right-2 bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full shadow-sm">0</span>
         </a>
 
-        <a href="cart.html" class="flex items-center gap-2 bg-noir-900 text-gold-400 border border-gold-500/30 px-4 py-2 rounded-full hover:bg-black transition shadow-sm">
+        <a href="cart.html" class="flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-900 font-bold px-4 py-2 rounded-full hover:brightness-110 transition shadow-lg">
           <div class="relative">
-            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-            <span id="cartCount" class="absolute -top-2 -right-2.5 bg-gold-500 text-noir-900 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow">0</span>
+            <i data-lucide="shopping-bag" class="w-4 h-4 text-noir-900 stroke-[2.5]"></i>
+            <span id="cartCount" class="absolute -top-2.5 -right-2.5 bg-noir-900 text-gold-400 text-[10px] font-black px-1.5 py-0.2 rounded-full border border-gold-500">0</span>
           </div>
-          <span class="text-xs font-bold tracking-wider uppercase hidden sm:inline">Cart</span>
+          <span class="text-xs tracking-wider uppercase hidden sm:inline">Cart</span>
         </a>
       </div>
     </div>
@@ -120,107 +145,107 @@
           type="text" 
           id="mobileSearchInput"
           placeholder="Search on Zivara..." 
-          class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-full text-xs focus:outline-none focus:border-gold-500"
+          class="w-full pl-10 pr-4 py-2 bg-noir-800/90 border border-gold-500/30 rounded-full text-xs text-white focus:outline-none focus:border-gold-400"
         />
-        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5"></i>
+        <i data-lucide="search" class="w-4 h-4 text-gold-400 absolute left-3.5 top-2.5"></i>
       </div>
     </div>
   </header>
 
   <!-- DYNAMIC MENUS NAV -->
-  <nav class="bg-white border-b border-slate-100 py-3 overflow-x-auto scrollbar-none shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-    <div id="categoryNavContainer" class="max-w-7xl mx-auto px-4 flex items-center min-w-[700px] gap-6 text-xs font-bold uppercase tracking-wider text-slate-600">
-      <button onclick="filterByCategory(null, 'The Heritage Edit')" class="category-btn text-gold-700 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 transition">
+  <nav class="bg-noir-950/70 backdrop-blur-md border-b border-gold-500/10 py-3 overflow-x-auto scrollbar-none shadow-sm">
+    <div id="categoryNavContainer" class="max-w-7xl mx-auto px-4 flex items-center min-w-[700px] gap-6 text-xs font-bold uppercase tracking-wider text-slate-300">
+      <button onclick="filterByCategory(null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 transition">
         <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
       </button>
     </div>
   </nav>
 
   <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 flex-1">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 flex-1 w-full z-10">
 
-    <!-- 3D PARALLAX HERO BANNER -->
-    <div class="hero-perspective w-full">
-      <div id="hero3DCard" class="hero-3d-card relative overflow-hidden rounded-3xl min-h-[440px] sm:min-h-[500px] text-white border border-gold-500/30 shadow-2xl flex items-center p-8 sm:p-14">
-        
-        <!-- Background 3D Image Layer with Parallax Scaling -->
-        <div 
-          id="heroBgLayer" 
-          class="hero-bg-layer absolute inset-0 -m-8 bg-cover bg-center pointer-events-none scale-110"
-          style="background-image: url('Cover.png');"
-        ></div>
-
-        <!-- Luxury Dark Vignette Gradient Overlays -->
-        <div class="absolute inset-0 bg-gradient-to-r from-noir-900/95 via-noir-900/80 to-noir-900/40 pointer-events-none"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-noir-900/90 via-transparent to-transparent pointer-events-none"></div>
-
-        <!-- Floating 3D Content -->
-        <div class="content-float-3d relative z-10 max-w-xl space-y-5">
-          <span class="inline-block px-3.5 py-1 bg-gold-500/20 backdrop-blur-md border border-gold-500/40 text-gold-300 rounded-full text-[11px] font-bold tracking-widest uppercase shadow-md">
-            Curated Luxury Collection
-          </span>
-          <h1 class="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-white leading-tight drop-shadow-md">
-            Elegance is an Attitude. Discover Your Signature Style.
-          </h1>
-          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-light drop-shadow">
-            Experience timeless sophistication with Zivara's bespoke designer fashion, precision timepieces, and hand-finished jewelry.
-          </p>
-          <div class="pt-2">
-            <a href="#products-section" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-900 px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl hover:from-gold-400 hover:to-gold-300 transition transform hover:-translate-y-1">
-              Shop The Edit <i data-lucide="arrow-right" class="w-4 h-4"></i>
-            </a>
-          </div>
+    <!-- HERO EDITORIAL SHOWCASE WITH SHARP EMBEDDED ART -->
+    <div class="glass-card relative overflow-hidden rounded-3xl shadow-2xl p-8 sm:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
+      
+      <!-- Left Content -->
+      <div class="max-w-xl space-y-5 z-10">
+        <span class="inline-block px-3.5 py-1 bg-gold-500/20 border border-gold-500/40 text-gold-300 rounded-full text-[11px] font-bold tracking-widest uppercase shadow">
+          Maison De Luxe
+        </span>
+        <h1 class="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-white leading-tight drop-shadow-md">
+          Elegance is an Attitude. Discover Your Signature Style.
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+          Experience timeless sophistication with Zivara's bespoke designer fashion, precision timepieces, and hand-finished jewelry.
+        </p>
+        <div class="pt-2">
+          <a href="#products-section" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-900 px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl hover:from-gold-400 hover:to-gold-300 transition transform hover:-translate-y-0.5">
+            Shop The Edit <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
         </div>
-
-        <!-- Floating Glow Ambient -->
-        <div class="absolute -right-16 -top-16 w-96 h-96 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
       </div>
+
+      <!-- Right Focus Card Artwork -->
+      <div class="w-full md:w-5/12 h-64 sm:h-72 rounded-2xl overflow-hidden border border-gold-500/30 shadow-2xl relative group">
+        <img 
+          src="Cover.png" 
+          alt="Zivara Collection" 
+          class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-700 ease-out"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-noir-950/80 via-transparent to-transparent"></div>
+        <div class="absolute bottom-3 left-4 text-[11px] font-bold tracking-widest uppercase text-gold-400">
+          Autumn / Winter Edition 2026
+        </div>
+      </div>
+
+      <!-- Ambient Glow Decor -->
+      <div class="absolute -right-20 -top-20 w-96 h-96 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
     </div>
 
     <!-- VALUE PROPOSITIONS -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 py-2">
-      <div class="flex items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div class="p-2.5 bg-gold-50 text-gold-600 rounded-xl"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
-        <div><h4 class="text-xs font-bold text-slate-800">100% Certified</h4><p class="text-[11px] text-slate-500">Genuine luxury craftsmanship</p></div>
+      <div class="glass-card flex items-center gap-3 p-4 rounded-2xl">
+        <div class="p-2.5 bg-gold-500/10 text-gold-400 border border-gold-500/20 rounded-xl"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+        <div><h4 class="text-xs font-bold text-slate-100">100% Certified</h4><p class="text-[11px] text-slate-400">Genuine craftsmanship</p></div>
       </div>
-      <div class="flex items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div class="p-2.5 bg-slate-100 text-slate-800 rounded-xl"><i data-lucide="truck" class="w-5 h-5"></i></div>
-        <div><h4 class="text-xs font-bold text-slate-800">Insured Delivery</h4><p class="text-[11px] text-slate-500">Free courier on all VIP orders</p></div>
+      <div class="glass-card flex items-center gap-3 p-4 rounded-2xl">
+        <div class="p-2.5 bg-gold-500/10 text-gold-400 border border-gold-500/20 rounded-xl"><i data-lucide="truck" class="w-5 h-5"></i></div>
+        <div><h4 class="text-xs font-bold text-slate-100">Insured Delivery</h4><p class="text-[11px] text-slate-400">Complimentary on orders</p></div>
       </div>
-      <div class="flex items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div class="p-2.5 bg-gold-50 text-gold-600 rounded-xl"><i data-lucide="award" class="w-5 h-5"></i></div>
-        <div><h4 class="text-xs font-bold text-slate-800">Bespoke Quality</h4><p class="text-[11px] text-slate-500">Hand-selected collections</p></div>
+      <div class="glass-card flex items-center gap-3 p-4 rounded-2xl">
+        <div class="p-2.5 bg-gold-500/10 text-gold-400 border border-gold-500/20 rounded-xl"><i data-lucide="award" class="w-5 h-5"></i></div>
+        <div><h4 class="text-xs font-bold text-slate-100">Bespoke Quality</h4><p class="text-[11px] text-slate-400">Hand-selected luxury</p></div>
       </div>
-      <div class="flex items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div class="p-2.5 bg-slate-100 text-slate-800 rounded-xl"><i data-lucide="lock" class="w-5 h-5"></i></div>
-        <div><h4 class="text-xs font-bold text-slate-800">Discreet & Secure</h4><p class="text-[11px] text-slate-500">Tamper-proof packaging</p></div>
+      <div class="glass-card flex items-center gap-3 p-4 rounded-2xl">
+        <div class="p-2.5 bg-gold-500/10 text-gold-400 border border-gold-500/20 rounded-xl"><i data-lucide="lock" class="w-5 h-5"></i></div>
+        <div><h4 class="text-xs font-bold text-slate-100">Tamper-Proof</h4><p class="text-[11px] text-slate-400">White glove packaging</p></div>
       </div>
     </div>
 
     <!-- PRODUCTS GRID -->
-    <section id="products-section" class="space-y-5">
-      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+    <section id="products-section" class="space-y-6">
+      <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
         <div>
-          <h2 id="currentCategoryTitle" class="text-xl sm:text-2xl font-serif text-slate-900 tracking-tight">The Heritage Edit</h2>
-          <p class="text-xs text-slate-500">Live products directly curated from Zivara inventory</p>
+          <h2 id="currentCategoryTitle" class="text-xl sm:text-2xl font-serif text-white tracking-tight">The Heritage Edit</h2>
+          <p class="text-xs text-slate-400">Live products directly curated from Zivara inventory</p>
         </div>
-        <span id="productCounter" class="text-xs font-bold uppercase tracking-wider text-gold-700 bg-gold-50 px-3 py-1 rounded-full border border-gold-400/20">
+        <span id="productCounter" class="text-xs font-bold uppercase tracking-wider text-gold-400 bg-noir-900/80 px-3.5 py-1 rounded-full border border-gold-500/30">
           Loading...
         </span>
       </div>
 
       <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 min-h-[300px]">
-        <div class="animate-pulse bg-slate-200 h-64 rounded-2xl"></div>
-        <div class="animate-pulse bg-slate-200 h-64 rounded-2xl"></div>
-        <div class="animate-pulse bg-slate-200 h-64 rounded-2xl"></div>
-        <div class="animate-pulse bg-slate-200 h-64 rounded-2xl"></div>
+        <div class="animate-pulse bg-noir-800/70 h-64 rounded-2xl border border-gold-500/10"></div>
+        <div class="animate-pulse bg-noir-800/70 h-64 rounded-2xl border border-gold-500/10"></div>
+        <div class="animate-pulse bg-noir-800/70 h-64 rounded-2xl border border-gold-500/10"></div>
+        <div class="animate-pulse bg-noir-800/70 h-64 rounded-2xl border border-gold-500/10"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-noir-900 text-slate-400 text-xs mt-20 border-t border-gold-500/20">
+  <!-- LUXURY FOOTER -->
+  <footer class="bg-noir-950/90 backdrop-blur-xl text-slate-400 text-xs mt-20 border-t border-gold-500/20 z-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
       <div class="space-y-3">
         <img src="Logo.png" alt="Zivara Logo" class="h-14 w-auto object-contain -ml-1 brightness-110" />
@@ -249,12 +274,12 @@
         </ul>
       </div>
     </div>
-    <div class="border-t border-noir-800 py-4 text-center text-[11px] text-slate-500">
+    <div class="border-t border-gold-500/10 py-4 text-center text-[11px] text-slate-500">
       &copy; 2026 Zivara Technologies Pvt Ltd. All rights reserved. Fashion • Style • You.
     </div>
   </footer>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- SCRIPT BLOCK -->
   <script>
     // 1. SUPABASE CLIENT
     const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
@@ -273,55 +298,21 @@
       }
     }
 
-    // 2. 3D INTERACTIVE TILT & PARALLAX ENGINE
-    function init3DParallax() {
-      const card = document.getElementById('hero3DCard');
-      const bgLayer = document.getElementById('heroBgLayer');
-      if (!card || !bgLayer) return;
+    // 2. PARALLAX BLUR EFFECT ON MOUSEMOVE
+    function initParallaxBackground() {
+      const bg = document.getElementById('ambientCoverBg');
+      if (!bg) return;
 
-      const maxTilt = 10; // degrees
-      const maxTranslate = 20; // px
-
-      card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-
-        const rotateX = ((y - centerY) / centerY) * -maxTilt;
-        const rotateY = ((x - centerX) / centerX) * maxTilt;
-
-        const bgTranslateX = ((x - centerX) / centerX) * -maxTranslate;
-        const bgTranslateY = ((y - centerY) / centerY) * -maxTranslate;
-
-        card.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
-        bgLayer.style.transform = `scale(1.1) translate(${bgTranslateX.toFixed(2)}px, ${bgTranslateY.toFixed(2)}px)`;
+      window.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 16;
+        const y = (e.clientY / window.innerHeight - 0.5) * 16;
+        bg.style.transform = `scale(1.05) translate(${x.toFixed(2)}px, ${y.toFixed(2)}px)`;
       });
-
-      card.addEventListener('mouseleave', () => {
-        card.style.transform = `rotateX(0deg) rotateY(0deg)`;
-        bgLayer.style.transform = `scale(1.1) translate(0px, 0px)`;
-      });
-
-      // Mobile Device Gyroscope Support
-      if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', (e) => {
-          if (!e.gamma || !e.beta) return;
-          const tiltX = Math.min(Math.max(e.beta - 45, -15), 15);
-          const tiltY = Math.min(Math.max(e.gamma, -15), 15);
-          card.style.transform = `rotateX(${(-tiltX * 0.4).toFixed(2)}deg) rotateY(${(tiltY * 0.4).toFixed(2)}deg)`;
-        }, true);
-      }
     }
 
     // 3. LOAD CATEGORIES (MENUS & SUBMENUS)
     async function loadCategories() {
-      if (!db) {
-        console.warn("Supabase client is not connected.");
-        return;
-      }
+      if (!db) return;
 
       try {
         const { data: categories, error } = await db
@@ -337,7 +328,7 @@
           const mainMenus = categories.filter(c => !c.parent_id);
 
           navContainer.innerHTML = `
-            <button onclick="filterByCategory(null, 'The Heritage Edit')" class="category-btn text-gold-700 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 transition">
+            <button onclick="filterByCategory(null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 transition">
               <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
             </button>
           `;
@@ -348,16 +339,16 @@
             menuWrapper.className = "relative group py-1";
 
             menuWrapper.innerHTML = `
-              <button onclick="filterByCategory('${menu.id}', '${menu.name}')" class="category-btn hover:text-gold-600 transition flex items-center gap-1.5 whitespace-nowrap pb-0.5">
+              <button onclick="filterByCategory('${menu.id}', '${menu.name}')" class="category-btn hover:text-gold-400 transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 text-slate-300">
                 <i data-lucide="${menu.icon || 'sparkles'}" class="w-4 h-4"></i>
                 <span>${menu.name}</span>
                 ${subMenus.length > 0 ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400"></i>` : ''}
               </button>
 
               ${subMenus.length > 0 ? `
-                <div class="absolute left-0 top-full hidden group-hover:block bg-noir-900 border border-gold-500/20 shadow-2xl rounded-xl py-2 min-w-[210px] z-50">
+                <div class="absolute left-0 top-full hidden group-hover:block bg-noir-950/95 backdrop-blur-xl border border-gold-500/30 shadow-2xl rounded-xl py-2 min-w-[210px] z-50">
                   ${subMenus.map(sub => `
-                    <button onclick="filterByCategory('${sub.id}', '${sub.name}')" class="w-full text-left px-4 py-2 text-[11px] text-slate-300 hover:text-gold-400 hover:bg-noir-800 transition flex items-center justify-between">
+                    <button onclick="filterByCategory('${sub.id}', '${sub.name}')" class="w-full text-left px-4 py-2 text-[11px] text-slate-300 hover:text-gold-400 hover:bg-noir-900 transition flex items-center justify-between">
                       <span>${sub.name}</span>
                       <i data-lucide="arrow-right" class="w-3 h-3 opacity-60"></i>
                     </button>
@@ -381,12 +372,6 @@
       const counter = document.getElementById('productCounter');
 
       if (!db) {
-        grid.innerHTML = `
-          <div class="col-span-full py-12 text-center text-slate-500 space-y-2">
-            <p class="text-sm font-bold text-slate-800">Supabase connect nahi hai.</p>
-            <p class="text-xs text-slate-400">index.html me valid Anon Key paste karein.</p>
-          </div>
-        `;
         counter.innerText = 'Offline';
         return;
       }
@@ -408,8 +393,8 @@
         allProducts = data || [];
         renderProducts(allProducts);
       } catch (err) {
-        console.error("Products fetch error:", err.message);
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-rose-500 text-xs font-semibold">Error: ${err.message}</div>`;
+        console.error("Products error:", err.message);
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-rose-400 text-xs font-semibold">Error: ${err.message}</div>`;
       }
     }
 
@@ -420,8 +405,8 @@
 
       if (items.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full py-16 text-center text-slate-400">
-            <p class="text-sm font-bold text-slate-700">No products available in this selection.</p>
+          <div class="col-span-full py-16 text-center text-slate-400 glass-card rounded-2xl">
+            <p class="text-sm font-bold text-slate-200">No products available in this selection.</p>
           </div>
         `;
         return;
@@ -433,24 +418,24 @@
         const catName = product.categories?.name || 'Exclusive';
 
         return `
-          <div class="group bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition duration-300 flex flex-col overflow-hidden">
-            <div class="relative w-full h-48 sm:h-60 bg-slate-100 overflow-hidden">
+          <div class="group glass-card rounded-2xl overflow-hidden hover:border-gold-400/50 transition duration-300 flex flex-col shadow-xl">
+            <div class="relative w-full h-48 sm:h-60 bg-noir-900 overflow-hidden">
               <img src="${product.image_url}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 ease-out" loading="lazy" />
-              ${hasDiscount ? `<span class="absolute top-2.5 left-2.5 bg-noir-900 text-gold-400 border border-gold-500/30 text-[10px] font-bold px-2 py-0.5 rounded">${discount}% OFF</span>` : ''}
-              <button class="absolute top-2.5 right-2.5 bg-white/90 p-1.5 rounded-full text-slate-700 hover:text-rose-600 shadow"><i data-lucide="heart" class="w-4 h-4"></i></button>
+              ${hasDiscount ? `<span class="absolute top-2.5 left-2.5 bg-noir-950 text-gold-400 border border-gold-500/40 text-[10px] font-bold px-2 py-0.5 rounded shadow">${discount}% OFF</span>` : ''}
+              <button class="absolute top-2.5 right-2.5 bg-noir-900/80 backdrop-blur-md p-1.5 rounded-full text-slate-300 hover:text-rose-500 shadow border border-gold-500/20"><i data-lucide="heart" class="w-4 h-4"></i></button>
             </div>
             <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
               <div>
-                <span class="text-[10px] font-bold tracking-widest uppercase text-gold-700">${catName}</span>
-                <h3 class="text-xs sm:text-sm font-semibold text-slate-900 line-clamp-2 mt-1">${product.title}</h3>
+                <span class="text-[10px] font-bold tracking-widest uppercase text-gold-400">${catName}</span>
+                <h3 class="text-xs sm:text-sm font-semibold text-slate-100 line-clamp-2 mt-1">${product.title}</h3>
               </div>
-              <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <div class="pt-2 border-t border-gold-500/10 flex items-center justify-between">
                 <div>
-                  <div class="text-sm sm:text-base font-black text-slate-900">₹${Number(product.price).toLocaleString('en-IN')}</div>
+                  <div class="text-sm sm:text-base font-black text-white">₹${Number(product.price).toLocaleString('en-IN')}</div>
                   ${hasDiscount ? `<div class="text-[11px] text-slate-400 line-through">₹${Number(product.original_price).toLocaleString('en-IN')}</div>` : ''}
                 </div>
-                <button onclick="addToCart('${product.id}')" class="bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/30 p-2.5 rounded-xl shadow-sm transition active:scale-95">
-                  <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                <button onclick="addToCart('${product.id}')" class="bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-900 p-2.5 rounded-xl shadow transition active:scale-95">
+                  <i data-lucide="shopping-bag" class="w-4 h-4 stroke-[2.5]"></i>
                 </button>
               </div>
             </div>
@@ -503,7 +488,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
-      init3DParallax();
+      initParallaxBackground();
       document.getElementById('cartCount').innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
       loadCategories();
       loadProducts();
