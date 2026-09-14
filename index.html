@@ -241,11 +241,23 @@
       if (!zivaraSupabase) return;
 
       try {
-        const { data: categories, error } = await zivaraSupabase
-          .from('categories')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true });
+const { data: categories, error } = await dbClient
+  .from('categories')
+  .select('*')
+  .eq('is_active', true)
+  .order('sort_order', { ascending: true });
+
+// loadProducts ke andar:
+const { data, error } = await dbClient
+  .from('products')
+  .select(`
+    id, title, description, price, original_price,
+    stock_quantity, image_url, rating, reviews_count,
+    category_id, categories ( name )
+  `)
+  .eq('is_active', true)
+  .gt('stock_quantity', 0)
+  .order('created_at', { ascending: false });
 
         if (error) throw error;
 
