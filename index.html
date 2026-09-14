@@ -35,8 +35,27 @@
       }
     }
   </script>
+
+  <style>
+    /* 3D Perspective Scaffolding */
+    .hero-perspective {
+      perspective: 1200px;
+    }
+    .hero-3d-card {
+      transform-style: preserve-3d;
+      transition: transform 0.15s ease-out;
+      will-change: transform;
+    }
+    .hero-bg-layer {
+      transition: transform 0.15s ease-out;
+      will-change: transform;
+    }
+    .content-float-3d {
+      transform: translateZ(50px);
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col overflow-x-hidden">
 
   <!-- TOP ANNOUNCEMENT BAR -->
   <div class="bg-noir-900 text-gold-400 text-xs py-2 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
@@ -47,7 +66,7 @@
   <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
       
-      <!-- LOGO: Direct file name matching repo -->
+      <!-- LOGO -->
       <a href="index.html" class="flex items-center gap-3">
         <img 
           src="Logo.png" 
@@ -120,25 +139,42 @@
   <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 flex-1">
 
-    <!-- HERO BANNER -->
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-noir-900 via-noir-850 to-noir-800 text-white border border-gold-500/20 shadow-2xl p-8 sm:p-14 flex flex-col justify-center">
-      <div class="relative z-10 max-w-xl space-y-5">
-        <span class="inline-block px-3.5 py-1 bg-gold-500/10 border border-gold-500/30 text-gold-400 rounded-full text-[11px] font-bold tracking-widest uppercase">
-          Curated Luxury Collection
-        </span>
-        <h1 class="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-white leading-tight">
-          Elegance is an Attitude. Discover Your Signature Style.
-        </h1>
-        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-          Experience timeless sophistication with Zivara's bespoke designer fashion, precision timepieces, and hand-finished jewelry.
-        </p>
-        <div class="pt-2">
-          <a href="#products-section" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-900 px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest shadow-lg hover:from-gold-400 hover:to-gold-300 transition transform hover:-translate-y-0.5">
-            Shop The Edit <i data-lucide="arrow-right" class="w-4 h-4"></i>
-          </a>
+    <!-- 3D PARALLAX HERO BANNER -->
+    <div class="hero-perspective w-full">
+      <div id="hero3DCard" class="hero-3d-card relative overflow-hidden rounded-3xl min-h-[440px] sm:min-h-[500px] text-white border border-gold-500/30 shadow-2xl flex items-center p-8 sm:p-14">
+        
+        <!-- Background 3D Image Layer with Parallax Scaling -->
+        <div 
+          id="heroBgLayer" 
+          class="hero-bg-layer absolute inset-0 -m-8 bg-cover bg-center pointer-events-none scale-110"
+          style="background-image: url('Cover.png');"
+        ></div>
+
+        <!-- Luxury Dark Vignette Gradient Overlays -->
+        <div class="absolute inset-0 bg-gradient-to-r from-noir-900/95 via-noir-900/80 to-noir-900/40 pointer-events-none"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-noir-900/90 via-transparent to-transparent pointer-events-none"></div>
+
+        <!-- Floating 3D Content -->
+        <div class="content-float-3d relative z-10 max-w-xl space-y-5">
+          <span class="inline-block px-3.5 py-1 bg-gold-500/20 backdrop-blur-md border border-gold-500/40 text-gold-300 rounded-full text-[11px] font-bold tracking-widest uppercase shadow-md">
+            Curated Luxury Collection
+          </span>
+          <h1 class="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-white leading-tight drop-shadow-md">
+            Elegance is an Attitude. Discover Your Signature Style.
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-light drop-shadow">
+            Experience timeless sophistication with Zivara's bespoke designer fashion, precision timepieces, and hand-finished jewelry.
+          </p>
+          <div class="pt-2">
+            <a href="#products-section" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-900 px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl hover:from-gold-400 hover:to-gold-300 transition transform hover:-translate-y-1">
+              Shop The Edit <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+          </div>
         </div>
+
+        <!-- Floating Glow Ambient -->
+        <div class="absolute -right-16 -top-16 w-96 h-96 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
       </div>
-      <div class="absolute -right-16 -top-16 w-96 h-96 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
     </div>
 
     <!-- VALUE PROPOSITIONS -->
@@ -218,13 +254,12 @@
     </div>
   </footer>
 
-  <!-- SCRIPT BLOCK -->
+  <!-- JAVASCRIPT LOGIC -->
   <script>
     // 1. SUPABASE CLIENT
     const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
-    const SUPABASE_ANON_KEY = "const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo"; // <-- PASTE YOUR SUPABASE ANON PUBLIC KEY HERE"; // <-- Yahan apni Anon Key dalein
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo";
 
-    // Single client initialization without collision
     const db = (window.supabase && SUPABASE_ANON_KEY.length > 30) 
       ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
       : null;
@@ -238,10 +273,53 @@
       }
     }
 
-    // 2. LOAD CATEGORIES
+    // 2. 3D INTERACTIVE TILT & PARALLAX ENGINE
+    function init3DParallax() {
+      const card = document.getElementById('hero3DCard');
+      const bgLayer = document.getElementById('heroBgLayer');
+      if (!card || !bgLayer) return;
+
+      const maxTilt = 10; // degrees
+      const maxTranslate = 20; // px
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const rotateX = ((y - centerY) / centerY) * -maxTilt;
+        const rotateY = ((x - centerX) / centerX) * maxTilt;
+
+        const bgTranslateX = ((x - centerX) / centerX) * -maxTranslate;
+        const bgTranslateY = ((y - centerY) / centerY) * -maxTranslate;
+
+        card.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+        bgLayer.style.transform = `scale(1.1) translate(${bgTranslateX.toFixed(2)}px, ${bgTranslateY.toFixed(2)}px)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+        bgLayer.style.transform = `scale(1.1) translate(0px, 0px)`;
+      });
+
+      // Mobile Device Gyroscope Support
+      if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', (e) => {
+          if (!e.gamma || !e.beta) return;
+          const tiltX = Math.min(Math.max(e.beta - 45, -15), 15);
+          const tiltY = Math.min(Math.max(e.gamma, -15), 15);
+          card.style.transform = `rotateX(${(-tiltX * 0.4).toFixed(2)}deg) rotateY(${(tiltY * 0.4).toFixed(2)}deg)`;
+        }, true);
+      }
+    }
+
+    // 3. LOAD CATEGORIES (MENUS & SUBMENUS)
     async function loadCategories() {
       if (!db) {
-        console.warn("Supabase Key configure nahi hai.");
+        console.warn("Supabase client is not connected.");
         return;
       }
 
@@ -297,7 +375,7 @@
       }
     }
 
-    // 3. LOAD PRODUCTS
+    // 4. LOAD PRODUCTS
     async function loadProducts() {
       const grid = document.getElementById('productGrid');
       const counter = document.getElementById('productCounter');
@@ -306,7 +384,7 @@
         grid.innerHTML = `
           <div class="col-span-full py-12 text-center text-slate-500 space-y-2">
             <p class="text-sm font-bold text-slate-800">Supabase connect nahi hai.</p>
-            <p class="text-xs text-slate-400">index.html me SUPABASE_ANON_KEY paste karein.</p>
+            <p class="text-xs text-slate-400">index.html me valid Anon Key paste karein.</p>
           </div>
         `;
         counter.innerText = 'Offline';
@@ -425,6 +503,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
+      init3DParallax();
       document.getElementById('cartCount').innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
       loadCategories();
       loadProducts();
