@@ -45,16 +45,16 @@
 
   <!-- NAVBAR -->
   <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 h-20 px-6 sm:px-12 flex items-center justify-between shadow-sm">
-    <!-- Brand Logo: Matches zivara.html & cart.html -->
-    <a href="../zivara.html" class="flex items-center gap-3">
+    <!-- Brand Logo: Relative path to Logo.png in root -->
+    <a href="index.html" class="flex items-center gap-3">
       <img 
-        src="../Images/Logo.png" 
+        src="Logo.png" 
         alt="Zivara Logo" 
         class="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition transform hover:scale-105"
       />
     </a>
 
-    <a href="../zivara.html" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-500 hover:text-gold-600 flex items-center gap-1.5 transition">
+    <a href="index.html" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-500 hover:text-gold-600 flex items-center gap-1.5 transition">
       <i data-lucide="x" class="w-4 h-4"></i>
       Cancel
     </a>
@@ -67,6 +67,8 @@
       <!-- STEP 1: MOBILE NUMBER INPUT -->
       <section id="stepPhone" class="space-y-6">
         <div class="text-center space-y-1.5">
+          <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700 bg-gold-50 px-2.5 py-0.5 rounded border border-gold-400/30">
+            Exclusive Sign In
           </span>
           <h1 class="text-2xl font-serif text-slate-900 tracking-tight pt-1">Welcome to Zivara</h1>
           <p class="text-xs text-slate-500">Enter your mobile phone number to sign in or register</p>
@@ -100,8 +102,8 @@
 
         <p class="text-[11px] text-slate-400 text-center leading-relaxed">
           By continuing, you agree to Zivara's 
-		  <a href="T&C.html" class="text-gold-700 font-semibold hover:underline">Conditions of Use</a>
-          <a href="#" class="text-gold-700 font-semibold hover:underline">Privacy Notice</a>.
+          <a href="T&C.html" class="text-gold-700 font-semibold hover:underline">Conditions of Use</a> and 
+          <a href="T&C.html" class="text-gold-700 font-semibold hover:underline">Privacy Notice</a>.
         </p>
       </section>
 
@@ -195,7 +197,7 @@
   <footer class="bg-noir-900 text-slate-400 text-xs border-t border-gold-500/20 py-5">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
       <div class="flex items-center gap-3">
-        <img src="../Images/Logo.png" alt="Zivara Logo" class="h-9 w-auto object-contain brightness-110" />
+        <img src="Logo.png" alt="Zivara Logo" class="h-9 w-auto object-contain brightness-110" />
         <span class="text-[11px] text-slate-400">Fashion • Style • You</span>
       </div>
       <div class="text-[11px] text-slate-500">
@@ -208,7 +210,6 @@
   <script>
     lucide.createIcons();
 
-    // DOM References
     const stepPhone = document.getElementById('stepPhone');
     const stepOtp = document.getElementById('stepOtp');
     const stepRegister = document.getElementById('stepRegister');
@@ -222,7 +223,6 @@
     let timerInterval = null;
     let timerSeconds = 30;
 
-    // Auto-focus progression for 6-digit OTP fields
     otpInputs.forEach((input, index) => {
       input.addEventListener('input', (e) => {
         if (e.target.value.length === 1 && index < otpInputs.length - 1) {
@@ -246,11 +246,6 @@
         return;
       }
 
-      /* 
-       * [SUPABASE / SMS GATEWAY INTEGRATION]:
-       * const { data, error } = await supabase.auth.signInWithOtp({ phone: '+91' + currentPhone });
-       */
-
       displayPhone.innerText = `+91 ${currentPhone}`;
       stepPhone.classList.add('hidden');
       stepOtp.classList.remove('hidden');
@@ -269,7 +264,6 @@
         return;
       }
 
-      // Demo OTP Validation (123456)
       if (enteredOtp === "123456") {
         clearInterval(timerInterval);
         
@@ -282,7 +276,7 @@
             email: existingUsers[currentPhone].email
           }));
           alert(`Welcome back to Zivara, ${existingUsers[currentPhone].name}!`);
-          window.location.href = '../zivara.html';
+          window.location.href = 'index.html';
         } else {
           stepOtp.classList.add('hidden');
           stepRegister.classList.remove('hidden');
@@ -306,10 +300,9 @@
       localStorage.setItem('zivara_session', JSON.stringify({ phone: currentPhone, name, email }));
 
       alert(`Registration Complete! Welcome to Zivara, ${name}!`);
-      window.location.href = '../zivara.html';
+      window.location.href = 'index.html';
     }
 
-    // Helper: Timer Logic
     function startTimer() {
       clearInterval(timerInterval);
       timerSeconds = 30;
