@@ -23,7 +23,6 @@
               700: '#856404'
             },
             noir: {
-              950: '#070708',
               900: '#0B0B0C',
               850: '#121214',
               800: '#18181B',
@@ -34,58 +33,16 @@
       }
     }
   </script>
-
-  <style>
-    /* Full-Page Blurred Cover Background Layer */
-    .bg-cover-wrapper {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -20;
-      overflow: hidden;
-      pointer-events: none;
-    }
-    .bg-cover-img {
-      width: 110%;
-      height: 110%;
-      position: absolute;
-      top: -5%;
-      left: -5%;
-      background-image: url('Cover.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      filter: blur(14px) brightness(0.4) saturate(1.2);
-      transform: scale(1.05);
-      transition: transform 0.2s ease-out;
-      will-change: transform;
-    }
-    /* Luxury Dark Glassmorphism */
-    .glass-card {
-      background: rgba(18, 18, 20, 0.78);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(212, 175, 55, 0.2);
-    }
-  </style>
 </head>
-<body class="text-slate-100 font-sans min-h-screen flex flex-col relative selection:bg-gold-500 selection:text-noir-900">
-
-  <!-- 1. FULLSCREEN FIXED BLURRED BACKGROUND LAYER -->
-  <div class="bg-cover-wrapper">
-    <div id="ambientCoverBg" class="bg-cover-img"></div>
-    <div class="absolute inset-0 bg-noir-950/70 z-[-10]"></div>
-  </div>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
   <!-- TOP LUXURY ANNOUNCEMENT STRIP -->
-  <div class="bg-noir-950/90 backdrop-blur-md text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium z-50">
+  <div class="bg-noir-900 text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
     ✨ Zivara Bag | Compliments on Orders Above ₹1,499 | 100% Insured Delivery
   </div>
 
   <!-- NAVBAR -->
-  <header class="sticky top-0 z-50 bg-noir-900/85 backdrop-blur-xl border-b border-gold-500/20 shadow-xl">
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       
       <!-- Brand Logo -->
@@ -93,32 +50,32 @@
         <img 
           src="Logo.png" 
           alt="Zivara Logo" 
-          class="h-14 sm:h-16 w-auto object-contain drop-shadow-md transition transform hover:scale-105"
+          class="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition transform hover:scale-105"
         />
       </a>
 
       <!-- Back to Shop Link -->
-      <a href="index.html" class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-300 hover:text-gold-400 flex items-center gap-1.5 transition">
-        <i data-lucide="arrow-left" class="w-4 h-4 text-gold-400"></i>
+      <a href="index.html" class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-600 hover:text-gold-600 flex items-center gap-1.5 transition">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
         Continue Shopping
       </a>
     </div>
   </header>
 
   <!-- MAIN CART CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full z-10 space-y-6">
-    <div class="border-b border-gold-500/20 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+    <div class="mb-6 border-b border-slate-200/80 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-serif text-white tracking-tight">Your Shopping Bag</h1>
-        <p id="cartItemsSubtitle" class="text-xs text-slate-400 mt-1">Review your bespoke selections</p>
+        <h1 class="text-2xl sm:text-3xl font-serif text-slate-900 tracking-tight">Your Shopping Bag</h1>
+        <p id="cartItemsSubtitle" class="text-xs text-slate-500 mt-1">Review your bespoke selections</p>
       </div>
-      <div class="flex items-center gap-2 text-xs text-slate-300">
-        <i data-lucide="shield-check" class="w-4 h-4 text-gold-400"></i>
+      <div class="flex items-center gap-2 text-xs text-slate-500">
+        <i data-lucide="shield-check" class="w-4 h-4 text-gold-600"></i>
         <span>Guaranteed Authenticity & Secure Checkout</span>
       </div>
     </div>
 
-    <!-- CART LAYOUT -->
+    <!-- CART LAYOUT (Items List + Summary Sidebar) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       
       <!-- ITEMS CONTAINER (Left Side - 8 Cols) -->
@@ -130,13 +87,13 @@
         </div>
 
         <!-- Empty Cart State -->
-        <div id="emptyCartState" class="hidden glass-card p-12 text-center rounded-3xl shadow-2xl space-y-5">
+        <div id="emptyCartState" class="hidden bg-white p-12 text-center rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
           <div class="w-20 h-20 bg-noir-900 text-gold-400 border border-gold-500/30 rounded-2xl flex items-center justify-center mx-auto shadow-md">
             <i data-lucide="shopping-bag" class="w-9 h-9"></i>
           </div>
           <div class="space-y-1">
-            <h3 class="text-xl font-serif font-bold text-white">Your bag is empty</h3>
-            <p class="text-xs text-slate-400 max-w-sm mx-auto">Discover statement jewelry, haute couture, and handcrafted timepieces to curate your collection.</p>
+            <h3 class="text-xl font-serif font-bold text-slate-900">Your bag is empty</h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">Discover statement jewelry, haute couture, and handcrafted timepieces to curate your collection.</p>
           </div>
           <div>
             <a href="index.html" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-900 text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-full shadow hover:from-gold-400 hover:to-gold-300 transition transform hover:-translate-y-0.5">
@@ -149,42 +106,42 @@
 
       <!-- ORDER SUMMARY (Right Side - 4 Cols) -->
       <div id="orderSummarySection" class="lg:col-span-4 sticky top-24">
-        <div class="glass-card rounded-3xl shadow-2xl p-6 space-y-6">
-          <div class="flex items-center justify-between border-b border-gold-500/10 pb-3">
-            <h2 class="text-base font-serif font-bold text-white tracking-tight">Order Summary</h2>
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-400/30">VIP Checkout</span>
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 space-y-6">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 class="text-base font-serif font-bold text-slate-900 tracking-tight">Order Summary</h2>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700 bg-gold-50 px-2 py-0.5 rounded border border-gold-400/30">VIP Checkout</span>
           </div>
 
           <!-- Price Details -->
           <div class="space-y-3 text-xs">
-            <div class="flex justify-between text-slate-300">
+            <div class="flex justify-between text-slate-600">
               <span>Bag Subtotal</span>
-              <span id="bagTotal" class="font-semibold text-white">₹0</span>
+              <span id="bagTotal" class="font-semibold text-slate-900">₹0</span>
             </div>
-            <div class="flex justify-between text-emerald-400">
+            <div class="flex justify-between text-emerald-600">
               <span>Bespoke Privilege Discount</span>
               <span id="bagDiscount" class="font-semibold">-₹0</span>
             </div>
-            <div class="flex justify-between text-slate-300">
+            <div class="flex justify-between text-slate-600">
               <span>Insured Courier Delivery</span>
-              <span id="deliveryFee" class="font-semibold text-white">₹0</span>
+              <span id="deliveryFee" class="font-semibold text-slate-900">₹0</span>
             </div>
-            <div class="border-t border-gold-500/20 pt-3 flex justify-between text-sm font-black text-white">
+            <div class="border-t border-slate-100 pt-3 flex justify-between text-sm font-black text-slate-900">
               <span>Total Payable</span>
-              <span id="finalTotal" class="text-gold-400 text-base font-black">₹0</span>
+              <span id="finalTotal" class="text-gold-700 text-base font-black">₹0</span>
             </div>
           </div>
 
           <!-- Coupon Input -->
           <div class="pt-1">
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Apply Privilege Code</label>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Apply Privilege Code</label>
             <div class="flex gap-2">
               <input 
                 type="text" 
                 placeholder="E.G. ZIVARA10" 
-                class="flex-1 bg-noir-800/80 border border-gold-500/30 rounded-xl px-3.5 py-2 text-xs uppercase font-semibold text-white focus:outline-none focus:border-gold-400 focus:bg-noir-900 transition"
+                class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs uppercase font-semibold focus:outline-none focus:border-gold-500 focus:bg-white transition"
               />
-              <button class="bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/40 text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">
+              <button class="bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/30 text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">
                 Apply
               </button>
             </div>
@@ -193,14 +150,14 @@
           <!-- Checkout Button -->
           <button 
             onclick="proceedToCheckout()" 
-            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-900 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-[0.98]">
+            class="w-full bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/40 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-[0.98]">
             <span>Proceed to Checkout</span>
-            <i data-lucide="lock" class="w-4 h-4 stroke-[2.5]"></i>
+            <i data-lucide="lock" class="w-4 h-4 text-gold-400"></i>
           </button>
 
           <!-- Badges -->
-          <div class="text-[11px] text-slate-400 text-center flex items-center justify-center gap-2 pt-1 border-t border-gold-500/10">
-            <i data-lucide="award" class="w-4 h-4 text-gold-400"></i>
+          <div class="text-[11px] text-slate-400 text-center flex items-center justify-center gap-2 pt-1 border-t border-slate-100">
+            <i data-lucide="award" class="w-4 h-4 text-gold-500"></i>
             <span>Encrypted 256-bit Payment Gateway Protection</span>
           </div>
         </div>
@@ -210,7 +167,7 @@
   </main>
 
   <!-- LUXURY FOOTER -->
-  <footer class="bg-noir-950/90 backdrop-blur-xl text-slate-400 text-xs mt-auto border-t border-gold-500/20 py-6 z-10">
+  <footer class="bg-noir-900 text-slate-400 text-xs mt-auto border-t border-gold-500/20 py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
       <div class="flex items-center gap-3">
         <img src="Logo.png" alt="Zivara Logo" class="h-10 w-auto object-contain brightness-110" />
@@ -233,17 +190,6 @@
     const summarySection = document.getElementById('orderSummarySection');
     const itemsSubtitle = document.getElementById('cartItemsSubtitle');
 
-    // Subtle parallax blur background movement
-    function initParallaxBackground() {
-      const bg = document.getElementById('ambientCoverBg');
-      if (!bg) return;
-      window.addEventListener('mousemove', (e) => {
-        const x = (e.clientX / window.innerWidth - 0.5) * 16;
-        const y = (e.clientY / window.innerHeight - 0.5) * 16;
-        bg.style.transform = `scale(1.05) translate(${x.toFixed(2)}px, ${y.toFixed(2)}px)`;
-      });
-    }
-
     function renderCart() {
       if (cart.length === 0) {
         itemsContainer.innerHTML = '';
@@ -262,43 +208,37 @@
       itemsContainer.innerHTML = cart.map(item => {
         const itemTotal = item.price * item.quantity;
         return `
-          <div class="glass-card p-4 sm:p-5 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 transition hover:border-gold-400/50">
+          <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 transition hover:border-gold-500/40">
             
-            <!-- Product Info & Image -->
             <div class="flex items-center gap-4 w-full sm:w-auto">
-              <img src="${item.image}" alt="${item.title}" class="w-20 h-24 object-cover rounded-2xl bg-noir-900 flex-shrink-0 shadow-md border border-gold-500/20" />
+              <img src="${item.image}" alt="${item.title}" class="w-20 h-24 object-cover rounded-2xl bg-slate-100 flex-shrink-0 shadow-sm" />
               <div class="space-y-1">
-                <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400">${item.category}</span>
-                <h3 class="text-xs sm:text-sm font-semibold text-white line-clamp-1">${item.title}</h3>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700">${item.category}</span>
+                <h3 class="text-xs sm:text-sm font-semibold text-slate-900 line-clamp-1">${item.title}</h3>
                 <div class="flex items-center gap-2 pt-0.5">
-                  <span class="text-sm sm:text-base font-black text-white">₹${item.price.toLocaleString('en-IN')}</span>
+                  <span class="text-sm sm:text-base font-black text-slate-900">₹${item.price.toLocaleString('en-IN')}</span>
                   ${item.originalPrice ? `<span class="text-xs text-slate-400 line-through">₹${item.originalPrice.toLocaleString('en-IN')}</span>` : ''}
                 </div>
               </div>
             </div>
 
-            <!-- Quantity & Delete Actions -->
-            <div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-gold-500/10">
-              
-              <!-- Stepper -->
-              <div class="flex items-center border border-gold-500/30 rounded-xl overflow-hidden bg-noir-800/80">
-                <button onclick="changeQuantity('${item.id}', -1)" class="p-2 hover:bg-noir-700 text-slate-300 transition">
+            <div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+              <div class="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                <button onclick="changeQuantity('${item.id}', -1)" class="p-2 hover:bg-slate-200 text-slate-600 transition">
                   <i data-lucide="minus" class="w-3.5 h-3.5"></i>
                 </button>
-                <span class="px-3.5 text-xs font-bold text-white">${item.quantity}</span>
-                <button onclick="changeQuantity('${item.id}', 1)" class="p-2 hover:bg-noir-700 text-slate-300 transition">
+                <span class="px-3.5 text-xs font-bold text-slate-900">${item.quantity}</span>
+                <button onclick="changeQuantity('${item.id}', 1)" class="p-2 hover:bg-slate-200 text-slate-600 transition">
                   <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
 
-              <!-- Item Subtotal -->
               <div class="text-right min-w-[80px]">
                 <div class="text-[10px] uppercase font-bold text-slate-400">Total</div>
-                <div class="text-sm font-black text-white">₹${itemTotal.toLocaleString('en-IN')}</div>
+                <div class="text-sm font-black text-slate-900">₹${itemTotal.toLocaleString('en-IN')}</div>
               </div>
 
-              <!-- Delete Button -->
-              <button onclick="removeFromCart('${item.id}')" class="text-slate-400 hover:text-rose-500 transition p-1.5 rounded-lg hover:bg-rose-500/10" title="Remove item">
+              <button onclick="removeFromCart('${item.id}')" class="text-slate-400 hover:text-rose-600 transition p-1.5 rounded-lg hover:bg-rose-50" title="Remove item">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
@@ -353,10 +293,7 @@
       alert('Proceeding to VIP Encrypted Checkout!');
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      initParallaxBackground();
-      renderCart();
-    });
+    renderCart();
   </script>
 </body>
 </html>
