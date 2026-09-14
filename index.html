@@ -47,13 +47,12 @@
   <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
       
-      <!-- LOGO: Relative image fallback supported -->
+      <!-- LOGO: Direct file name matching repo -->
       <a href="index.html" class="flex items-center gap-3">
         <img 
-          src="./Images/Logo.png" 
+          src="Logo.png" 
           alt="Zivara Logo" 
           class="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition transform hover:scale-105"
-          onerror="this.onerror=null; this.src='./images/Logo.png';"
         />
       </a>
 
@@ -75,7 +74,7 @@
 
       <!-- RIGHT ACTIONS -->
       <div class="flex items-center gap-5 sm:gap-6">
-        <a href="modules/login.html" id="userAuthBtn" class="flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase text-slate-700 hover:text-gold-600 transition">
+        <a href="login.html" id="userAuthBtn" class="flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase text-slate-700 hover:text-gold-600 transition">
           <i data-lucide="user" class="w-4 h-4"></i>
           <span id="userAuthText" class="hidden sm:inline">Sign In</span>
         </a>
@@ -85,7 +84,7 @@
           <span class="absolute -top-1.5 -right-2 bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full shadow-sm">0</span>
         </a>
 
-        <a href="modules/cart.html" class="flex items-center gap-2 bg-noir-900 text-gold-400 border border-gold-500/30 px-4 py-2 rounded-full hover:bg-black transition shadow-sm">
+        <a href="cart.html" class="flex items-center gap-2 bg-noir-900 text-gold-400 border border-gold-500/30 px-4 py-2 rounded-full hover:bg-black transition shadow-sm">
           <div class="relative">
             <i data-lucide="shopping-bag" class="w-4 h-4"></i>
             <span id="cartCount" class="absolute -top-2 -right-2.5 bg-gold-500 text-noir-900 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow">0</span>
@@ -188,7 +187,7 @@
   <footer class="bg-noir-900 text-slate-400 text-xs mt-20 border-t border-gold-500/20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
       <div class="space-y-3">
-        <img src="./Logo.png" alt="Zivara Logo" class="h-14 w-auto object-contain -ml-1 brightness-110" onerror="this.onerror=null; this.src='./images/Logo.png';" />
+        <img src="Logo.png" alt="Zivara Logo" class="h-14 w-auto object-contain -ml-1 brightness-110" />
         <p class="text-[11px] leading-relaxed text-slate-400">
           Zivara crafts modern luxury for discerning tastemakers. Redefining fashion, timepieces, and jewelry across India.
         </p>
@@ -210,7 +209,7 @@
       <div>
         <h5 class="text-gold-400 uppercase font-bold tracking-widest text-[11px] mb-3">Governance</h5>
         <ul class="space-y-2">
-          <li><a href="modules/T&C.html" class="hover:text-white transition">Conditions of Use</a></li>
+          <li><a href="T&C.html" class="hover:text-white transition">Conditions of Use</a></li>
         </ul>
       </div>
     </div>
@@ -219,13 +218,16 @@
     </div>
   </footer>
 
-  <!-- SCRIPT BLOCK: SINGLE DECLARATION ONLY -->
+  <!-- SCRIPT BLOCK -->
   <script>
-    // 1. SUPABASE CLIENT INITIALIZATION
+    // 1. SUPABASE CLIENT
     const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo"; // <-- PASTE YOUR SUPABASE ANON PUBLIC KEY HERE
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY_HERE"; // <-- Yahan apni Anon Key dalein
 
-    const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Single client initialization without collision
+    const db = (window.supabase && SUPABASE_ANON_KEY.length > 30) 
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
+      : null;
 
     let allProducts = [];
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
@@ -236,28 +238,19 @@
       }
     }
 
-    // 2. LOAD CATEGORIES & SUBMENUS
+    // 2. LOAD CATEGORIES
     async function loadCategories() {
-      if (!zivaraSupabase) return;
+      if (!db) {
+        console.warn("Supabase Key configure nahi hai.");
+        return;
+      }
 
       try {
-const { data: categories, error } = await dbClient
-  .from('categories')
-  .select('*')
-  .eq('is_active', true)
-  .order('sort_order', { ascending: true });
-
-// loadProducts ke andar:
-const { data, error } = await dbClient
-  .from('products')
-  .select(`
-    id, title, description, price, original_price,
-    stock_quantity, image_url, rating, reviews_count,
-    category_id, categories ( name )
-  `)
-  .eq('is_active', true)
-  .gt('stock_quantity', 0)
-  .order('created_at', { ascending: false });
+        const { data: categories, error } = await db
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
 
         if (error) throw error;
 
@@ -300,7 +293,7 @@ const { data, error } = await dbClient
           refreshIcons();
         }
       } catch (err) {
-        console.error("Categories error:", err.message);
+        console.error("Categories fetch error:", err.message);
       }
     }
 
@@ -309,13 +302,19 @@ const { data, error } = await dbClient
       const grid = document.getElementById('productGrid');
       const counter = document.getElementById('productCounter');
 
-      if (!zivaraSupabase) {
+      if (!db) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-500 space-y-2">
+            <p class="text-sm font-bold text-slate-800">Supabase connect nahi hai.</p>
+            <p class="text-xs text-slate-400">index.html me SUPABASE_ANON_KEY paste karein.</p>
+          </div>
+        `;
         counter.innerText = 'Offline';
         return;
       }
 
       try {
-        const { data, error } = await zivaraSupabase
+        const { data, error } = await db
           .from('products')
           .select(`
             id, title, description, price, original_price,
@@ -331,7 +330,7 @@ const { data, error } = await dbClient
         allProducts = data || [];
         renderProducts(allProducts);
       } catch (err) {
-        console.error("Products error:", err.message);
+        console.error("Products fetch error:", err.message);
         grid.innerHTML = `<div class="col-span-full py-12 text-center text-rose-500 text-xs font-semibold">Error: ${err.message}</div>`;
       }
     }
@@ -424,7 +423,6 @@ const { data, error } = await dbClient
       renderProducts(allProducts.filter(p => p.title.toLowerCase().includes(term)));
     }
 
-    // Single DOM Initialization
     window.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
       document.getElementById('cartCount').innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
