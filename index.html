@@ -59,12 +59,11 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      filter: blur(14px) brightness(0.4) saturate(1.2);
+      filter: blur(16px) brightness(0.35) saturate(1.2);
       transform: scale(1.05);
       transition: transform 0.2s ease-out;
       will-change: transform;
     }
-    /* Dynamic Glassmorphism */
     .glass-card {
       background: rgba(18, 18, 20, 0.78);
       backdrop-filter: blur(16px);
@@ -73,96 +72,99 @@
     }
   </style>
 </head>
-<body class="text-slate-100 font-sans min-h-screen flex flex-col relative selection:bg-gold-500 selection:text-noir-900">
+<body class="text-slate-100 font-sans min-h-screen flex flex-col relative selection:bg-gold-500 selection:text-noir-900 overflow-x-hidden">
 
   <!-- 1. FULLSCREEN FIXED BLURRED BACKGROUND LAYER -->
   <div class="bg-cover-wrapper">
     <div id="ambientCoverBg" class="bg-cover-img"></div>
-    <!-- Dark luxury gradient overlay across the whole viewport -->
-    <div class="absolute inset-0 bg-noir-950/70 z-[-10]"></div>
+    <div class="absolute inset-0 bg-noir-950/75 z-[-10]"></div>
   </div>
 
-  <!-- TOP LUXURY ANNOUNCEMENT STRIP -->
-  <div class="bg-noir-950/90 backdrop-blur-md text-gold-400 text-xs py-2 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium z-50">
-    ✨ Welcome to <span class="font-bold text-white tracking-widest">ZIVARA</span> | Compliments on Orders Above ₹1,499 | Use Code <span class="text-white font-bold bg-gold-600/30 px-2 py-0.5 rounded border border-gold-400/40">ZIVARA10</span>
-  </div>
+  <!-- 2. STICKY TOP WRAPPER (ANNOUNCEMENT + NAVBAR + CATEGORIES MENU) -->
+  <div class="sticky top-0 z-50 w-full shadow-2xl">
+    
+    <!-- TOP LUXURY ANNOUNCEMENT STRIP -->
+    <div class="bg-noir-950/95 backdrop-blur-md text-gold-400 text-xs py-2 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
+      ✨ Welcome to <span class="font-bold text-white tracking-widest">ZIVARA</span> | Compliments on Orders Above ₹1,499 | Use Code <span class="text-white font-bold bg-gold-600/30 px-2 py-0.5 rounded border border-gold-400/40">ZIVARA10</span>
+    </div>
 
-  <!-- NAVBAR -->
-  <header class="sticky top-0 z-50 bg-noir-900/85 backdrop-blur-xl border-b border-gold-500/20 shadow-xl">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-      
-      <!-- LOGO -->
-      <a href="index.html" class="flex items-center gap-3">
-        <img 
-          src="Logo.png" 
-          alt="Zivara Logo" 
-          class="h-14 sm:h-16 w-auto object-contain drop-shadow-md transition transform hover:scale-105"
-        />
-      </a>
-
-      <!-- SMART SEARCH BAR -->
-      <div class="flex-1 max-w-xl hidden md:block">
-        <div class="relative">
-          <input 
-            type="text" 
-            id="searchInput" 
-            placeholder="Search luxury couture, watches, jewelry, accessories..." 
-            class="w-full pl-10 pr-24 py-2.5 bg-noir-800/80 border border-gold-500/30 rounded-full text-xs text-slate-100 tracking-wide focus:outline-none focus:border-gold-400 focus:bg-noir-900 transition placeholder:text-slate-400"
+    <!-- MAIN NAVBAR -->
+    <header class="bg-noir-900/90 backdrop-blur-xl border-b border-gold-500/20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+        
+        <!-- LOGO -->
+        <a href="index.html" class="flex items-center gap-3">
+          <img 
+            src="Logo.png" 
+            alt="Zivara Logo" 
+            class="h-14 sm:h-16 w-auto object-contain drop-shadow-md transition transform hover:scale-105"
           />
-          <i data-lucide="search" class="w-4 h-4 text-gold-400/80 absolute left-3.5 top-3"></i>
-          <button onclick="handleSearch()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-900 text-xs font-bold rounded-full transition shadow">
-            Search
-          </button>
+        </a>
+
+        <!-- SEARCH BAR -->
+        <div class="flex-1 max-w-xl hidden md:block">
+          <div class="relative">
+            <input 
+              type="text" 
+              id="searchInput" 
+              placeholder="Search luxury couture, watches, jewelry, accessories..." 
+              class="w-full pl-10 pr-24 py-2.5 bg-noir-800/80 border border-gold-500/30 rounded-full text-xs text-slate-100 tracking-wide focus:outline-none focus:border-gold-400 focus:bg-noir-900 transition placeholder:text-slate-400"
+            />
+            <i data-lucide="search" class="w-4 h-4 text-gold-400/80 absolute left-3.5 top-3"></i>
+            <button onclick="handleSearch()" class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-900 text-xs font-bold rounded-full transition shadow">
+              Search
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT ACTIONS -->
+        <div class="flex items-center gap-5 sm:gap-6">
+          <a href="login.html" id="userAuthBtn" class="flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase text-slate-200 hover:text-gold-400 transition">
+            <i data-lucide="user" class="w-4 h-4 text-gold-400"></i>
+            <span id="userAuthText" class="hidden sm:inline">Sign In</span>
+          </a>
+
+          <a href="#" class="relative text-slate-200 hover:text-gold-400 transition">
+            <i data-lucide="heart" class="w-5 h-5"></i>
+            <span class="absolute -top-1.5 -right-2 bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full shadow-sm">0</span>
+          </a>
+
+          <a href="cart.html" class="flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-900 font-bold px-4 py-2 rounded-full hover:brightness-110 transition shadow-lg">
+            <div class="relative">
+              <i data-lucide="shopping-bag" class="w-4 h-4 text-noir-900 stroke-[2.5]"></i>
+              <span id="cartCount" class="absolute -top-2.5 -right-2.5 bg-noir-900 text-gold-400 text-[10px] font-black px-1.5 py-0.2 rounded-full border border-gold-500">0</span>
+            </div>
+            <span class="text-xs tracking-wider uppercase hidden sm:inline">Cart</span>
+          </a>
         </div>
       </div>
 
-      <!-- RIGHT ACTIONS -->
-      <div class="flex items-center gap-5 sm:gap-6">
-        <a href="login.html" id="userAuthBtn" class="flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase text-slate-200 hover:text-gold-400 transition">
-          <i data-lucide="user" class="w-4 h-4 text-gold-400"></i>
-          <span id="userAuthText" class="hidden sm:inline">Sign In</span>
-        </a>
-
-        <a href="#" class="relative text-slate-200 hover:text-gold-400 transition">
-          <i data-lucide="heart" class="w-5 h-5"></i>
-          <span class="absolute -top-1.5 -right-2 bg-rose-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full shadow-sm">0</span>
-        </a>
-
-        <a href="cart.html" class="flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-900 font-bold px-4 py-2 rounded-full hover:brightness-110 transition shadow-lg">
-          <div class="relative">
-            <i data-lucide="shopping-bag" class="w-4 h-4 text-noir-900 stroke-[2.5]"></i>
-            <span id="cartCount" class="absolute -top-2.5 -right-2.5 bg-noir-900 text-gold-400 text-[10px] font-black px-1.5 py-0.2 rounded-full border border-gold-500">0</span>
-          </div>
-          <span class="text-xs tracking-wider uppercase hidden sm:inline">Cart</span>
-        </a>
+      <!-- Mobile Search Bar -->
+      <div class="px-4 pb-3 md:hidden">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="mobileSearchInput"
+            placeholder="Search on Zivara..." 
+            class="w-full pl-10 pr-4 py-2 bg-noir-800/90 border border-gold-500/30 rounded-full text-xs text-white focus:outline-none focus:border-gold-400"
+          />
+          <i data-lucide="search" class="w-4 h-4 text-gold-400 absolute left-3.5 top-2.5"></i>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Mobile Search Bar -->
-    <div class="px-4 pb-3 md:hidden">
-      <div class="relative">
-        <input 
-          type="text" 
-          id="mobileSearchInput"
-          placeholder="Search on Zivara..." 
-          class="w-full pl-10 pr-4 py-2 bg-noir-800/90 border border-gold-500/30 rounded-full text-xs text-white focus:outline-none focus:border-gold-400"
-        />
-        <i data-lucide="search" class="w-4 h-4 text-gold-400 absolute left-3.5 top-2.5"></i>
+    <!-- DYNAMIC CATEGORY MENU BAR (Never Hides) -->
+    <nav class="bg-noir-950/90 backdrop-blur-xl border-b border-gold-500/20 py-3 relative z-40">
+      <div id="categoryNavContainer" class="max-w-7xl mx-auto px-4 flex items-center gap-8 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-visible">
+        <button onclick="filterByCategory(null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 transition">
+          <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
+        </button>
       </div>
-    </div>
-  </header>
-
-  <!-- DYNAMIC MENUS NAV -->
-  <nav class="bg-noir-950/70 backdrop-blur-md border-b border-gold-500/10 py-3 overflow-x-auto scrollbar-none shadow-sm">
-    <div id="categoryNavContainer" class="max-w-7xl mx-auto px-4 flex items-center min-w-[700px] gap-6 text-xs font-bold uppercase tracking-wider text-slate-300">
-      <button onclick="filterByCategory(null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 transition">
-        <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
-      </button>
-    </div>
-  </nav>
+    </nav>
+  </div>
 
   <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 flex-1 w-full z-10">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 flex-1 w-full relative z-10">
 
     <!-- HERO EDITORIAL SHOWCASE WITH SHARP EMBEDDED ART -->
     <div class="glass-card relative overflow-hidden rounded-3xl shadow-2xl p-8 sm:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
@@ -245,7 +247,7 @@
   </main>
 
   <!-- LUXURY FOOTER -->
-  <footer class="bg-noir-950/90 backdrop-blur-xl text-slate-400 text-xs mt-20 border-t border-gold-500/20 z-10">
+  <footer class="bg-noir-950/90 backdrop-blur-xl text-slate-400 text-xs mt-20 border-t border-gold-500/20 relative z-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
       <div class="space-y-3">
         <img src="Logo.png" alt="Zivara Logo" class="h-14 w-auto object-contain -ml-1 brightness-110" />
@@ -310,7 +312,7 @@
       });
     }
 
-    // 3. LOAD CATEGORIES (MENUS & SUBMENUS)
+    // 3. LOAD CATEGORIES (MENUS & SUBMENUS DROPDOWNS FULLY VISIBLE)
     async function loadCategories() {
       if (!db) return;
 
@@ -336,19 +338,19 @@
           mainMenus.forEach(menu => {
             const subMenus = categories.filter(c => c.parent_id === menu.id);
             const menuWrapper = document.createElement('div');
-            menuWrapper.className = "relative group py-1";
+            menuWrapper.className = "relative group py-1 overflow-visible";
 
             menuWrapper.innerHTML = `
               <button onclick="filterByCategory('${menu.id}', '${menu.name}')" class="category-btn hover:text-gold-400 transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 text-slate-300">
                 <i data-lucide="${menu.icon || 'sparkles'}" class="w-4 h-4"></i>
                 <span>${menu.name}</span>
-                ${subMenus.length > 0 ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400"></i>` : ''}
+                ${subMenus.length > 0 ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 group-hover:rotate-180 transition"></i>` : ''}
               </button>
 
               ${subMenus.length > 0 ? `
-                <div class="absolute left-0 top-full hidden group-hover:block bg-noir-950/95 backdrop-blur-xl border border-gold-500/30 shadow-2xl rounded-xl py-2 min-w-[210px] z-50">
+                <div class="absolute left-0 top-full hidden group-hover:block bg-noir-950/95 backdrop-blur-2xl border border-gold-500/40 shadow-2xl rounded-2xl py-2 min-w-[220px] z-[100] divide-y divide-gold-500/10">
                   ${subMenus.map(sub => `
-                    <button onclick="filterByCategory('${sub.id}', '${sub.name}')" class="w-full text-left px-4 py-2 text-[11px] text-slate-300 hover:text-gold-400 hover:bg-noir-900 transition flex items-center justify-between">
+                    <button onclick="filterByCategory('${sub.id}', '${sub.name}')" class="w-full text-left px-4 py-2.5 text-[11px] font-semibold text-slate-300 hover:text-gold-400 hover:bg-noir-900 transition flex items-center justify-between">
                       <span>${sub.name}</span>
                       <i data-lucide="arrow-right" class="w-3 h-3 opacity-60"></i>
                     </button>
