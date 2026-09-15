@@ -472,8 +472,9 @@
     }
 
     // COMPREHENSIVE PRODUCT CREATION
-    async function handleCreateProduct(e) {
+async function handleCreateProduct(e) {
       e.preventDefault();
+      
       const product_id = document.getElementById('prodRandomId').value;
       const product_code = document.getElementById('prodCode').value.trim().toUpperCase();
       const brand_name = document.getElementById('prodBrand').value.trim();
@@ -483,7 +484,9 @@
       const submenu_code = document.getElementById('prodSubmenuSelect').value || null;
       const price = parseFloat(document.getElementById('prodPrice').value);
       const original_price = document.getElementById('prodOrigPrice').value ? parseFloat(document.getElementById('prodOrigPrice').value) : null;
-      const image_url = document.getElementById('prodImageUrl').value.trim();
+      
+      // Variable ko yahan theek se define kiya gaya hai
+      const thumbnail_url = document.getElementById('prodImageUrl').value.trim();
 
       const galleryRaw = document.getElementById('prodGallery').value;
       const gallery_images = galleryRaw ? galleryRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -498,7 +501,8 @@
       const is_active = document.getElementById('prodActive').checked;
       const is_featured = document.getElementById('prodFeatured').checked;
 
-    const payload = {
+      // Database schema ke hisaab se payload
+      const payload = {
         product_id,
         product_code,
         brand_name,
@@ -508,7 +512,7 @@
         submenu_code,
         price,
         original_price,
-        thumbnail_url,         // Database ka primary image column
+        thumbnail_url,
         gallery_images,
         video_url,
         available_sizes,
