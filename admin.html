@@ -498,7 +498,7 @@
       const is_active = document.getElementById('prodActive').checked;
       const is_featured = document.getElementById('prodFeatured').checked;
 
-      const payload = {
+    const payload = {
         product_id,
         product_code,
         brand_name,
@@ -508,8 +508,7 @@
         submenu_code,
         price,
         original_price,
-        image_url,
-        thumbnail_url: image_url,
+        thumbnail_url,         // Database ka primary image column
         gallery_images,
         video_url,
         available_sizes,
