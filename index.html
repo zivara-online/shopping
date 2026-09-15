@@ -34,7 +34,7 @@
     }
   </script>
 
-  <style>
+<style>
     html, body {
       max-width: 100%;
       overflow-x: hidden;
@@ -46,14 +46,25 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    /* Dropdown Hover Visibility Fix */
+
+    /* 1. Container ko dropdown cut karne se rokein */
+    #categoryNavContainer {
+      overflow-y: visible !important;
+    }
+
+    /* 2. Dropdown ko sabse aage aur visible layein */
+    .menu-parent {
+      position: relative !important;
+    }
     .menu-parent:hover .dropdown-menu {
       display: block !important;
       opacity: 1 !important;
       visibility: visible !important;
       pointer-events: auto !important;
+      z-index: 99999 !important;
     }
-    /* Auto-Slider cross-fade */
+
+    /* 3. Banner cross-fade */
     .banner-slide {
       transition: opacity 0.8s ease-in-out;
     }
