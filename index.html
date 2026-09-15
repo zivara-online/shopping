@@ -38,31 +38,37 @@
   </script>
 
   <style>
-    .glass-nav {
-      background: rgba(11, 11, 12, 0.94);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+    /* Prevent page horizontal shifting */
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .custom-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
     .glass-card {
-      background: rgba(18, 18, 20, 0.85);
-      backdrop-filter: blur(16px);
+      background: rgba(18, 18, 20, 0.88);
+      backdrop-filter: blur(14px);
       border: 1px solid rgba(212, 175, 55, 0.2);
     }
   </style>
 </head>
-<body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-gold-500 selection:text-noir-950 overflow-x-hidden">
+<body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-gold-500 selection:text-noir-950">
 
-  <!-- STICKY HEADER & TAXONOMY NAVIGATION -->
-  <div class="sticky top-0 z-50 w-full shadow-2xl">
+  <!-- STICKY TOP CONTAINER -->
+  <div class="sticky top-0 z-50 w-full shadow-2xl bg-noir-950">
     
     <!-- TOP ANNOUNCEMENT STRIP -->
     <div class="bg-noir-950 text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
       ✨ Zivara Privé | Compliments on Orders Above ₹1,499 | Use Code <span class="text-white font-bold bg-gold-600/30 px-2 py-0.5 rounded border border-gold-400/40">ZIVARA10</span>
     </div>
 
-    <!-- MAIN NAVBAR (Meesho Structure, Zivara Luxury Aesthetic) -->
-    <header class="glass-nav">
+    <!-- MAIN NAVBAR -->
+    <header class="bg-noir-900/95 backdrop-blur-xl border-b border-gold-500/20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-6">
         
         <!-- LOGO -->
@@ -74,24 +80,33 @@
           />
         </a>
 
-        <!-- SMART MULTI-INDEX LIVE SEARCH BAR -->
+        <!-- SMART SEARCH BAR (WITH CLEAR 'X' BUTTON) -->
         <div class="flex-1 max-w-2xl relative">
           <div class="relative flex items-center">
             <i data-lucide="search" class="w-4 h-4 text-gold-400 absolute left-4 pointer-events-none"></i>
             <input 
               type="text" 
               id="searchInput" 
-              oninput="handleLiveSearch()"
-              placeholder="Try Watches, Diamond Pendants, or Search by Product Code (e.g. ZIV-01)..." 
-              class="w-full pl-11 pr-28 py-3 bg-noir-900 border border-gold-500/30 rounded-full text-xs text-white tracking-wide focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/50 transition placeholder:text-slate-400 shadow-inner"
+              oninput="handleSearchInput(event)"
+              placeholder="Try Watches, Diamond Pendants, or Search by Product Code..." 
+              class="w-full pl-11 pr-20 py-3 bg-noir-900 border border-gold-500/30 rounded-full text-xs text-white tracking-wide focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/50 transition placeholder:text-slate-400 shadow-inner"
             />
-            <button onclick="handleLiveSearch()" class="absolute right-1.5 px-5 py-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 text-xs font-bold rounded-full transition shadow">
+            <button 
+              id="clearSearchBtn" 
+              onclick="resetSearch()" 
+              class="hidden absolute right-10 text-slate-400 hover:text-white p-1 transition"
+              title="Clear Search">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <button 
+              onclick="triggerSearch()" 
+              class="absolute right-1.5 px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 text-xs font-bold rounded-full transition shadow">
               Search
             </button>
           </div>
         </div>
 
-        <!-- RIGHT ACTIONS (Concierge, Account, Cart) -->
+        <!-- RIGHT ACTIONS -->
         <div class="flex items-center gap-6 shrink-0 text-xs font-semibold tracking-wider uppercase">
           <a href="login.html" id="userAuthBtn" class="flex flex-col items-center gap-1 text-slate-300 hover:text-gold-400 transition">
             <i data-lucide="user" class="w-5 h-5 text-gold-400"></i>
@@ -109,85 +124,186 @@
       </div>
     </header>
 
-    <!-- HORIZONTAL TAXONOMY CATEGORIES BAR -->
-    <nav class="bg-noir-900/95 border-b border-gold-500/15 py-2.5 overflow-x-auto scrollbar-none">
-      <div id="categoryNavContainer" class="max-w-7xl mx-auto px-4 flex items-center min-w-[760px] gap-8 text-xs font-bold uppercase tracking-wider text-slate-300">
-        <button onclick="filterByMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 transition shrink-0">
-          <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
+    <!-- HORIZONTAL MENUS BAR (SMOOTH SCROLL, NO SCREEN SHIFT) -->
+    <nav class="bg-noir-900/90 border-b border-gold-500/15 py-2.5 relative">
+      <div class="max-w-7xl mx-auto px-4 relative flex items-center">
+        <!-- Scroll Left Button -->
+        <button onclick="scrollMenus(-180)" class="hidden md:flex absolute left-1 z-20 bg-noir-950/80 border border-gold-500/30 text-gold-400 p-1 rounded-full shadow hover:bg-noir-800">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
+
+        <!-- Dynamic Menu Container -->
+        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-x-auto custom-scrollbar scroll-smooth px-2">
+          <button onclick="selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
+          </button>
+        </div>
+
+        <!-- Scroll Right Button -->
+        <button onclick="scrollMenus(180)" class="hidden md:flex absolute right-1 z-20 bg-noir-950/80 border border-gold-500/30 text-gold-400 p-1 rounded-full shadow hover:bg-noir-800">
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </button>
       </div>
     </nav>
   </div>
 
   <!-- MAIN BODY CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 flex-1 w-full">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1 w-full">
 
-    <!-- HERO PANORAMIC COVER BANNER -->
-    <div class="relative w-full rounded-3xl overflow-hidden border border-gold-500/30 shadow-2xl bg-noir-900 min-h-[300px] sm:min-h-[380px] flex items-center">
-      <!-- Full Cover Image Background -->
-      <img 
-        src="Cover.png" 
-        alt="Zivara Maison Editorial" 
-        class="absolute inset-0 w-full h-full object-cover object-center"
-      />
-      <!-- Luxury Dark Vignette Gradient -->
-      <div class="absolute inset-0 bg-gradient-to-r from-noir-950 via-noir-950/70 to-transparent"></div>
+    <!-- HERO SECTION (HIDES AUTOMATICALLY WHEN SEARCHING) -->
+    <div id="heroBannerSection" class="transition-all duration-300">
+      <div class="relative w-full rounded-3xl overflow-hidden border border-gold-500/30 shadow-2xl bg-noir-900 min-h-[300px] sm:min-h-[360px] flex items-center">
+        <img 
+          src="Cover.png" 
+          alt="Zivara Maison Editorial" 
+          class="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div class="absolute inset-0 bg-gradient-to-r from-noir-950 via-noir-950/70 to-transparent"></div>
 
-      <!-- Hero Call To Action Content -->
-      <div class="relative z-10 max-w-xl p-8 sm:p-14 space-y-4">
-        <span class="inline-block px-3 py-1 bg-gold-500/20 backdrop-blur-md border border-gold-500/40 text-gold-300 rounded-full text-[10px] font-bold tracking-widest uppercase">
-          Curated Luxury Edit 2026
-        </span>
-        <h1 class="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-white leading-tight drop-shadow-lg">
-          Elegance is an Attitude.
-        </h1>
-        <p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-light drop-shadow">
-          Experience timeless sophistication with Zivara's bespoke designer fashion, precision timepieces, and hand-finished jewelry.
-        </p>
-        <div class="pt-2">
-          <a href="#products-section" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 px-7 py-3 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl transition transform hover:-translate-y-0.5">
-            Shop The Edit <i data-lucide="arrow-right" class="w-4 h-4"></i>
-          </a>
+        <div class="relative z-10 max-w-xl p-8 sm:p-14 space-y-4">
+          <span class="inline-block px-3 py-1 bg-gold-500/20 backdrop-blur-md border border-gold-500/40 text-gold-300 rounded-full text-[10px] font-bold tracking-widest uppercase">
+            Curated Luxury Edit 2026
+          </span>
+          <h1 class="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-white leading-tight drop-shadow-lg">
+            Elegance is an Attitude.
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-light drop-shadow">
+            Experience timeless sophistication with Zivara's bespoke designer fashion, precision timepieces, and hand-finished jewelry.
+          </p>
+          <div class="pt-2">
+            <a href="#products-section" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 px-7 py-3 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl transition transform hover:-translate-y-0.5">
+              Shop The Edit <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- VALUE STRIP -->
+      <div class="mt-6 bg-noir-900/90 border border-gold-500/20 rounded-2xl py-3.5 px-6 shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center divide-y md:divide-y-0 md:divide-x divide-gold-500/10 text-xs font-semibold">
+        <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 md:pt-0">
+          <i data-lucide="rotate-ccw" class="w-4 h-4 text-gold-400"></i>
+          <span>7 Days Seamless Replacement</span>
+        </div>
+        <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 md:pt-0">
+          <i data-lucide="shield-check" class="w-4 h-4 text-gold-400"></i>
+          <span>100% Certified Luxury Craftsmanship</span>
+        </div>
+        <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 md:pt-0">
+          <i data-lucide="truck" class="w-4 h-4 text-gold-400"></i>
+          <span>Free Insured White-Glove Transit</span>
         </div>
       </div>
     </div>
 
-    <!-- MEESHO-STYLE LUXURY VALUE STRIP -->
-    <div class="bg-noir-900/90 border border-gold-500/20 rounded-2xl py-3.5 px-6 shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center divide-y md:divide-y-0 md:divide-x divide-gold-500/10 text-xs font-semibold">
-      <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 md:pt-0">
-        <i data-lucide="rotate-ccw" class="w-4 h-4 text-gold-400"></i>
-        <span>7 Days Seamless Replacement</span>
-      </div>
-      <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 md:pt-0">
-        <i data-lucide="shield-check" class="w-4 h-4 text-gold-400"></i>
-        <span>100% Certified Luxury Craftsmanship</span>
-      </div>
-      <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 md:pt-0">
-        <i data-lucide="truck" class="w-4 h-4 text-gold-400"></i>
-        <span>Free Insured White-Glove Transit</span>
-      </div>
-    </div>
-
-    <!-- PRODUCTS GRID CONTAINER -->
-    <section id="products-section" class="space-y-6 pt-4">
-      <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+    <!-- MEESHO-STYLE CATALOGUE & SEARCH RESULTS LAYOUT (SIDEBAR + GRID) -->
+    <div id="products-section" class="space-y-4 pt-2">
+      
+      <!-- Top Dynamic Search Header & Sort Control -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gold-500/20 pb-4">
         <div>
-          <h2 id="currentCategoryTitle" class="text-xl sm:text-2xl font-serif text-white tracking-tight">The Heritage Edit</h2>
-          <p id="searchSubtext" class="text-xs text-slate-400">Live products directly curated from Zivara inventory</p>
+          <h2 id="searchHeading" class="text-xl sm:text-2xl font-serif text-white tracking-tight capitalize">The Heritage Edit</h2>
+          <p id="searchSubtext" class="text-xs text-slate-400">Live catalogue directly synced with database inventory</p>
         </div>
-        <span id="productCounter" class="text-xs font-bold uppercase tracking-wider text-gold-400 bg-noir-900 px-3.5 py-1 rounded-full border border-gold-500/30">
-          Loading...
-        </span>
+
+        <!-- SORT BY DROPDOWN -->
+        <div class="flex items-center gap-3 self-end sm:self-auto">
+          <div class="flex items-center bg-noir-900 border border-gold-500/30 rounded-xl px-3 py-2 text-xs">
+            <span class="text-slate-400 mr-2 shrink-0">Sort by:</span>
+            <select id="sortSelect" onchange="applyFiltersAndSort()" class="bg-transparent text-gold-400 font-bold focus:outline-none cursor-pointer">
+              <option value="relevance" class="bg-noir-900 text-white">Relevance</option>
+              <option value="price_low" class="bg-noir-900 text-white">Price: Low to High</option>
+              <option value="price_high" class="bg-noir-900 text-white">Price: High to Low</option>
+              <option value="rating" class="bg-noir-900 text-white">Customer Rating</option>
+            </select>
+          </div>
+          <span id="productCounter" class="text-xs font-bold uppercase tracking-wider text-gold-400 bg-noir-900 px-3.5 py-2 rounded-xl border border-gold-500/30 shrink-0">
+            0 Items
+          </span>
+        </div>
       </div>
 
-      <!-- PRODUCT CARDS GRID -->
-      <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 min-h-[300px]">
-        <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
-        <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
-        <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
-        <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+      <!-- MAIN CATALOGUE CONTAINER: FILTERS ON LEFT + PRODUCTS ON RIGHT -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- LEFT SIDEBAR FILTERS (4 COLS ON LARGE DESKTOP) -->
+        <aside class="lg:col-span-3 bg-noir-900/90 border border-gold-500/25 rounded-2xl p-5 space-y-6 shadow-xl sticky top-40">
+          
+          <!-- Filter Header -->
+          <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
+            <div>
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider">Filters</h3>
+              <span id="filterProductCount" class="text-[10px] text-slate-400">0 Products Available</span>
+            </div>
+            <button onclick="resetAllFilters()" class="text-[11px] font-semibold text-gold-400 hover:underline">
+              Reset All
+            </button>
+          </div>
+
+          <!-- Category Checkboxes (From MenuSubmenu Table) -->
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+              <span>Category</span>
+              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+            </h4>
+            <div id="categoryFilterContainer" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar text-xs text-slate-300 pr-1">
+              <!-- Dynamically Populated Checkboxes -->
+            </div>
+          </div>
+
+          <!-- Price Range Filter -->
+          <div class="space-y-3 border-t border-gold-500/15 pt-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+              <span>Price Range</span>
+              <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+            </h4>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="radio" name="priceRange" value="all" checked onchange="applyFiltersAndSort()" class="accent-gold-500" />
+                <span>All Prices</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="radio" name="priceRange" value="under2000" onchange="applyFiltersAndSort()" class="accent-gold-500" />
+                <span>Under ₹2,000</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="radio" name="priceRange" value="2000to5000" onchange="applyFiltersAndSort()" class="accent-gold-500" />
+                <span>₹2,000 - ₹5,000</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="radio" name="priceRange" value="above5000" onchange="applyFiltersAndSort()" class="accent-gold-500" />
+                <span>Above ₹5,000</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Customer Rating Filter -->
+          <div class="space-y-3 border-t border-gold-500/15 pt-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+              <span>Customer Rating</span>
+              <i data-lucide="star" class="w-3.5 h-3.5"></i>
+            </h4>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="checkbox" id="filterRating4" onchange="applyFiltersAndSort()" class="accent-gold-500 rounded" />
+                <span>4.0 ★ & Above</span>
+              </label>
+            </div>
+          </div>
+
+        </aside>
+
+        <!-- RIGHT PRODUCTS GRID (9 COLS) -->
+        <section class="lg:col-span-9">
+          <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 min-h-[380px]">
+            <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+            <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+            <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+            <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+          </div>
+        </section>
+
       </div>
-    </section>
+    </div>
 
   </main>
 
@@ -226,16 +342,17 @@
     </div>
   </footer>
 
-  <!-- SCRIPT LOGIC -->
+  <!-- REAL-TIME LOGIC & SUPABASE MAPPING -->
   <script>
     const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo";
 
-    const db = (window.supabase && SUPABASE_ANON_KEY.length > 30) 
-      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
-      : null;
+    const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     let allProducts = [];
+    let menuSubmenuList = [];
+    let activeMenuId = null;
+    let activeSubmenuId = null;
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
 
     function refreshIcons() {
@@ -244,12 +361,16 @@
       }
     }
 
-    // 1. FETCH DYNAMIC MENUS & SUBMENUS (MenuSubmenu Table)
+    function scrollMenus(offset) {
+      document.getElementById('categoryNavContainer').scrollBy({ left: offset, behavior: 'smooth' });
+    }
+
+    // 1. FETCH & RENDER TAXONOMY MENUS (FROM MenuSubmenu Table)
     async function loadMenuSubmenu() {
       if (!db) return;
 
       try {
-        const { data: rows, error } = await db
+        const { data, error } = await db
           .from('MenuSubmenu')
           .select('*')
           .eq('Active', true)
@@ -257,78 +378,85 @@
           .order('SubMenu Serial', { ascending: true });
 
         if (error) throw error;
+        menuSubmenuList = data || [];
 
-        if (rows && rows.length > 0) {
-          const navContainer = document.getElementById('categoryNavContainer');
+        const navContainer = document.getElementById('categoryNavContainer');
+        const filterContainer = document.getElementById('categoryFilterContainer');
+
+        // Nav Bar All Button
+        navContainer.innerHTML = `
+          <button onclick="selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
+          </button>
+        `;
+
+        // Filter Sidebar Checkboxes Init
+        filterContainer.innerHTML = '';
+
+        // Grouping Main Menus with their Submenus
+        const menuMap = new Map();
+        menuSubmenuList.forEach(item => {
+          if (!menuMap.has(item.MenuID)) {
+            menuMap.set(item.MenuID, {
+              menuId: item.MenuID,
+              menuName: item.MenuName,
+              icon: item.Icons || 'sparkles',
+              submenus: []
+            });
+          }
+          if (item.SubmenuID && item.SubName) {
+            menuMap.get(item.MenuID).submenus.push({
+              subId: item.SubmenuID,
+              subName: item.SubName
+            });
+          }
+        });
+
+        menuMap.forEach(menu => {
+          const hasSubs = menu.submenus.length > 0;
           
-          navContainer.innerHTML = `
-            <button onclick="filterByMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 transition shrink-0">
-              <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
+          // Render Horizontal Menu
+          const menuWrapper = document.createElement('div');
+          menuWrapper.className = "relative group py-1 shrink-0";
+          menuWrapper.innerHTML = `
+            <button onclick="selectMenu('${menu.menuId}', null, '${menu.menuName}')" class="category-btn hover:text-gold-400 transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 text-slate-300">
+              <i data-lucide="${menu.icon}" class="w-4 h-4"></i>
+              <span>${menu.menuName}</span>
+              ${hasSubs ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 group-hover:rotate-180 transition"></i>` : ''}
             </button>
+
+            ${hasSubs ? `
+              <div class="absolute left-0 top-full hidden group-hover:block bg-noir-950/95 backdrop-blur-2xl border border-gold-500/40 shadow-2xl rounded-2xl py-2 min-w-[210px] z-[100] divide-y divide-gold-500/10">
+                ${menu.submenus.map(sub => `
+                  <button onclick="selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-[11px] font-semibold text-slate-300 hover:text-gold-400 hover:bg-noir-900 transition flex items-center justify-between">
+                    <span>${sub.subName}</span>
+                    <span class="text-[9px] text-gold-500/70 border border-gold-500/20 px-1 rounded font-mono">${sub.subId}</span>
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
           `;
+          navContainer.appendChild(menuWrapper);
 
-          const menusMap = new Map();
-          rows.forEach(r => {
-            if (!menusMap.has(r.MenuID)) {
-              menusMap.set(r.MenuID, {
-                menuID: r.MenuID,
-                menuName: r.MenuName,
-                icon: r.Icons || 'sparkles',
-                submenus: []
-              });
-            }
-            if (r.SubmenuID && r.SubName) {
-              menusMap.get(r.MenuID).submenus.push({
-                submenuID: r.SubmenuID,
-                subName: r.SubName,
-                icon: r.Icons || 'sparkles'
-              });
-            }
-          });
+          // Render Sidebar Category Checkbox
+          const catLabel = document.createElement('label');
+          catLabel.className = "flex items-center gap-2 cursor-pointer hover:text-white";
+          catLabel.innerHTML = `
+            <input type="checkbox" value="${menu.menuId}" class="cat-checkbox accent-gold-500 rounded" onchange="applyFiltersAndSort()" />
+            <span>${menu.menuName}</span>
+          `;
+          filterContainer.appendChild(catLabel);
+        });
 
-          menusMap.forEach(menu => {
-            const menuWrapper = document.createElement('div');
-            menuWrapper.className = "relative group py-1 overflow-visible shrink-0";
-
-            const hasSubs = menu.submenus.length > 0;
-
-            menuWrapper.innerHTML = `
-              <button onclick="filterByMenu('${menu.menuID}', null, '${menu.menuName}')" class="category-btn hover:text-gold-400 transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 text-slate-300">
-                <i data-lucide="${menu.icon}" class="w-4 h-4"></i>
-                <span>${menu.menuName}</span>
-                ${hasSubs ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 group-hover:rotate-180 transition"></i>` : ''}
-              </button>
-
-              ${hasSubs ? `
-                <div class="absolute left-0 top-full hidden group-hover:block bg-noir-950/95 backdrop-blur-2xl border border-gold-500/40 shadow-2xl rounded-2xl py-2 min-w-[210px] z-[100] divide-y divide-gold-500/10">
-                  ${menu.submenus.map(sub => `
-                    <button onclick="filterByMenu('${menu.menuID}', '${sub.submenuID}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-[11px] font-semibold text-slate-300 hover:text-gold-400 hover:bg-noir-900 transition flex items-center justify-between">
-                      <span>${sub.subName}</span>
-                      <span class="text-[9px] text-gold-500/70 border border-gold-500/20 px-1 rounded font-mono">${sub.submenuID}</span>
-                    </button>
-                  `).join('')}
-                </div>
-              ` : ''}
-            `;
-            navContainer.appendChild(menuWrapper);
-          });
-
-          refreshIcons();
-        }
+        refreshIcons();
       } catch (err) {
         console.error("MenuSubmenu fetch error:", err.message);
       }
     }
 
-    // 2. LOAD PRODUCTS FROM DATABASE
+    // 2. FETCH PRODUCTS DATABASE
     async function loadProducts() {
-      const grid = document.getElementById('productGrid');
-      const counter = document.getElementById('productCounter');
-
-      if (!db) {
-        counter.innerText = 'Offline';
-        return;
-      }
+      if (!db) return;
 
       try {
         const { data, error } = await db
@@ -339,27 +467,30 @@
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-
         allProducts = data || [];
-        renderProducts(allProducts);
+        
+        applyFiltersAndSort();
       } catch (err) {
         console.error("Products error:", err.message);
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-rose-400 text-xs font-semibold">Error: ${err.message}</div>`;
+        document.getElementById('productGrid').innerHTML = `<div class="col-span-full py-12 text-center text-rose-400 text-xs">Error loading products: ${err.message}</div>`;
       }
     }
 
-    // 3. RENDER PRODUCTS
-    function renderProducts(items) {
+    // 3. DISPLAY PRODUCTS IN MEESHO-STYLE CARDS
+    function renderProductGrid(items) {
       const grid = document.getElementById('productGrid');
       const counter = document.getElementById('productCounter');
+      const filterCount = document.getElementById('filterProductCount');
+
       counter.innerText = `${items.length} Item${items.length === 1 ? '' : 's'}`;
+      filterCount.innerText = `${items.length} Products Available`;
 
       if (items.length === 0) {
         grid.innerHTML = `
-          <div class="col-span-full py-16 text-center text-slate-400 glass-card rounded-2xl space-y-2">
-            <i data-lucide="package-search" class="w-8 h-8 mx-auto text-gold-400/50"></i>
-            <p class="text-sm font-bold text-slate-200">No matching luxury items found.</p>
-            <p class="text-xs text-slate-500">Try searching for a different keyword or product code.</p>
+          <div class="col-span-full py-20 text-center text-slate-400 bg-noir-900/60 border border-gold-500/10 rounded-3xl space-y-3">
+            <i data-lucide="package-search" class="w-10 h-10 mx-auto text-gold-400/40"></i>
+            <p class="text-sm font-bold text-slate-200">No matching products found.</p>
+            <p class="text-xs text-slate-500">Try adjusting your filters, search keyword or product codes.</p>
           </div>
         `;
         refreshIcons();
@@ -371,30 +502,63 @@
         const discount = hasDiscount ? Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0;
 
         return `
-          <div class="group glass-card rounded-2xl overflow-hidden hover:border-gold-400/50 transition duration-300 flex flex-col shadow-xl">
-            <div class="relative w-full h-48 sm:h-60 bg-noir-900 overflow-hidden">
-              <img src="${product.image_url}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 ease-out" loading="lazy" />
-              ${hasDiscount ? `<span class="absolute top-2.5 left-2.5 bg-noir-950 text-gold-400 border border-gold-500/40 text-[10px] font-bold px-2 py-0.5 rounded shadow">${discount}% OFF</span>` : ''}
-              <button class="absolute top-2.5 right-2.5 bg-noir-900/80 backdrop-blur-md p-1.5 rounded-full text-slate-300 hover:text-rose-500 shadow border border-gold-500/20"><i data-lucide="heart" class="w-4 h-4"></i></button>
+          <div class="group bg-noir-900 border border-gold-500/20 rounded-2xl overflow-hidden hover:border-gold-400/60 transition duration-300 flex flex-col shadow-lg">
+            
+            <!-- Image Area -->
+            <div class="relative w-full h-48 sm:h-56 bg-noir-950 overflow-hidden">
+              <img 
+                src="${product.image_url}" 
+                alt="${product.title}" 
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500 ease-out" 
+                loading="lazy"
+                onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80'"
+              />
+              ${hasDiscount ? `
+                <span class="absolute top-2 left-2 bg-noir-950/90 text-gold-400 border border-gold-500/40 text-[9px] font-bold px-2 py-0.5 rounded shadow">
+                  ${discount}% OFF
+                </span>
+              ` : ''}
+              <button class="absolute top-2 right-2 bg-noir-900/80 p-1.5 rounded-full text-slate-300 hover:text-rose-500 transition shadow">
+                <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+              </button>
             </div>
-            <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+
+            <!-- Product Details -->
+            <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2.5">
               <div>
-                <div class="flex items-center justify-between text-[10px] uppercase tracking-widest text-gold-400 font-mono">
-                  <span>Code: ${product.product_code || 'ZIV'}</span>
-                  ${product.submenu_code ? `<span class="border border-gold-500/20 px-1 rounded">${product.submenu_code}</span>` : ''}
+                <div class="flex items-center justify-between text-[10px] text-slate-400 uppercase font-mono tracking-wider">
+                  <span>${product.product_code || 'ZIV'}</span>
+                  ${product.submenu_code ? `<span class="text-gold-400 border border-gold-500/30 px-1 rounded">${product.submenu_code}</span>` : ''}
                 </div>
-                <h3 class="text-xs sm:text-sm font-semibold text-slate-100 line-clamp-2 mt-1">${product.title}</h3>
+                <h3 class="text-xs font-semibold text-slate-100 line-clamp-1 mt-1" title="${product.title}">
+                  ${product.title}
+                </h3>
               </div>
-              <div class="pt-2 border-t border-gold-500/10 flex items-center justify-between">
-                <div>
-                  <div class="text-sm sm:text-base font-black text-white">₹${Number(product.price).toLocaleString('en-IN')}</div>
-                  ${hasDiscount ? `<div class="text-[11px] text-slate-400 line-through">₹${Number(product.original_price).toLocaleString('en-IN')}</div>` : ''}
+
+              <!-- Price & Rating -->
+              <div>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-base font-black text-white">₹${Number(product.price).toLocaleString('en-IN')}</span>
+                  ${hasDiscount ? `<span class="text-xs text-slate-500 line-through">₹${Number(product.original_price).toLocaleString('en-IN')}</span>` : ''}
                 </div>
-                <button onclick="addToCart('${product.product_id}')" class="bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 p-2.5 rounded-xl shadow transition active:scale-95">
-                  <i data-lucide="shopping-bag" class="w-4 h-4 stroke-[2.5]"></i>
-                </button>
+                
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="inline-flex items-center text-[10px] font-bold bg-emerald-950 border border-emerald-500/40 text-emerald-400 px-1.5 py-0.5 rounded">
+                    ${product.rating || '4.2'} <i data-lucide="star" class="w-2.5 h-2.5 fill-current ml-0.5"></i>
+                  </span>
+                  <span class="text-[10px] text-slate-500">(${product.reviews_count || 120} Reviews)</span>
+                </div>
               </div>
+
+              <!-- Add to Bag Button -->
+              <button 
+                onclick="addToCart('${product.product_id}')" 
+                class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1.5 shadow active:scale-95">
+                <i data-lucide="shopping-bag" class="w-3.5 h-3.5 stroke-[2.5]"></i>
+                <span>Add to Bag</span>
+              </button>
             </div>
+
           </div>
         `;
       }).join('');
@@ -402,51 +566,144 @@
       refreshIcons();
     }
 
-    // 4. MULTI-FIELD LIVE SEARCH (Title, Product Code, Menu Code, Submenu Code)
-    function handleLiveSearch() {
-      const term = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-      const subtext = document.getElementById('searchSubtext');
-
-      if (!term) {
-        subtext.innerText = "Live products directly curated from Zivara inventory";
-        renderProducts(allProducts);
-        return;
+    // 4. LIVE SEARCH & DYNAMIC MEESHO VIEW SWITCHING
+    function handleSearchInput(e) {
+      const term = e.target.value.trim();
+      const clearBtn = document.getElementById('clearSearchBtn');
+      
+      if (term.length > 0) {
+        clearBtn.classList.remove('hidden');
+        // Hide Hero Section for pure search view
+        document.getElementById('heroBannerSection').classList.add('hidden');
+        document.getElementById('searchHeading').innerText = `"${term}"`;
+        document.getElementById('searchSubtext').innerText = `Showing results matching your query`;
+      } else {
+        clearBtn.classList.add('hidden');
+        document.getElementById('heroBannerSection').classList.remove('hidden');
+        document.getElementById('searchHeading').innerText = "The Heritage Edit";
+        document.getElementById('searchSubtext').innerText = "Live catalogue directly synced with database inventory";
       }
 
-      subtext.innerText = `Search results for "${term}"`;
+      applyFiltersAndSort();
+    }
 
-      const matched = allProducts.filter(p => {
-        const titleMatch = p.title && p.title.toLowerCase().includes(term);
-        const codeMatch = p.product_code && p.product_code.toLowerCase().includes(term);
-        const menuMatch = p.menu_code && p.menu_code.toString().toLowerCase() === term;
-        const subMatch = p.submenu_code && p.submenu_code.toLowerCase().includes(term);
-        return titleMatch || codeMatch || menuMatch || subMatch;
+    function resetSearch() {
+      const input = document.getElementById('searchInput');
+      input.value = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      document.getElementById('heroBannerSection').classList.remove('hidden');
+      document.getElementById('searchHeading').innerText = "The Heritage Edit";
+      document.getElementById('searchSubtext').innerText = "Live catalogue directly synced with database inventory";
+      applyFiltersAndSort();
+    }
+
+    function triggerSearch() {
+      document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' });
+      applyFiltersAndSort();
+    }
+
+    // 5. TAXONOMY SELECTION HANDLER
+    function selectMenu(menuId, submenuId, title) {
+      activeMenuId = menuId;
+      activeSubmenuId = submenuId;
+      
+      document.getElementById('searchHeading').innerText = title || 'The Heritage Edit';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+
+      if (menuId || submenuId) {
+        document.getElementById('heroBannerSection').classList.add('hidden');
+        document.getElementById('searchSubtext').innerText = `Showing filtered collection for ${title}`;
+      } else {
+        document.getElementById('heroBannerSection').classList.remove('hidden');
+        document.getElementById('searchSubtext').innerText = "Live catalogue directly synced with database inventory";
+      }
+
+      // Checkbox Sync
+      document.querySelectorAll('.cat-checkbox').forEach(cb => {
+        cb.checked = (cb.value === menuId);
       });
 
-      renderProducts(matched);
+      applyFiltersAndSort();
     }
 
-    // 5. TAXONOMY FILTERING
-    function filterByMenu(menuId, submenuId, title) {
-      document.getElementById('currentCategoryTitle').innerText = title || 'The Heritage Edit';
+    // 6. MULTI-VARIABLE DATABASE FILTER & SORT CONTROLLER
+    function applyFiltersAndSort() {
+      let filtered = [...allProducts];
+
+      // A. Text Search Query
+      const term = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+      if (term) {
+        filtered = filtered.filter(p => {
+          const title = p.title ? p.title.toLowerCase() : '';
+          const code = p.product_code ? p.product_code.toLowerCase() : '';
+          const menuCode = p.menu_code ? p.menu_code.toString().toLowerCase() : '';
+          const subCode = p.submenu_code ? p.submenu_code.toLowerCase() : '';
+          return title.includes(term) || code.includes(term) || menuCode === term || subCode.includes(term);
+        });
+      }
+
+      // B. Navbar Menu / Submenu Filter
+      if (activeSubmenuId) {
+        filtered = filtered.filter(p => p.submenu_code === activeSubmenuId);
+      } else if (activeMenuId) {
+        filtered = filtered.filter(p => p.menu_code === activeMenuId);
+      }
+
+      // C. Sidebar Category Checkboxes
+      const checkedCategories = Array.from(document.querySelectorAll('.cat-checkbox:checked')).map(cb => cb.value);
+      if (checkedCategories.length > 0 && !activeSubmenuId) {
+        filtered = filtered.filter(p => checkedCategories.includes(p.menu_code));
+      }
+
+      // D. Price Range Radio
+      const priceVal = document.querySelector('input[name="priceRange"]:checked')?.value;
+      if (priceVal === 'under2000') {
+        filtered = filtered.filter(p => p.price < 2000);
+      } else if (priceVal === '2000to5000') {
+        filtered = filtered.filter(p => p.price >= 2000 && p.price <= 5000);
+      } else if (priceVal === 'above5000') {
+        filtered = filtered.filter(p => p.price > 5000);
+      }
+
+      // E. Rating Filter (4.0+)
+      if (document.getElementById('filterRating4')?.checked) {
+        filtered = filtered.filter(p => (p.rating || 5) >= 4.0);
+      }
+
+      // F. Sorting
+      const sortMode = document.getElementById('sortSelect')?.value || 'relevance';
+      if (sortMode === 'price_low') {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (sortMode === 'price_high') {
+        filtered.sort((a, b) => b.price - a.price);
+      } else if (sortMode === 'rating') {
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      }
+
+      renderProductGrid(filtered);
+    }
+
+    function resetAllFilters() {
+      activeMenuId = null;
+      activeSubmenuId = null;
       document.getElementById('searchInput').value = '';
-      document.getElementById('searchSubtext').innerText = "Live products directly curated from Zivara inventory";
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      document.getElementById('heroBannerSection').classList.remove('hidden');
+      document.getElementById('searchHeading').innerText = "The Heritage Edit";
+      document.getElementById('searchSubtext').innerText = "Live catalogue directly synced with database inventory";
 
-      if (!menuId && !submenuId) {
-        renderProducts(allProducts);
-        return;
-      }
+      document.querySelectorAll('.cat-checkbox').forEach(cb => cb.checked = false);
+      const allPricesRadio = document.querySelector('input[name="priceRange"][value="all"]');
+      if (allPricesRadio) allPricesRadio.checked = true;
+      const r4 = document.getElementById('filterRating4');
+      if (r4) r4.checked = false;
+      document.getElementById('sortSelect').value = 'relevance';
 
-      let filtered = allProducts;
-      if (submenuId) {
-        filtered = allProducts.filter(p => p.submenu_code === submenuId);
-      } else if (menuId) {
-        filtered = allProducts.filter(p => p.menu_code === menuId);
-      }
-      renderProducts(filtered);
+      applyFiltersAndSort();
     }
 
-    // 6. CART HANDLER
+    // 7. CART HANDLER
     function addToCart(id) {
       const product = allProducts.find(p => p.product_id === id);
       if (!product) return;
