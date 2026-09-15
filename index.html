@@ -228,8 +228,6 @@
       <!-- Top Dynamic Header & Sort -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gold-500/20 pb-4">
         <div>
-          <h2 id="searchHeading" class="text-xl sm:text-2xl font-serif text-white tracking-tight capitalize">The Heritage Edit</h2>
-          <p id="searchSubtext" class="text-xs text-slate-400">Live catalogue directly synced with database inventory</p>
         </div>
 
         <div class="flex items-center gap-3 self-end sm:self-auto">
@@ -453,8 +451,6 @@
 
       const activeData = heroBanners[currentBannerIdx];
       if (activeData) {
-        if (activeData.title) document.getElementById('bannerTitle').innerText = activeData.title;
-        if (activeData.subtitle) document.getElementById('bannerSubtitle').innerText = activeData.subtitle;
       }
     }
 
