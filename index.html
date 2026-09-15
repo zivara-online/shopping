@@ -5,11 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zivara - Fashion • Style • You</title>
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
@@ -38,7 +35,6 @@
   </script>
 
   <style>
-    /* Prevent page horizontal shifting */
     html, body {
       max-width: 100%;
       overflow-x: hidden;
@@ -50,10 +46,16 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    .glass-card {
-      background: rgba(18, 18, 20, 0.88);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(212, 175, 55, 0.2);
+    /* Dropdown Hover Visibility Fix */
+    .menu-parent:hover .dropdown-menu {
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+    /* Auto-Slider cross-fade */
+    .banner-slide {
+      transition: opacity 0.8s ease-in-out;
     }
   </style>
 </head>
@@ -80,7 +82,7 @@
           />
         </a>
 
-        <!-- SMART SEARCH BAR (WITH CLEAR 'X' BUTTON) -->
+        <!-- SMART SEARCH BAR -->
         <div class="flex-1 max-w-2xl relative">
           <div class="relative flex items-center">
             <i data-lucide="search" class="w-4 h-4 text-gold-400 absolute left-4 pointer-events-none"></i>
@@ -124,23 +126,21 @@
       </div>
     </header>
 
-    <!-- HORIZONTAL MENUS BAR (SMOOTH SCROLL, NO SCREEN SHIFT) -->
-    <nav class="bg-noir-900/90 border-b border-gold-500/15 py-2.5 relative">
-      <div class="max-w-7xl mx-auto px-4 relative flex items-center">
-        <!-- Scroll Left Button -->
-        <button onclick="scrollMenus(-180)" class="hidden md:flex absolute left-1 z-20 bg-noir-950/80 border border-gold-500/30 text-gold-400 p-1 rounded-full shadow hover:bg-noir-800">
+    <!-- HORIZONTAL MENUS BAR (DROPDOWNS FULLY VISIBLE, NO SCREEN CUT) -->
+    <nav class="bg-noir-900/90 border-b border-gold-500/15 py-2.5 relative z-40 overflow-visible">
+      <div class="max-w-7xl mx-auto px-4 relative flex items-center overflow-visible">
+        
+        <button onclick="scrollMenus(-180)" class="hidden md:flex absolute left-1 z-30 bg-noir-950/80 border border-gold-500/30 text-gold-400 p-1 rounded-full shadow hover:bg-noir-800">
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
 
-        <!-- Dynamic Menu Container -->
-        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-x-auto custom-scrollbar scroll-smooth px-2">
+        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-x-auto custom-scrollbar scroll-smooth px-2 overflow-y-visible py-1">
           <button onclick="selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
             <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
           </button>
         </div>
 
-        <!-- Scroll Right Button -->
-        <button onclick="scrollMenus(180)" class="hidden md:flex absolute right-1 z-20 bg-noir-950/80 border border-gold-500/30 text-gold-400 p-1 rounded-full shadow hover:bg-noir-800">
+        <button onclick="scrollMenus(180)" class="hidden md:flex absolute right-1 z-30 bg-noir-950/80 border border-gold-500/30 text-gold-400 p-1 rounded-full shadow hover:bg-noir-800">
           <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </button>
       </div>
@@ -150,15 +150,47 @@
   <!-- MAIN BODY CONTAINER -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1 w-full">
 
-    <!-- HERO SECTION (HIDES AUTOMATICALLY WHEN SEARCHING) -->
+    <!-- HERO SECTION WITH WHITE LUXURY FRAME & 4-SEC DYNAMIC AUTOSCROLL SLIDER -->
     <div id="heroBannerSection" class="transition-all duration-300">
-      <div class="relative w-full rounded-3xl overflow-hidden border border-gold-500/30 shadow-2xl bg-noir-900 min-h-[300px] sm:min-h-[360px] flex items-center">
-        <img 
-          src="Cover.png" 
-          alt="Zivara Maison Editorial" 
-          class="absolute inset-0 w-full h-full object-cover object-center"
-        />
-        <div class="absolute inset-0 bg-gradient-to-r from-noir-950 via-noir-950/70 to-transparent"></div>
+      
+      <!-- Attractive White Elevated Frame Container -->
+      <div class="bg-white/95 p-3 sm:p-4 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(255,255,255,0.08)] border border-white/40">
+        
+        <div class="relative w-full rounded-3xl overflow-hidden shadow-inner bg-noir-900 min-h-[300px] sm:min-h-[380px] flex items-center">
+          
+          <!-- Dynamic Banner Slides Container (Rotates every 4 seconds) -->
+          <div id="bannerSlidesTrack" class="absolute inset-0 w-full h-full">
+            <div class="banner-slide absolute inset-0 w-full h-full bg-cover bg-center opacity-100" style="background-image: url('Cover.png');"></div>
+          </div>
+
+          <!-- Editorial Ambient Gradient -->
+          <div class="absolute inset-0 bg-gradient-to-r from-noir-950 via-noir-950/65 to-transparent z-10 pointer-events-none"></div>
+
+          <!-- Slide Content Overlay -->
+          <div class="relative z-20 max-w-xl p-8 sm:p-14 space-y-4">
+            <span id="bannerSubtitle" class="inline-block px-3 py-1 bg-gold-500/20 backdrop-blur-md border border-gold-500/40 text-gold-300 rounded-full text-[10px] font-bold tracking-widest uppercase">
+              Curated Luxury Edit 2026
+            </span>
+            <h1 id="bannerTitle" class="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-white leading-tight drop-shadow-lg">
+              Elegance is an Attitude.
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-light drop-shadow">
+              Experience timeless sophistication with Zivara's bespoke designer fashion, precision timepieces, and hand-finished jewelry.
+            </p>
+            <div class="pt-2 flex items-center gap-3">
+              <a id="bannerBtn" href="#products-section" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 px-7 py-3 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl transition transform hover:-translate-y-0.5">
+                Shop The Edit <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Slide Indicators (Dots) -->
+          <div id="bannerDots" class="absolute bottom-4 right-6 z-20 flex items-center gap-2">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+      </div>
 
       <!-- VALUE STRIP -->
       <div class="mt-6 bg-noir-900/90 border border-gold-500/20 rounded-2xl py-3.5 px-6 shadow-md grid grid-cols-1 md:grid-cols-3 gap-4 text-center divide-y md:divide-y-0 md:divide-x divide-gold-500/10 text-xs font-semibold">
@@ -177,17 +209,16 @@
       </div>
     </div>
 
-    <!-- MEESHO-STYLE CATALOGUE & SEARCH RESULTS LAYOUT (SIDEBAR + GRID) -->
+    <!-- CATALOGUE & SEARCH RESULTS (SIDEBAR + GRID) -->
     <div id="products-section" class="space-y-4 pt-2">
       
-      <!-- Top Dynamic Search Header & Sort Control -->
+      <!-- Top Dynamic Header & Sort -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gold-500/20 pb-4">
         <div>
           <h2 id="searchHeading" class="text-xl sm:text-2xl font-serif text-white tracking-tight capitalize">The Heritage Edit</h2>
           <p id="searchSubtext" class="text-xs text-slate-400">Live catalogue directly synced with database inventory</p>
         </div>
 
-        <!-- SORT BY DROPDOWN -->
         <div class="flex items-center gap-3 self-end sm:self-auto">
           <div class="flex items-center bg-noir-900 border border-gold-500/30 rounded-xl px-3 py-2 text-xs">
             <span class="text-slate-400 mr-2 shrink-0">Sort by:</span>
@@ -204,13 +235,12 @@
         </div>
       </div>
 
-      <!-- MAIN CATALOGUE CONTAINER: FILTERS ON LEFT + PRODUCTS ON RIGHT -->
+      <!-- FILTERS ON LEFT + PRODUCTS ON RIGHT -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        <!-- LEFT SIDEBAR FILTERS (4 COLS ON LARGE DESKTOP) -->
+        <!-- FILTERS SIDEBAR -->
         <aside class="lg:col-span-3 bg-noir-900/90 border border-gold-500/25 rounded-2xl p-5 space-y-6 shadow-xl sticky top-40">
           
-          <!-- Filter Header -->
           <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
             <div>
               <h3 class="text-xs font-bold text-white uppercase tracking-wider">Filters</h3>
@@ -221,18 +251,15 @@
             </button>
           </div>
 
-          <!-- Category Checkboxes (From MenuSubmenu Table) -->
           <div class="space-y-3">
             <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
               <span>Category</span>
               <i data-lucide="layers" class="w-3.5 h-3.5"></i>
             </h4>
             <div id="categoryFilterContainer" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar text-xs text-slate-300 pr-1">
-              <!-- Dynamically Populated Checkboxes -->
             </div>
           </div>
 
-          <!-- Price Range Filter -->
           <div class="space-y-3 border-t border-gold-500/15 pt-4">
             <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
               <span>Price Range</span>
@@ -258,7 +285,6 @@
             </div>
           </div>
 
-          <!-- Customer Rating Filter -->
           <div class="space-y-3 border-t border-gold-500/15 pt-4">
             <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
               <span>Customer Rating</span>
@@ -274,7 +300,7 @@
 
         </aside>
 
-        <!-- RIGHT PRODUCTS GRID (9 COLS) -->
+        <!-- RIGHT PRODUCTS GRID -->
         <section class="lg:col-span-9">
           <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 min-h-[380px]">
             <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
@@ -324,7 +350,7 @@
     </div>
   </footer>
 
-  <!-- REAL-TIME LOGIC & SUPABASE MAPPING -->
+  <!-- SCRIPT ENGINE -->
   <script>
     const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo";
@@ -337,6 +363,16 @@
     let activeSubmenuId = null;
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
 
+    // Banner Carousel State
+    let heroBanners = [
+      { image_url: 'Cover.png', title: 'Elegance is an Attitude.', subtitle: 'Curated Luxury Edit 2026' },
+      { image_url: 'Cover2.png', title: 'Timeless Horology.', subtitle: 'Master Swiss Craftsmanship' },
+      { image_url: 'Cover3.png', title: 'Bespoke Haute Couture.', subtitle: 'Tailored for Discerning Tastemakers' },
+      { image_url: 'Cover4.png', title: 'Fine Solitaire & Jewelry.', subtitle: 'Handcrafted 18K Gold Statements' }
+    ];
+    let currentBannerIdx = 0;
+    let bannerInterval = null;
+
     function refreshIcons() {
       if (window.lucide) {
         window.lucide.createIcons();
@@ -347,7 +383,80 @@
       document.getElementById('categoryNavContainer').scrollBy({ left: offset, behavior: 'smooth' });
     }
 
-    // 1. FETCH & RENDER TAXONOMY MENUS (FROM MenuSubmenu Table)
+    // ========================================================
+    // 1. DYNAMIC AUTO-SLIDER (4 SECONDS ROTATION LINKED TO DB)
+    // ========================================================
+    async function loadHeroBanners() {
+      if (!db) return;
+      try {
+        const { data, error } = await db
+          .from('hero_banners')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
+
+        if (!error && data && data.length > 0) {
+          heroBanners = data;
+        }
+      } catch (e) {
+        console.warn("Using default banners fallback:", e);
+      }
+      initBannerCarousel();
+    }
+
+    function initBannerCarousel() {
+      const track = document.getElementById('bannerSlidesTrack');
+      const dotsContainer = document.getElementById('bannerDots');
+      if (!track || heroBanners.length === 0) return;
+
+      track.innerHTML = heroBanners.map((b, i) => `
+        <div class="banner-slide absolute inset-0 w-full h-full bg-cover bg-center ${i === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'}" 
+             style="background-image: url('${b.image_url}');"></div>
+      `).join('');
+
+      dotsContainer.innerHTML = heroBanners.map((_, i) => `
+        <button onclick="goToSlide(${i})" class="w-2 h-2 rounded-full transition-all duration-300 ${i === 0 ? 'bg-gold-400 w-6' : 'bg-white/40'}"></button>
+      `).join('');
+
+      if (bannerInterval) clearInterval(bannerInterval);
+      bannerInterval = setInterval(nextSlide, 4000);
+    }
+
+    function goToSlide(idx) {
+      const slides = document.querySelectorAll('.banner-slide');
+      const dots = document.getElementById('bannerDots')?.children;
+      if (!slides.length) return;
+
+      slides[currentBannerIdx].classList.remove('opacity-100', 'z-10');
+      slides[currentBannerIdx].classList.add('opacity-0', 'z-0');
+      if (dots && dots[currentBannerIdx]) {
+        dots[currentBannerIdx].className = "w-2 h-2 rounded-full bg-white/40 transition-all duration-300";
+      }
+
+      currentBannerIdx = idx;
+
+      slides[currentBannerIdx].classList.remove('opacity-0', 'z-0');
+      slides[currentBannerIdx].classList.add('opacity-100', 'z-10');
+      if (dots && dots[currentBannerIdx]) {
+        dots[currentBannerIdx].className = "w-6 h-2 rounded-full bg-gold-400 transition-all duration-300";
+      }
+
+      // Update text dynamically
+      const activeData = heroBanners[currentBannerIdx];
+      if (activeData) {
+        if (activeData.title) document.getElementById('bannerTitle').innerText = activeData.title;
+        if (activeData.subtitle) document.getElementById('bannerSubtitle').innerText = activeData.subtitle;
+      }
+    }
+
+    function nextSlide() {
+      const nextIdx = (currentBannerIdx + 1) % heroBanners.length;
+      goToSlide(nextIdx);
+    }
+
+    // ========================================================
+    // 2. DYNAMIC MENUSUBMENU (FIXED DROPDOWN HOVER LOGIC)
+    // ========================================================
     async function loadMenuSubmenu() {
       if (!db) return;
 
@@ -365,17 +474,14 @@
         const navContainer = document.getElementById('categoryNavContainer');
         const filterContainer = document.getElementById('categoryFilterContainer');
 
-        // Nav Bar All Button
         navContainer.innerHTML = `
           <button onclick="selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
             <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
           </button>
         `;
 
-        // Filter Sidebar Checkboxes Init
         filterContainer.innerHTML = '';
 
-        // Grouping Main Menus with their Submenus
         const menuMap = new Map();
         menuSubmenuList.forEach(item => {
           if (!menuMap.has(item.MenuID)) {
@@ -397,18 +503,18 @@
         menuMap.forEach(menu => {
           const hasSubs = menu.submenus.length > 0;
           
-          // Render Horizontal Menu
           const menuWrapper = document.createElement('div');
-          menuWrapper.className = "relative group py-1 shrink-0";
+          // menu-parent class triggers solid CSS hover rule
+          menuWrapper.className = "relative menu-parent py-1 shrink-0";
           menuWrapper.innerHTML = `
             <button onclick="selectMenu('${menu.menuId}', null, '${menu.menuName}')" class="category-btn hover:text-gold-400 transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 text-slate-300">
-              <i data-lucide="${menu.icon}" class="w-4 h-4"></i>
+              <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-400"></i>
               <span>${menu.menuName}</span>
-              ${hasSubs ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 group-hover:rotate-180 transition"></i>` : ''}
+              ${hasSubs ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 transition"></i>` : ''}
             </button>
 
             ${hasSubs ? `
-              <div class="absolute left-0 top-full hidden group-hover:block bg-noir-950/95 backdrop-blur-2xl border border-gold-500/40 shadow-2xl rounded-2xl py-2 min-w-[210px] z-[100] divide-y divide-gold-500/10">
+              <div class="dropdown-menu hidden absolute left-0 top-full bg-noir-950/98 backdrop-blur-2xl border border-gold-500/40 shadow-[0_15px_35px_rgba(0,0,0,0.8)] rounded-2xl py-2 min-w-[220px] z-[999] divide-y divide-gold-500/10">
                 ${menu.submenus.map(sub => `
                   <button onclick="selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-[11px] font-semibold text-slate-300 hover:text-gold-400 hover:bg-noir-900 transition flex items-center justify-between">
                     <span>${sub.subName}</span>
@@ -420,7 +526,7 @@
           `;
           navContainer.appendChild(menuWrapper);
 
-          // Render Sidebar Category Checkbox
+          // Checkbox in Sidebar
           const catLabel = document.createElement('label');
           catLabel.className = "flex items-center gap-2 cursor-pointer hover:text-white";
           catLabel.innerHTML = `
@@ -436,10 +542,11 @@
       }
     }
 
-    // 2. FETCH PRODUCTS DATABASE
+    // ========================================================
+    // 3. PRODUCTS DATA LOADER
+    // ========================================================
     async function loadProducts() {
       if (!db) return;
-
       try {
         const { data, error } = await db
           .from('products')
@@ -450,7 +557,6 @@
 
         if (error) throw error;
         allProducts = data || [];
-        
         applyFiltersAndSort();
       } catch (err) {
         console.error("Products error:", err.message);
@@ -458,7 +564,6 @@
       }
     }
 
-    // 3. DISPLAY PRODUCTS IN MEESHO-STYLE CARDS
     function renderProductGrid(items) {
       const grid = document.getElementById('productGrid');
       const counter = document.getElementById('productCounter');
@@ -486,7 +591,6 @@
         return `
           <div class="group bg-noir-900 border border-gold-500/20 rounded-2xl overflow-hidden hover:border-gold-400/60 transition duration-300 flex flex-col shadow-lg">
             
-            <!-- Image Area -->
             <div class="relative w-full h-48 sm:h-56 bg-noir-950 overflow-hidden">
               <img 
                 src="${product.image_url}" 
@@ -505,7 +609,6 @@
               </button>
             </div>
 
-            <!-- Product Details -->
             <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2.5">
               <div>
                 <div class="flex items-center justify-between text-[10px] text-slate-400 uppercase font-mono tracking-wider">
@@ -517,7 +620,6 @@
                 </h3>
               </div>
 
-              <!-- Price & Rating -->
               <div>
                 <div class="flex items-baseline gap-2">
                   <span class="text-base font-black text-white">₹${Number(product.price).toLocaleString('en-IN')}</span>
@@ -532,7 +634,6 @@
                 </div>
               </div>
 
-              <!-- Add to Bag Button -->
               <button 
                 onclick="addToCart('${product.product_id}')" 
                 class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1.5 shadow active:scale-95">
@@ -548,14 +649,15 @@
       refreshIcons();
     }
 
-    // 4. LIVE SEARCH & DYNAMIC MEESHO VIEW SWITCHING
+    // ========================================================
+    // 4. SEARCH & FILTER CONTROLLER
+    // ========================================================
     function handleSearchInput(e) {
       const term = e.target.value.trim();
       const clearBtn = document.getElementById('clearSearchBtn');
       
       if (term.length > 0) {
         clearBtn.classList.remove('hidden');
-        // Hide Hero Section for pure search view
         document.getElementById('heroBannerSection').classList.add('hidden');
         document.getElementById('searchHeading').innerText = `"${term}"`;
         document.getElementById('searchSubtext').innerText = `Showing results matching your query`;
@@ -584,7 +686,6 @@
       applyFiltersAndSort();
     }
 
-    // 5. TAXONOMY SELECTION HANDLER
     function selectMenu(menuId, submenuId, title) {
       activeMenuId = menuId;
       activeSubmenuId = submenuId;
@@ -601,7 +702,6 @@
         document.getElementById('searchSubtext').innerText = "Live catalogue directly synced with database inventory";
       }
 
-      // Checkbox Sync
       document.querySelectorAll('.cat-checkbox').forEach(cb => {
         cb.checked = (cb.value === menuId);
       });
@@ -609,11 +709,9 @@
       applyFiltersAndSort();
     }
 
-    // 6. MULTI-VARIABLE DATABASE FILTER & SORT CONTROLLER
     function applyFiltersAndSort() {
       let filtered = [...allProducts];
 
-      // A. Text Search Query
       const term = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
       if (term) {
         filtered = filtered.filter(p => {
@@ -625,20 +723,17 @@
         });
       }
 
-      // B. Navbar Menu / Submenu Filter
       if (activeSubmenuId) {
         filtered = filtered.filter(p => p.submenu_code === activeSubmenuId);
       } else if (activeMenuId) {
         filtered = filtered.filter(p => p.menu_code === activeMenuId);
       }
 
-      // C. Sidebar Category Checkboxes
       const checkedCategories = Array.from(document.querySelectorAll('.cat-checkbox:checked')).map(cb => cb.value);
       if (checkedCategories.length > 0 && !activeSubmenuId) {
         filtered = filtered.filter(p => checkedCategories.includes(p.menu_code));
       }
 
-      // D. Price Range Radio
       const priceVal = document.querySelector('input[name="priceRange"]:checked')?.value;
       if (priceVal === 'under2000') {
         filtered = filtered.filter(p => p.price < 2000);
@@ -648,12 +743,10 @@
         filtered = filtered.filter(p => p.price > 5000);
       }
 
-      // E. Rating Filter (4.0+)
       if (document.getElementById('filterRating4')?.checked) {
         filtered = filtered.filter(p => (p.rating || 5) >= 4.0);
       }
 
-      // F. Sorting
       const sortMode = document.getElementById('sortSelect')?.value || 'relevance';
       if (sortMode === 'price_low') {
         filtered.sort((a, b) => a.price - b.price);
@@ -685,7 +778,6 @@
       applyFiltersAndSort();
     }
 
-    // 7. CART HANDLER
     function addToCart(id) {
       const product = allProducts.find(p => p.product_id === id);
       if (!product) return;
@@ -710,6 +802,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
       document.getElementById('cartCount').innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
+      loadHeroBanners();
       loadMenuSubmenu();
       loadProducts();
     });
