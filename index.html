@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zivara - Fashion • Style • You</title>
   
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
@@ -47,7 +50,7 @@
       scrollbar-width: none;
     }
 
-    /* 1. RELIABLE DROPDOWN DISPLAY TRIGGER */
+    /* 1. RELIABLE DROPDOWN HOVER TRIGGER */
     .menu-parent {
       position: relative;
     }
@@ -140,15 +143,16 @@
       </div>
     </header>
 
-    <!-- HORIZONTAL MENUS BAR (DROPDOWNS VISIBLE & UNCLIPPED) -->
-    <nav class="bg-noir-900/95 border-b border-gold-500/15 py-2.5 relative z-40 overflow-visible">
-      <div class="max-w-7xl mx-auto px-4 relative flex items-center overflow-visible">
+    <!-- HORIZONTAL MENUS BAR (DROPDOWNS UNCLIPPED & FULLY VISIBLE) -->
+    <nav class="bg-noir-900/95 border-b border-gold-500/15 py-2.5 relative z-40">
+      <div class="max-w-7xl mx-auto px-4 relative flex items-center">
         
         <button onclick="scrollMenus(-180)" class="hidden md:flex absolute left-1 z-30 bg-noir-950/90 border border-gold-500/30 text-gold-400 p-1.5 rounded-full shadow hover:bg-noir-800 transition">
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
 
-        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-x-auto custom-scrollbar scroll-smooth px-6 py-1 overflow-y-visible">
+        <!-- Menu Container with horizontal scroll and visible dropdown overflow -->
+        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-x-auto custom-scrollbar scroll-smooth px-6 py-1">
           <button onclick="selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
             <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
           </button>
@@ -462,7 +466,7 @@
       goToSlide(nextIdx);
     }
 
-    // 2. DYNAMIC MENUSUBMENU (FIXED DROPDOWN HOVER & MOUNTING)
+    // 2. DYNAMIC MENUSUBMENU (ROBUST GROUPING & UNCLIPPED POPUP)
     async function loadMenuSubmenu() {
       if (!db) return;
 
@@ -488,20 +492,30 @@
 
         filterContainer.innerHTML = '';
 
+        // Safe grouping mapping with trim() to avoid space mismatch
         const menuMap = new Map();
+
         menuSubmenuList.forEach(item => {
-          if (!menuMap.has(item.MenuID)) {
-            menuMap.set(item.MenuID, {
-              menuId: item.MenuID,
-              menuName: item.MenuName,
+          const mId = String(item.MenuID || '').trim();
+          if (!mId) return;
+
+          if (!menuMap.has(mId)) {
+            menuMap.set(mId, {
+              menuId: mId,
+              menuName: String(item.MenuName || '').trim(),
               icon: item.Icons || 'sparkles',
               submenus: []
             });
           }
-          if (item.SubmenuID && item.SubName) {
-            menuMap.get(item.MenuID).submenus.push({
-              subId: item.SubmenuID,
-              subName: item.SubName
+
+          // Check if Submenu exists (handle non-null SubmenuID or SubName)
+          const subId = item.SubmenuID ? String(item.SubmenuID).trim() : '';
+          const subName = item.SubName ? String(item.SubName).trim() : '';
+
+          if (subId && subId !== 'NULL' && subName && subName !== 'NULL') {
+            menuMap.get(mId).submenus.push({
+              subId: subId,
+              subName: subName
             });
           }
         });
@@ -520,8 +534,8 @@
             </button>
 
             ${hasSubs ? `
-              <div class="dropdown-menu absolute left-0 top-full pt-2 z-[99999] min-w-[230px]">
-                <div class="bg-noir-900/98 backdrop-blur-2xl border border-gold-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl py-2 divide-y divide-gold-500/10">
+              <div class="dropdown-menu absolute left-0 top-full pt-2 z-[99999] min-w-[220px]">
+                <div class="bg-noir-900 border border-gold-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl py-2 divide-y divide-gold-500/10">
                   ${menu.submenus.map(sub => `
                     <button onclick="selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-[11px] font-semibold text-slate-300 hover:text-gold-400 hover:bg-noir-950 transition flex items-center justify-between">
                       <span>${sub.subName}</span>
@@ -691,8 +705,8 @@
     }
 
     function selectMenu(menuId, submenuId, title) {
-      activeMenuId = menuId;
-      activeSubmenuId = submenuId;
+      activeMenuId = menuId ? String(menuId).trim() : null;
+      activeSubmenuId = submenuId ? String(submenuId).trim() : null;
       
       document.getElementById('searchHeading').innerText = title || 'The Heritage Edit';
       document.getElementById('searchInput').value = '';
@@ -728,14 +742,14 @@
       }
 
       if (activeSubmenuId) {
-        filtered = filtered.filter(p => p.submenu_code === activeSubmenuId);
+        filtered = filtered.filter(p => String(p.submenu_code || '').trim() === activeSubmenuId);
       } else if (activeMenuId) {
-        filtered = filtered.filter(p => p.menu_code === activeMenuId);
+        filtered = filtered.filter(p => String(p.menu_code || '').trim() === activeMenuId);
       }
 
       const checkedCategories = Array.from(document.querySelectorAll('.cat-checkbox:checked')).map(cb => cb.value);
       if (checkedCategories.length > 0 && !activeSubmenuId) {
-        filtered = filtered.filter(p => checkedCategories.includes(p.menu_code));
+        filtered = filtered.filter(p => checkedCategories.includes(String(p.menu_code || '').trim()));
       }
 
       const priceVal = document.querySelector('input[name="priceRange"]:checked')?.value;
