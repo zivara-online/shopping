@@ -12,5 +12,7 @@ export const state = {
 };
 
 export function refreshIcons() {
-  if (window.lucide) window.lucide.createIcons();
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
 }
