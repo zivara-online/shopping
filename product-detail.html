@@ -158,23 +158,90 @@
       if (badge) badge.innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
     }
 
-    // Helper: Convert normal YouTube link to Embed URL
+    // ==========================================
+    // 1. ROBUST VIDEO PARSER & EMBED FIX
+    // ==========================================
     function formatVideoEmbed(url) {
       if (!url) return '';
-      if (url.includes('youtube.com/embed/')) return url;
-      if (url.includes('youtu.be/')) {
-        const id = url.split('youtu.be/')[1]?.split('?')[0];
-        return `https://www.youtube.com/embed/${id}?autoplay=1`;
+      const cleanUrl = url.trim();
+
+      // YouTube Shorts link
+      if (cleanUrl.includes('/shorts/')) {
+        const id = cleanUrl.split('/shorts/')[1]?.split('?')[0]?.split('&')[0];
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&enablejsapi=1&rel=0`;
       }
-      if (url.includes('youtube.com/watch')) {
-        const params = new URLSearchParams(url.split('?')[1]);
-        const id = params.get('v');
-        return `https://www.youtube.com/embed/${id}?autoplay=1`;
+
+      // YouTube Short link
+      if (cleanUrl.includes('youtu.be/')) {
+        const id = cleanUrl.split('youtu.be/')[1]?.split('?')[0]?.split('&')[0];
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&enablejsapi=1&rel=0`;
       }
-      return url; // Direct MP4 / other video link
+
+      // Standard YouTube link
+      if (cleanUrl.includes('youtube.com/watch')) {
+        try {
+          const urlObj = new URL(cleanUrl);
+          const id = urlObj.searchParams.get('v');
+          return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&enablejsapi=1&rel=0`;
+        } catch (e) {
+          const id = cleanUrl.split('v=')[1]?.split('&')[0];
+          return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&enablejsapi=1&rel=0`;
+        }
+      }
+
+      // Embed link already
+      if (cleanUrl.includes('youtube.com/embed/')) {
+        const sep = cleanUrl.includes('?') ? '&' : '?';
+        return `${cleanUrl}${sep}autoplay=1&mute=1&enablejsapi=1&rel=0`;
+      }
+
+      // Direct MP4 / CDN video URL
+      return cleanUrl;
     }
 
-    // 1. LOAD PRODUCT DETAIL
+    // ==========================================
+    // 2. INLINE VIDEO PLAYER 
+    // ==========================================
+    function playInlineVideo(rawUrl, btn) {
+      const frame = document.getElementById('mediaViewerFrame');
+      if (!frame || !rawUrl) return;
+
+      const embedUrl = formatVideoEmbed(rawUrl);
+
+      if (embedUrl.includes('youtube.com/embed/')) {
+        frame.innerHTML = `
+          <iframe 
+            src="${embedUrl}" 
+            class="w-full h-full border-0 rounded-2xl" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen>
+          </iframe>
+        `;
+      } else {
+        // Direct MP4/Video file
+        frame.innerHTML = `
+          <video 
+            src="${rawUrl}" 
+            controls 
+            autoplay 
+            muted 
+            playsinline 
+            class="w-full h-full object-contain bg-black rounded-2xl">
+          </video>
+        `;
+      }
+
+      // Active state styling for thumbnail buttons
+      document.querySelectorAll('.thumbnail-btn').forEach(b => {
+        b.className = "thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border border-gold-500/20 bg-noir-950 shrink-0 transition";
+      });
+      if (btn) {
+        btn.className = "thumbnail-btn w-16 h-16 rounded-xl border border-gold-400 ring-2 ring-gold-400/40 bg-gold-500/10 text-gold-400 shrink-0 flex flex-col items-center justify-center transition";
+      }
+    }
+
+
+    // 3. LOAD PRODUCT DETAIL
     async function loadProductDetail() {
       const params = new URLSearchParams(window.location.search);
       const productId = params.get('id');
@@ -201,7 +268,7 @@
       }
     }
 
-    // 2. RENDER MAIN DETAIL & INLINE MEDIA SWITCHER
+    // 4. RENDER MAIN DETAIL & INLINE MEDIA SWITCHER
     function renderMainDetail(p) {
       const container = document.getElementById('productDetailContainer');
       const hasDiscount = p.original_price && p.original_price > p.price;
@@ -334,28 +401,6 @@
       btn.className = "thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border border-gold-400 ring-2 ring-gold-400/40 bg-noir-950 shrink-0 transition";
     }
 
-    // Play Video In The Exact Same Area (No YouTube Redirect)
-    function playInlineVideo(rawUrl, btn) {
-      const frame = document.getElementById('mediaViewerFrame');
-      const embedUrl = formatVideoEmbed(rawUrl);
-
-      if (embedUrl.includes('youtube.com/embed/')) {
-        frame.innerHTML = `
-          <iframe src="${embedUrl}" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        `;
-      } else {
-        // Direct MP4 / CDN Video file
-        frame.innerHTML = `
-          <video src="${rawUrl}" controls autoplay class="w-full h-full object-contain bg-black"></video>
-        `;
-      }
-
-      document.querySelectorAll('.thumbnail-btn').forEach(b => {
-        b.className = "thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border border-gold-500/20 bg-noir-950 shrink-0 transition";
-      });
-      btn.className = "thumbnail-btn w-16 h-16 rounded-xl border border-gold-400 ring-2 ring-gold-400/40 bg-gold-500/10 text-gold-400 shrink-0 flex flex-col items-center justify-center transition";
-    }
-
     function selectVariantSize(val, btn) {
       selectedSize = val;
       document.querySelectorAll('.size-btn').forEach(b => b.className = "size-btn px-4 py-2 rounded-xl text-xs font-bold border bg-noir-950 border-gold-500/30 text-slate-300 transition");
@@ -368,7 +413,7 @@
       btn.className = "color-btn px-4 py-2 rounded-xl text-xs font-bold border bg-gold-500 text-noir-950 border-gold-400 transition";
     }
 
-    // 3. LOAD SLIDE-RIGHT CAROUSEL ROWS (10 ITEMS EACH)
+    // 5. LOAD SLIDE-RIGHT CAROUSEL ROWS (10 ITEMS EACH)
     async function loadRelatedRows(p) {
       if (!db) return;
       try {
@@ -420,7 +465,7 @@
       }).join('');
     }
 
-    // 4. INFINITE DISCOVERY FEED (CURRENT PRODUCT SPECIFICALLY EXCLUDED VIA .neq)
+    // 6. INFINITE DISCOVERY FEED (CURRENT PRODUCT SPECIFICALLY EXCLUDED VIA .neq)
     async function loadInfiniteFeed() {
       if (!db || isFeedLoading || !hasMoreFeed || !currentProduct) return;
       isFeedLoading = true;
@@ -480,7 +525,7 @@
       }
     });
 
-    // Cart Handlers
+    // 7. Cart Handlers
     function addCurrentToCart() {
       if (!currentProduct) return;
       const idx = cart.findIndex(i => i.id === currentProduct.product_id);
