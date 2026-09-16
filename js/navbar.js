@@ -1,6 +1,29 @@
 import { db, state, refreshIcons } from './config.js';
 import { applyFiltersAndSort } from './products.js';
 
+// Safe Lucide Icon Resolver
+function mapSafeIcon(rawIcon) {
+  if (!rawIcon) return 'sparkles';
+  const icon = String(rawIcon).toLowerCase().trim();
+  
+  const iconDictionary = {
+    'kids': 'baby',
+    'kichen': 'utensils',
+    'kitchen': 'utensils',
+    'beauty': 'sparkles',
+    'electronic': 'tv',
+    'electronics': 'tv',
+    'fashion': 'shirt',
+    'jewellery': 'gem',
+    'jewelry': 'gem',
+    'watch': 'watch',
+    'watches': 'watch',
+    'bags': 'briefcase'
+  };
+
+  return iconDictionary[icon] || icon;
+}
+
 export async function loadMenuSubmenu() {
   if (!db) return;
 
@@ -19,11 +42,13 @@ export async function loadMenuSubmenu() {
     const filterContainer = document.getElementById('categoryFilterContainer');
     const mobileFilterContainer = document.getElementById('mobileCategoryFilterContainer');
 
-    navContainer.innerHTML = `
-      <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
-        <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
-      </button>
-    `;
+    if (navContainer) {
+      navContainer.innerHTML = `
+        <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
+          <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
+        </button>
+      `;
+    }
 
     if (filterContainer) filterContainer.innerHTML = '';
     if (mobileFilterContainer) mobileFilterContainer.innerHTML = '';
@@ -37,7 +62,7 @@ export async function loadMenuSubmenu() {
         menuMap.set(mId, {
           menuId: mId,
           menuName: String(item.MenuName || '').trim(),
-          icon: item.Icons || 'sparkles',
+          icon: mapSafeIcon(item.Icons || item.MenuName),
           submenus: []
         });
       }
@@ -74,7 +99,7 @@ export async function loadMenuSubmenu() {
           </div>
         ` : ''}
       `;
-      navContainer.appendChild(menuWrapper);
+      if (navContainer) navContainer.appendChild(menuWrapper);
 
       // Desktop Checkbox
       if (filterContainer) {
@@ -113,7 +138,7 @@ export function syncCategoryCheckboxes(id, isChecked) {
   document.querySelectorAll(`.cat-checkbox[value="${id}"]`).forEach(c => c.checked = isChecked);
 }
 
-// Mobile Drawer & Sort Handlers
+// Mobile Filter Drawer & Sort Controls
 export function openMobileFilterDrawer() {
   document.getElementById('mobileFilterDrawerBackdrop')?.classList.remove('hidden');
   const drawer = document.getElementById('mobileFilterDrawer');
