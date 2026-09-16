@@ -210,24 +210,24 @@
             </div>
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Product Code (SKU)</label>
-              <input type="text" id="prodCode" required placeholder="e.g. ZIV-WCH-01" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white uppercase font-mono" />
+              <input type="text" id="prodCode" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white uppercase font-mono" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Brand Name</label>
-              <input type="text" id="prodBrand" required value="Zivara Maison" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="text" id="prodBrand" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Stock Units</label>
-              <input type="number" id="prodStock" required value="10" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="number" id="prodStock" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
           </div>
 
           <div>
             <label class="block text-slate-400 mb-1 font-semibold">Product Title</label>
-            <input type="text" id="prodTitle" required placeholder="e.g. Gold Automatic Chrono Watch" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+            <input type="text" id="prodTitle" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
           </div>
 
           <div class="grid grid-cols-2 gap-2">
@@ -244,11 +244,11 @@
           <div class="grid grid-cols-3 gap-2 items-end">
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Selling Price (₹)</label>
-              <input type="number" id="prodPrice" required placeholder="4999" oninput="calculateDiscountPreview()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white font-bold" />
+              <input type="number" id="prodPrice" oninput="calculateDiscountPreview()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white font-bold" />
             </div>
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">MRP Price (₹)</label>
-              <input type="number" id="prodOrigPrice" placeholder="8999" oninput="calculateDiscountPreview()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="number" id="prodOrigPrice" oninput="calculateDiscountPreview()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
             <div>
               <span id="discountPreviewBadge" class="block w-full bg-noir-950 border border-gold-500/30 text-gold-400 font-bold px-2 py-2 rounded-xl text-center">
@@ -281,12 +281,12 @@
             <!-- Optional Online URL Override -->
             <div>
               <label class="block text-slate-500 mb-0.5 font-semibold text-[10px]">Or Paste Direct Web URL (Optional if local file uploaded)</label>
-              <input type="url" id="prodImageUrl" placeholder="https://images.unsplash.com/... or Cover.png" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-1.5 text-slate-300 text-xs" />
+              <input type="url" id="prodImageUrl" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-1.5 text-slate-300 text-xs" />
             </div>
 
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Video Demonstration URL (YouTube / Shorts / CDN)</label>
-              <input type="url" id="prodVideo" placeholder="https://www.youtube.com/shorts/... or CDN video URL" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="url" id="prodVideo" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
           </div>
 
@@ -297,13 +297,13 @@
             </div>
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Colors (e.g. Gold, Silver)</label>
-              <input type="text" id="prodColors" placeholder="Yellow Gold, Platinum" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="text" id="prodColors" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
           </div>
 
           <div>
             <label class="block text-slate-400 mb-1 font-semibold">Description</label>
-            <textarea id="prodDesc" rows="2" placeholder="Luxury craftsmanship details, purity, guarantee..." class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2 text-white"></textarea>
+            <textarea id="prodDesc" rows="2" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2 text-white"></textarea>
           </div>
 
           <div class="flex items-center gap-4 pt-1">
