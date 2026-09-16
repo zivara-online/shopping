@@ -3,6 +3,7 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Scrollbar Hiding */
 .custom-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -11,10 +12,11 @@ html, body {
   scrollbar-width: none;
 }
 
-/* Dropdown Hover Rule */
+/* 1. Reliable Dropdown Hover Trigger */
 .menu-parent {
   position: relative;
 }
+
 .menu-parent:hover .dropdown-menu,
 .menu-parent:focus-within .dropdown-menu {
   display: block !important;
@@ -23,6 +25,7 @@ html, body {
   pointer-events: auto !important;
   transform: translateY(0) !important;
 }
+
 .dropdown-menu {
   display: none;
   opacity: 0;
@@ -32,10 +35,12 @@ html, body {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
+/* 2. Banner Cross-Fade */
 .banner-slide {
   transition: opacity 0.8s ease-in-out;
 }
 
+/* 3. Flipkart Style Mobile Slide-Up Filter Drawer */
 #mobileFilterDrawer {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
