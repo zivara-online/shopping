@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zivara - Fashion • Style • You</title>
   
+  <!-- Inline Favicon to prevent 404 -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D4AF37'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <link rel="stylesheet" href="css/styles.css" />
+
   <script>
     tailwind.config = {
       theme: {
@@ -25,17 +29,353 @@
 </head>
 <body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-gold-500 selection:text-noir-950 pb-16 lg:pb-0">
 
-  <!-- DYNAMIC COMPONENT ROOTS -->
-  <div id="header-root"></div>
-  
+  <!-- HEADER COMPONENT -->
+  <div class="sticky top-0 z-50 w-full shadow-2xl bg-noir-950">
+    <div class="bg-noir-950 text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
+      ✨ Zivara Privé | Compliments on Orders Above ₹1,499 | Use Code <span class="text-white font-bold bg-gold-600/30 px-2 py-0.5 rounded border border-gold-400/40">ZIVARA10</span>
+    </div>
+
+    <header class="bg-noir-900/95 backdrop-blur-xl border-b border-gold-500/20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4 sm:gap-6">
+        <a href="index.html" class="flex items-center gap-3 shrink-0">
+          <img src="Logo.png" alt="Zivara Logo" class="h-12 sm:h-16 w-auto object-contain drop-shadow-md transition transform hover:scale-105" onerror="this.src='Logo.png'" />
+        </a>
+
+        <div class="flex-1 max-w-2xl relative">
+          <div class="relative flex items-center">
+            <i data-lucide="search" class="w-4 h-4 text-gold-400 absolute left-3.5 pointer-events-none"></i>
+            <input 
+              type="text" 
+              id="searchInput" 
+              oninput="window.handleSearchInput(event)"
+              placeholder="Search Luxury Couture, Watches, Jewelry..." 
+              class="w-full pl-10 pr-16 sm:pr-20 py-2.5 sm:py-3 bg-noir-900 border border-gold-500/30 rounded-full text-xs text-white tracking-wide focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/50 transition placeholder:text-slate-400 shadow-inner"
+            />
+            <button id="clearSearchBtn" onclick="window.resetSearch()" class="hidden absolute right-12 text-slate-400 hover:text-white p-1 transition" title="Clear Search">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <button onclick="window.triggerSearch()" class="absolute right-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 text-xs font-bold rounded-full transition shadow">
+              <span class="hidden sm:inline">Search</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5 sm:hidden"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 sm:gap-6 shrink-0 text-xs font-semibold tracking-wider uppercase">
+          <a href="login.html" id="userAuthBtn" class="flex flex-col items-center gap-1 text-slate-300 hover:text-gold-400 transition">
+            <i data-lucide="user" class="w-5 h-5 text-gold-400"></i>
+            <span id="userAuthText" class="text-[10px] sm:text-[11px] hidden sm:inline">Profile</span>
+          </a>
+
+          <a href="cart.html" class="flex flex-col items-center gap-1 text-slate-300 hover:text-gold-400 transition relative">
+            <div class="relative">
+              <i data-lucide="shopping-bag" class="w-5 h-5 text-gold-400"></i>
+              <span id="cartCount" class="absolute -top-2 -right-3 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow">0</span>
+            </div>
+            <span class="text-[10px] sm:text-[11px] hidden sm:inline">Cart</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <nav class="bg-noir-900/95 border-b border-gold-500/15 py-2.5 relative z-40">
+      <div class="max-w-7xl mx-auto px-4 relative flex items-center">
+        <button onclick="window.scrollMenus(-180)" class="hidden md:flex absolute left-1 z-30 bg-noir-950/90 border border-gold-500/30 text-gold-400 p-1.5 rounded-full shadow hover:bg-noir-800 transition">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+        </button>
+
+        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-x-auto custom-scrollbar scroll-smooth px-2 sm:px-6 py-1">
+          <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
+          </button>
+        </div>
+
+        <button onclick="window.scrollMenus(180)" class="hidden md:flex absolute right-1 z-30 bg-noir-950/90 border border-gold-500/30 text-gold-400 p-1.5 rounded-full shadow hover:bg-noir-800 transition">
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- MAIN BODY -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1 w-full">
-    <div id="hero-root"></div>
-    <div id="catalogue-root"></div>
+
+    <!-- HERO SECTION -->
+    <div id="heroBannerSection" class="transition-all duration-300">
+      <div class="bg-white/95 p-2 sm:p-4 rounded-3xl sm:rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(255,255,255,0.08)] border border-white/40">
+        <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner bg-noir-900 min-h-[260px] sm:min-h-[380px] flex items-center">
+          <div id="bannerSlidesTrack" class="absolute inset-0 w-full h-full">
+            <div class="banner-slide absolute inset-0 w-full h-full bg-cover bg-center opacity-100" style="background-image: url('Cover.png');"></div>
+          </div>
+
+          <div class="absolute inset-0 bg-gradient-to-r from-noir-950 via-noir-950/65 to-transparent z-10 pointer-events-none"></div>
+
+          <div class="relative z-20 max-w-xl p-6 sm:p-14 space-y-3 sm:space-y-4">
+            <span id="bannerSubtitle" class="inline-block px-3 py-1 bg-gold-500/20 backdrop-blur-md border border-gold-500/40 text-gold-300 rounded-full text-[10px] font-bold tracking-widest uppercase">
+              Curated Luxury Edit 2026
+            </span>
+            <h1 id="bannerTitle" class="text-2xl sm:text-5xl font-serif font-normal tracking-tight text-white leading-tight drop-shadow-lg">
+              Elegance is an Attitude.
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed font-light drop-shadow line-clamp-2 sm:line-clamp-none">
+              Experience timeless sophistication with bespoke designer fashion, precision timepieces, and hand-finished jewelry.
+            </p>
+            <div class="pt-2">
+              <a id="bannerBtn" href="#products-section" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl transition transform hover:-translate-y-0.5">
+                Shop The Edit <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </a>
+            </div>
+          </div>
+
+          <div id="bannerDots" class="absolute bottom-4 right-6 z-20 flex items-center gap-2"></div>
+        </div>
+      </div>
+
+      <div class="mt-4 sm:mt-6 bg-noir-900/90 border border-gold-500/20 rounded-2xl py-3.5 px-4 sm:px-6 shadow-md grid grid-cols-1 sm:grid-cols-3 gap-3 text-center divide-y sm:divide-y-0 sm:divide-x divide-gold-500/10 text-xs font-semibold">
+        <div class="flex items-center justify-center gap-2 text-slate-200 pt-1 sm:pt-0">
+          <i data-lucide="rotate-ccw" class="w-4 h-4 text-gold-400"></i>
+          <span>7 Days Seamless Replacement</span>
+        </div>
+        <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 sm:pt-0">
+          <i data-lucide="shield-check" class="w-4 h-4 text-gold-400"></i>
+          <span>100% Certified Luxury Craftsmanship</span>
+        </div>
+        <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 sm:pt-0">
+          <i data-lucide="truck" class="w-4 h-4 text-gold-400"></i>
+          <span>Free Insured White-Glove Transit</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATALOGUE & FILTER SECTION -->
+    <div id="products-section" class="space-y-4 pt-2">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gold-500/20 pb-4">
+        <div>
+          <h2 id="searchHeading" class="text-xl sm:text-2xl font-serif text-white tracking-tight capitalize">The Heritage Edit</h2>
+          <p id="searchSubtext" class="text-xs text-slate-400">Live catalogue directly synced with database inventory</p>
+        </div>
+
+        <div class="hidden sm:flex items-center gap-3 self-end sm:self-auto">
+          <div class="flex items-center bg-noir-900 border border-gold-500/30 rounded-xl px-3 py-2 text-xs">
+            <span class="text-slate-400 mr-2 shrink-0">Sort by:</span>
+            <select id="sortSelect" onchange="window.applyFiltersAndSort()" class="bg-transparent text-gold-400 font-bold focus:outline-none cursor-pointer">
+              <option value="relevance" class="bg-noir-900 text-white">Relevance</option>
+              <option value="price_low" class="bg-noir-900 text-white">Price: Low to High</option>
+              <option value="price_high" class="bg-noir-900 text-white">Price: High to Low</option>
+              <option value="rating" class="bg-noir-900 text-white">Customer Rating</option>
+            </select>
+          </div>
+          <span id="productCounter" class="text-xs font-bold uppercase tracking-wider text-gold-400 bg-noir-900 px-3.5 py-2 rounded-xl border border-gold-500/30 shrink-0">
+            0 Items
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- DESKTOP SIDEBAR -->
+        <aside class="hidden lg:block lg:col-span-3 bg-noir-900/90 border border-gold-500/25 rounded-2xl p-5 space-y-6 shadow-xl sticky top-40">
+          <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
+            <div>
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider">Filters</h3>
+              <span id="filterProductCount" class="text-[10px] text-slate-400">0 Products Available</span>
+            </div>
+            <button onclick="window.resetAllFilters()" class="text-[11px] font-semibold text-gold-400 hover:underline">
+              Reset All
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+              <span>Category</span>
+              <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+            </h4>
+            <div id="categoryFilterContainer" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar text-xs text-slate-300 pr-1"></div>
+          </div>
+
+          <div class="space-y-3 border-t border-gold-500/15 pt-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+              <span>Price Range</span>
+              <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+            </h4>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="radio" name="priceRange" value="all" checked onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
+                <span>All Prices</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="radio" name="priceRange" value="under2000" onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
+                <span>Under ₹2,000</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="radio" name="priceRange" value="2000to5000" onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
+                <span>₹2,000 - ₹5,000</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="radio" name="priceRange" value="above5000" onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
+                <span>Above ₹5,000</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-3 border-t border-gold-500/15 pt-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+              <span>Customer Rating</span>
+              <i data-lucide="star" class="w-3.5 h-3.5"></i>
+            </h4>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                <input type="checkbox" id="filterRating4" onchange="window.applyFiltersAndSort()" class="accent-gold-500 rounded" />
+                <span>4.0 ★ & Above</span>
+              </label>
+            </div>
+          </div>
+        </aside>
+
+        <!-- PRODUCTS GRID -->
+        <section class="col-span-1 lg:col-span-9 w-full">
+          <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 min-h-[380px]">
+            <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+            <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
   </main>
 
-  <div id="footer-root"></div>
+  <!-- MOBILE FILTER BAR (FLIPKART STYLE) -->
+  <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-noir-900/98 backdrop-blur-md border-t border-gold-500/30 flex items-center h-14 divide-x divide-gold-500/20 shadow-2xl">
+    <button onclick="window.toggleMobileSortModal()" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-200 active:bg-noir-800 h-full">
+      <i data-lucide="arrow-up-down" class="w-4 h-4 text-gold-400"></i>
+      <span>Sort</span>
+    </button>
+    <button onclick="window.openMobileFilterDrawer()" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-gold-400 active:bg-noir-800 h-full">
+      <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+      <span>Filters</span>
+      <span id="mobileFilterDot" class="hidden w-2 h-2 rounded-full bg-gold-400"></span>
+    </button>
+  </div>
 
-  <!-- ENTRY POINT (ES6 MODULE) -->
+  <!-- MOBILE FILTER DRAWER -->
+  <div id="mobileFilterDrawerBackdrop" onclick="window.closeMobileFilterDrawer()" class="fixed inset-0 bg-black/80 z-[100] hidden backdrop-blur-sm transition-opacity"></div>
+  <div id="mobileFilterDrawer" class="fixed inset-x-0 bottom-0 z-[101] bg-noir-900 border-t border-gold-500/40 rounded-t-3xl max-h-[85vh] flex flex-col translate-y-full lg:hidden shadow-2xl">
+    <div class="p-4 border-b border-gold-500/20 flex items-center justify-between bg-noir-950 rounded-t-3xl">
+      <div class="flex items-center gap-2">
+        <i data-lucide="sliders-horizontal" class="w-4 h-4 text-gold-400"></i>
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Filters</h3>
+      </div>
+      <button onclick="window.resetAllFilters()" class="text-xs text-gold-400 font-semibold uppercase">Reset All</button>
+      <button onclick="window.closeMobileFilterDrawer()" class="p-1 rounded-full text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div class="p-5 overflow-y-auto custom-scrollbar space-y-6 flex-1 text-xs">
+      <div class="space-y-3">
+        <h4 class="font-bold text-gold-400 uppercase tracking-wider">Category</h4>
+        <div id="mobileCategoryFilterContainer" class="space-y-2.5 max-h-48 overflow-y-auto custom-scrollbar"></div>
+      </div>
+
+      <div class="space-y-3 border-t border-gold-500/15 pt-4">
+        <h4 class="font-bold text-gold-400 uppercase tracking-wider">Price Range</h4>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+            <input type="radio" name="mobilePriceRange" value="all" checked onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
+            <span>All</span>
+          </label>
+          <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+            <input type="radio" name="mobilePriceRange" value="under2000" onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
+            <span>&lt; ₹2,000</span>
+          </label>
+          <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+            <input type="radio" name="mobilePriceRange" value="2000to5000" onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
+            <span>₹2k - ₹5k</span>
+          </label>
+          <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+            <input type="radio" name="mobilePriceRange" value="above5000" onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
+            <span>&gt; ₹5,000</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="space-y-3 border-t border-gold-500/15 pt-4">
+        <h4 class="font-bold text-gold-400 uppercase tracking-wider">Customer Rating</h4>
+        <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+          <input type="checkbox" id="mobileFilterRating4" onchange="window.syncMobileRating(this.checked)" class="accent-gold-500 rounded" />
+          <span>4.0 ★ & Above</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="p-3 bg-noir-950 border-t border-gold-500/20 flex gap-3">
+      <button onclick="window.closeMobileFilterDrawer()" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 font-bold uppercase tracking-widest py-3 rounded-xl shadow-lg">
+        Apply Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- MOBILE SORT MODAL -->
+  <div id="mobileSortModal" class="fixed inset-x-0 bottom-0 z-[101] bg-noir-900 border-t border-gold-500/40 rounded-t-3xl p-5 hidden lg:hidden space-y-4 shadow-2xl">
+    <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">Sort By</h3>
+      <button onclick="window.toggleMobileSortModal()"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i></button>
+    </div>
+    <div class="space-y-2 text-xs">
+      <button onclick="window.selectMobileSort('relevance')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+        <span>Relevance</span>
+        <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-relevance"></i>
+      </button>
+      <button onclick="window.selectMobileSort('price_low')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+        <span>Price: Low to High</span>
+        <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-price_low"></i>
+      </button>
+      <button onclick="window.selectMobileSort('price_high')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+        <span>Price: High to Low</span>
+        <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-price_high"></i>
+      </button>
+      <button onclick="window.selectMobileSort('rating')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+        <span>Customer Rating</span>
+        <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-rating"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- LUXURY FOOTER COMPONENT -->
+  <footer class="bg-noir-950 text-slate-400 text-xs mt-20 border-t border-gold-500/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div class="space-y-3">
+        <img src="Logo.png" alt="Zivara Logo" class="h-14 w-auto object-contain -ml-1 brightness-110" onerror="this.src='Logo.png'" />
+        <p class="text-[11px] leading-relaxed text-slate-400">
+          Zivara crafts modern luxury for discerning tastemakers. Redefining fashion, timepieces, and jewelry across India.
+        </p>
+      </div>
+      <div>
+        <h5 class="text-gold-400 uppercase font-bold tracking-widest text-[11px] mb-3">Concierge</h5>
+        <ul class="space-y-2">
+          <li><a href="#" class="hover:text-white transition">Track Shipment</a></li>
+          <li><a href="#" class="hover:text-white transition">Authenticity Guarantee</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 class="text-gold-400 uppercase font-bold tracking-widest text-[11px] mb-3">The Maison</h5>
+        <ul class="space-y-2">
+          <li><a href="#" class="hover:text-white transition">About Zivara</a></li>
+          <li><a href="#" class="hover:text-white transition">Designer Partnerships</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 class="text-gold-400 uppercase font-bold tracking-widest text-[11px] mb-3">Governance</h5>
+        <ul class="space-y-2">
+          <li><a href="T&C.html" class="hover:text-white transition">Conditions of Use</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-gold-500/10 py-4 text-center text-[11px] text-slate-500">
+      &copy; 2026 Zivara Technologies Pvt Ltd. All rights reserved. Fashion • Style • You.
+    </div>
+  </footer>
+
+  <!-- MODULE ENTRY POINT -->
   <script type="module">
     import { refreshIcons } from './js/config.js';
     import { loadHeroBanners, goToSlide } from './js/slider.js';
@@ -51,7 +391,7 @@
     } from './js/products.js';
     import { addToCart, updateCartBadge } from './js/cart.js';
 
-    // Global Window Bindings for Component Event Listeners
+    // Global Bindings for inline HTML handlers
     window.goToSlide = goToSlide;
     window.scrollMenus = scrollMenus;
     window.selectMenu = selectMenu;
@@ -69,20 +409,7 @@
     window.syncMobilePrice = syncMobilePrice;
     window.syncMobileRating = syncMobileRating;
 
-    // Component Loader Function
-    async function loadComponent(id, file) {
-      const res = await fetch(file);
-      document.getElementById(id).innerHTML = await res.text();
-    }
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      await Promise.all([
-        loadComponent('header-root', 'components/header.html'),
-        loadComponent('hero-root', 'components/hero.html'),
-        loadComponent('catalogue-root', 'components/filters.html'),
-        loadComponent('footer-root', 'components/footer.html')
-      ]);
-
+    window.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
       updateCartBadge();
       loadHeroBanners();
