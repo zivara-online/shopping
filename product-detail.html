@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivara - Luxury Product Showcase</title>
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D4AF37'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: { 300: '#F5D77F', 400: '#E5C06E', 500: '#D4AF37', 600: '#AA820A', 700: '#856404' },
+            noir: { 950: '#070708', 900: '#0B0B0C', 850: '#121214', 800: '#18181B', 700: '#27272A' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { display: none; }
+    .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-gold-500 selection:text-noir-950">
+
+  <!-- TOP STRIP -->
+  <div class="bg-noir-900 text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
+    ✨ Compliments on Orders Above ₹1,499 | 100% Certified Luxury Craftsmanship
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-50 bg-noir-900/95 backdrop-blur-xl border-b border-gold-500/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="Logo.png" alt="Zivara Logo" class="h-12 sm:h-14 w-auto object-contain drop-shadow" onerror="this.src='Logo.png'" />
+      </a>
+      <div class="flex items-center gap-6">
+        <a href="index.html" class="text-xs uppercase font-bold text-slate-300 hover:text-gold-400 flex items-center gap-1 transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Catalogue
+        </a>
+        <a href="cart.html" class="flex items-center gap-1.5 text-xs uppercase font-bold text-gold-400 relative">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <span id="navCartBadge" class="bg-gold-500 text-noir-950 text-[10px] font-black px-1.5 rounded-full">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- PRODUCT DETAIL SECTION -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12 flex-1 w-full">
+    
+    <!-- MAIN DETAIL CARD (FLIPKART STYLE: 2 COLUMNS) -->
+    <div id="productDetailContainer" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-noir-900/70 border border-gold-500/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
+      <div class="lg:col-span-12 py-20 text-center text-gold-400 animate-pulse">Loading bespoke product details...</div>
+    </div>
+
+    <!-- HORIZONTAL ROW 1: FLIPKART STYLE SLIDE-RIGHT CAROUSEL (10 ITEMS ONLY) -->
+    <section class="space-y-4 pt-4 border-t border-gold-500/20">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg sm:text-xl font-serif text-white tracking-tight">Similar Items in this Collection</h3>
+          <p class="text-xs text-slate-400">Curated specifically to match this piece (Slide right for more)</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="scrollRow('relatedRow', -320)" class="p-2 rounded-xl bg-noir-900 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <button onclick="scrollRow('relatedRow', 320)" class="p-2 rounded-xl bg-noir-900 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Slide Right Track (Max 10 Items) -->
+      <div id="relatedRow" class="flex gap-4 overflow-x-auto custom-scrollbar scroll-smooth py-2">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- HORIZONTAL ROW 2: RECOMMENDED FOR YOU (FLIPKART SLIDE-RIGHT 10 ITEMS) -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg sm:text-xl font-serif text-white tracking-tight">Customers Also Viewed</h3>
+          <p class="text-xs text-slate-400">Trending pieces across Zivara Maison</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="scrollRow('trendingRow', -320)" class="p-2 rounded-xl bg-noir-900 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <button onclick="scrollRow('trendingRow', 320)" class="p-2 rounded-xl bg-noir-900 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="trendingRow" class="flex gap-4 overflow-x-auto custom-scrollbar scroll-smooth py-2">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- VERTICAL INFINITE DISCOVERY FEED (50 ITEMS + AUTO LOAD NEXT 50 ON SCROLL) -->
+    <section class="space-y-6 pt-6 border-t border-gold-500/20">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-xl sm:text-2xl font-serif text-white tracking-tight">More to Discover</h3>
+          <p class="text-xs text-slate-400">Scroll down to continuously load more master creations</p>
+        </div>
+        <span id="infiniteCountBadge" class="text-xs font-mono text-gold-400 bg-noir-900 px-3 py-1 rounded-xl border border-gold-500/30">
+          Showing 50 Items
+        </span>
+      </div>
+
+      <!-- 4 Column Responsive Grid -->
+      <div id="infiniteFeedGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 min-h-[400px]">
+        <!-- Injected via JS -->
+      </div>
+
+      <div id="infiniteLoader" class="py-8 text-center text-xs text-gold-400 font-semibold hidden">
+        Loading next 50 luxury pieces...
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-noir-900 text-slate-400 text-xs mt-20 border-t border-gold-500/20 py-8 text-center">
+    &copy; 2026 Zivara Technologies Pvt Ltd. All rights reserved. Fashion • Style • You.
+  </footer>
+
+  <!-- DETAIL SCRIPT LOGIC -->
+  <script>
+    const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo";
+    const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    let currentProduct = null;
+    let selectedSize = '';
+    let selectedColor = '';
+    let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
+
+    // Infinite Feed States
+    let feedOffset = 0;
+    const FEED_LIMIT = 50;
+    let isFeedLoading = false;
+    let hasMoreFeed = true;
+
+    function refreshIcons() {
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function scrollRow(id, offset) {
+      document.getElementById(id)?.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+
+    function updateCartBadge() {
+      const badge = document.getElementById('navCartBadge');
+      if (badge) badge.innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
+    }
+
+    // 1. LOAD PRODUCT BY URL PARAMETER (?id=XYZ)
+    async function loadProductDetail() {
+      const params = new URLSearchParams(window.location.search);
+      const productId = params.get('id');
+
+      if (!productId || !db) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      try {
+        const { data, error } = await db.from('products').select('*').eq('product_id', productId).single();
+        if (error || !data) throw error;
+
+        currentProduct = data;
+        renderMainDetail(currentProduct);
+        loadRelatedRows(currentProduct);
+        loadInfiniteFeed();
+      } catch (e) {
+        document.getElementById('productDetailContainer').innerHTML = `
+          <div class="lg:col-span-12 py-16 text-center text-rose-400 space-y-3">
+            <p class="font-bold">Item not found or inactive.</p>
+            <a href="index.html" class="inline-block px-5 py-2 bg-gold-500 text-noir-950 font-bold rounded-xl text-xs">Return to Store</a>
+          </div>`;
+      }
+    }
+
+    // 2. RENDER FLIPKART STYLE PRODUCT CARD
+    function renderMainDetail(p) {
+      const container = document.getElementById('productDetailContainer');
+      const hasDiscount = p.original_price && p.original_price > p.price;
+      const discount = hasDiscount ? Math.round(((p.original_price - p.price) / p.original_price) * 100) : 0;
+      
+      const primaryImg = p.thumbnail_url || p.image_url || 'Cover.png';
+      const allImages = [primaryImg, ...(p.gallery_images || [])];
+
+      const sizes = p.available_sizes || [];
+      const colors = p.available_colors || [];
+
+      selectedSize = sizes[0] || '';
+      selectedColor = colors[0] || '';
+
+      container.innerHTML = `
+        <!-- LEFT: FLIPKART STYLE GALLERY & SLIDER (5 COLS) -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="relative w-full h-[360px] sm:h-[460px] bg-noir-950 rounded-2xl overflow-hidden border border-gold-500/30 flex items-center justify-center">
+            <img id="mainShowcaseImg" src="${primaryImg}" alt="${p.title}" class="w-full h-full object-cover transition-all duration-300" onerror="this.src='Cover.png'" />
+            ${hasDiscount ? `<span class="absolute top-3 left-3 bg-noir-950/90 text-gold-400 border border-gold-500/40 text-[10px] font-bold px-2.5 py-1 rounded-md shadow">${discount}% SPECIAL PRIVILEGE</span>` : ''}
+          </div>
+
+          <!-- Thumbnails Row (Slide & Click to preview) -->
+          <div class="flex gap-2.5 overflow-x-auto custom-scrollbar py-1">
+            ${allImages.map((img, i) => `
+              <button onclick="switchImage('${img}', this)" class="thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border ${i === 0 ? 'border-gold-400 ring-2 ring-gold-400/40' : 'border-gold-500/20'} bg-noir-950 shrink-0 transition">
+                <img src="${img}" class="w-full h-full object-cover" onerror="this.src='Cover.png'" />
+              </button>
+            `).join('')}
+            ${p.video_url ? `
+              <a href="${p.video_url}" target="_blank" class="w-16 h-16 rounded-xl border border-gold-500/40 bg-noir-950 shrink-0 flex flex-col items-center justify-center text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition" title="Watch Video">
+                <i data-lucide="play-circle" class="w-6 h-6"></i>
+                <span class="text-[9px] font-bold uppercase mt-0.5">Video</span>
+              </a>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- RIGHT: PRODUCT SPECIFICATIONS & ACTION BUY (7 COLS) -->
+        <div class="lg:col-span-7 space-y-6">
+          <div>
+            <div class="flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-gold-400">
+              <span>SKU: ${p.product_code || 'ZIV'}</span>
+              <span>•</span>
+              <span>${p.brand_name || 'Zivara Maison'}</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-serif text-white tracking-tight mt-1 leading-snug">${p.title}</h1>
+            
+            <!-- Rating Badge -->
+            <div class="flex items-center gap-2 mt-2.5">
+              <span class="inline-flex items-center text-xs font-bold bg-emerald-950 border border-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-md">
+                ${p.rating || '4.8'} <i data-lucide="star" class="w-3 h-3 fill-current ml-1"></i>
+              </span>
+              <span class="text-xs text-slate-400">Certified Luxury Rating (${p.reviews_count || 120} Member Reviews)</span>
+            </div>
+          </div>
+
+          <!-- Price & Discounts -->
+          <div class="p-4 rounded-2xl bg-noir-950 border border-gold-500/20 space-y-1">
+            <div class="flex items-baseline gap-3">
+              <span class="text-2xl sm:text-3xl font-black text-white">₹${Number(p.price).toLocaleString('en-IN')}</span>
+              ${hasDiscount ? `<span class="text-sm text-slate-500 line-through">₹${Number(p.original_price).toLocaleString('en-IN')}</span>` : ''}
+              ${hasDiscount ? `<span class="text-xs font-bold text-emerald-400 font-mono">${discount}% OFF</span>` : ''}
+            </div>
+            <p class="text-[11px] text-slate-400">Inclusive of all duties, certified white-glove packaging, and transit insurance.</p>
+          </div>
+
+          <!-- Variants (Sizes) -->
+          ${sizes.length > 0 ? `
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Select Size / Fit</label>
+              <div class="flex flex-wrap gap-2">
+                ${sizes.map((s, idx) => `
+                  <button onclick="selectVariantSize('${s}', this)" class="size-btn px-4 py-2 rounded-xl text-xs font-bold border ${idx === 0 ? 'bg-gold-500 text-noir-950 border-gold-400' : 'bg-noir-950 border-gold-500/30 text-slate-300'} transition">
+                    ${s}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Variants (Colors) -->
+          ${colors.length > 0 ? `
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Tone / Material</label>
+              <div class="flex flex-wrap gap-2">
+                ${colors.map((c, idx) => `
+                  <button onclick="selectVariantColor('${c}', this)" class="color-btn px-4 py-2 rounded-xl text-xs font-bold border ${idx === 0 ? 'bg-gold-500 text-noir-950 border-gold-400' : 'bg-noir-950 border-gold-500/30 text-slate-300'} transition">
+                    ${c}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Description -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider">Editorial Details & Craftsmanship</h4>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+              ${p.description || 'Masterfully engineered and curated exclusively under the Zivara Privé atelier. Certified materials hand-finished to ensure timeless longevity and unmatched aesthetic brilliance.'}
+            </p>
+          </div>
+
+          <!-- Actions -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <button onclick="addCurrentToCart()" class="w-full bg-noir-950 border border-gold-500/40 text-gold-400 hover:bg-noir-800 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition flex items-center justify-center gap-2">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i> Add To Bag
+            </button>
+            <button onclick="buyNowCurrent()" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-xl transition flex items-center justify-center gap-2">
+              <i data-lucide="zap" class="w-4 h-4 text-noir-950 fill-current"></i> Buy Now
+            </button>
+          </div>
+        </div>
+      `;
+
+      refreshIcons();
+    }
+
+    function switchImage(src, btn) {
+      document.getElementById('mainShowcaseImg').src = src;
+      document.querySelectorAll('.thumbnail-btn').forEach(b => {
+        b.className = "thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border border-gold-500/20 bg-noir-950 shrink-0 transition";
+      });
+      btn.className = "thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border border-gold-400 ring-2 ring-gold-400/40 bg-noir-950 shrink-0 transition";
+    }
+
+    function selectVariantSize(val, btn) {
+      selectedSize = val;
+      document.querySelectorAll('.size-btn').forEach(b => b.className = "size-btn px-4 py-2 rounded-xl text-xs font-bold border bg-noir-950 border-gold-500/30 text-slate-300 transition");
+      btn.className = "size-btn px-4 py-2 rounded-xl text-xs font-bold border bg-gold-500 text-noir-950 border-gold-400 transition";
+    }
+
+    function selectVariantColor(val, btn) {
+      selectedColor = val;
+      document.querySelectorAll('.color-btn').forEach(b => b.className = "color-btn px-4 py-2 rounded-xl text-xs font-bold border bg-noir-950 border-gold-500/30 text-slate-300 transition");
+      btn.className = "color-btn px-4 py-2 rounded-xl text-xs font-bold border bg-gold-500 text-noir-950 border-gold-400 transition";
+    }
+
+    // 3. LOAD SLIDE-RIGHT CAROUSEL ROWS (10 ITEMS ONLY)
+    async function loadRelatedRows(p) {
+      if (!db) return;
+      try {
+        // Row 1: Related by Menu/Submenu (Max 10)
+        const { data: related } = await db.from('products')
+          .select('*')
+          .eq('menu_code', p.menu_code)
+          .neq('product_id', p.product_id)
+          .eq('is_active', true)
+          .limit(10);
+
+        // Row 2: Trending / Featured (Max 10)
+        const { data: trending } = await db.from('products')
+          .select('*')
+          .neq('product_id', p.product_id)
+          .eq('is_active', true)
+          .limit(10);
+
+        renderCarouselRow('relatedRow', related || []);
+        renderCarouselRow('trendingRow', trending || []);
+      } catch (err) {
+        console.warn("Row loading error:", err);
+      }
+    }
+
+    function renderCarouselRow(containerId, items) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      if (items.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-500 py-4">No additional items in this category yet.</p>`;
+        return;
+      }
+
+      container.innerHTML = items.map(item => {
+        const img = item.thumbnail_url || item.image_url || 'Cover.png';
+        return `
+          <div onclick="window.location.href='product-detail.html?id=${item.product_id}'" class="w-56 sm:w-64 shrink-0 bg-noir-900 border border-gold-500/20 hover:border-gold-400/50 rounded-2xl p-3.5 cursor-pointer shadow-lg transition transform hover:-translate-y-1">
+            <div class="w-full h-40 bg-noir-950 rounded-xl overflow-hidden mb-3">
+              <img src="${img}" class="w-full h-full object-cover" onerror="this.src='Cover.png'" />
+            </div>
+            <div class="space-y-1">
+              <span class="text-[9px] font-mono text-gold-400 uppercase">${item.product_code || 'ZIV'}</span>
+              <h4 class="text-xs font-semibold text-white line-clamp-1">${item.title}</h4>
+              <div class="text-sm font-black text-white">₹${Number(item.price).toLocaleString('en-IN')}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 4. VERTICAL INFINITE DISCOVERY FEED (50 ITEMS + AUTO LOAD NEXT 50)
+    async function loadInfiniteFeed() {
+      if (!db || isFeedLoading || !hasMoreFeed) return;
+      isFeedLoading = true;
+      document.getElementById('infiniteLoader')?.classList.remove('hidden');
+
+      try {
+        const { data, error } = await db.from('products')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .range(feedOffset, feedOffset + FEED_LIMIT - 1);
+
+        if (error) throw error;
+
+        if (data.length < FEED_LIMIT) {
+          hasMoreFeed = false;
+        }
+
+        feedOffset += data.length;
+        document.getElementById('infiniteCountBadge').innerText = `Showing ${feedOffset} Items`;
+
+        const feedGrid = document.getElementById('infiniteFeedGrid');
+        const cardsMarkup = data.map(item => {
+          const img = item.thumbnail_url || item.image_url || 'Cover.png';
+          return `
+            <div onclick="window.location.href='product-detail.html?id=${item.product_id}'" class="group bg-noir-900 border border-gold-500/20 hover:border-gold-400/60 rounded-2xl overflow-hidden p-3.5 cursor-pointer transition shadow-lg">
+              <div class="w-full h-44 bg-noir-950 rounded-xl overflow-hidden mb-3">
+                <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='Cover.png'" />
+              </div>
+              <div class="space-y-1">
+                <span class="text-[9px] font-mono text-gold-400 uppercase">${item.product_code || 'ZIV'}</span>
+                <h4 class="text-xs font-semibold text-white line-clamp-1 group-hover:text-gold-400 transition">${item.title}</h4>
+                <div class="text-sm font-black text-white">₹${Number(item.price).toLocaleString('en-IN')}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        feedGrid.innerHTML += cardsMarkup;
+      } catch (err) {
+        console.error("Infinite feed error:", err);
+      } finally {
+        isFeedLoading = false;
+        document.getElementById('infiniteLoader')?.classList.add('hidden');
+        refreshIcons();
+      }
+    }
+
+    // Auto load next 50 on scrolling to page bottom
+    window.addEventListener('scroll', () => {
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+        if (!isFeedLoading && hasMoreFeed) {
+          loadInfiniteFeed();
+        }
+      }
+    });
+
+    // Cart actions
+    function addCurrentToCart() {
+      if (!currentProduct) return;
+      const idx = cart.findIndex(i => i.id === currentProduct.product_id);
+      if (idx > -1) {
+        cart[idx].quantity += 1;
+      } else {
+        cart.push({
+          id: currentProduct.product_id,
+          title: currentProduct.title,
+          price: Number(currentProduct.price),
+          originalPrice: currentProduct.original_price ? Number(currentProduct.original_price) : null,
+          image: currentProduct.thumbnail_url || currentProduct.image_url || 'Cover.png',
+          size: selectedSize,
+          color: selectedColor,
+          quantity: 1
+        });
+      }
+      localStorage.setItem('zivara_cart', JSON.stringify(cart));
+      updateCartBadge();
+      alert(`"${currentProduct.title}" added to your shopping bag!`);
+    }
+
+    function buyNowCurrent() {
+      addCurrentToCart();
+      window.location.href = 'cart.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshIcons();
+      updateCartBadge();
+      loadProductDetail();
+    });
+  </script>
+</body>
+</html>
