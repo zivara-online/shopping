@@ -3,6 +3,7 @@ import { applyFiltersAndSort } from './products.js';
 
 export async function loadMenuSubmenu() {
   if (!db) return;
+
   try {
     const { data, error } = await db
       .from('MenuSubmenu')
@@ -23,6 +24,7 @@ export async function loadMenuSubmenu() {
         <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
       </button>
     `;
+
     if (filterContainer) filterContainer.innerHTML = '';
     if (mobileFilterContainer) mobileFilterContainer.innerHTML = '';
 
@@ -39,6 +41,7 @@ export async function loadMenuSubmenu() {
           submenus: []
         });
       }
+
       const subId = item.SubmenuID ? String(item.SubmenuID).trim() : '';
       const subName = item.SubName ? String(item.SubName).trim() : '';
       if (subId && subId !== 'NULL' && subName && subName !== 'NULL') {
@@ -48,6 +51,7 @@ export async function loadMenuSubmenu() {
 
     menuMap.forEach(menu => {
       const hasSubs = menu.submenus.length > 0;
+      
       const menuWrapper = document.createElement('div');
       menuWrapper.className = "relative menu-parent py-1 shrink-0";
       menuWrapper.innerHTML = `
@@ -72,19 +76,26 @@ export async function loadMenuSubmenu() {
       `;
       navContainer.appendChild(menuWrapper);
 
+      // Desktop Checkbox
       if (filterContainer) {
-        filterContainer.innerHTML += `
-          <label class="flex items-center gap-2 cursor-pointer hover:text-white">
-            <input type="checkbox" value="${menu.menuId}" class="cat-checkbox accent-gold-500 rounded" onchange="window.applyFiltersAndSort()" />
-            <span>${menu.menuName}</span>
-          </label>`;
+        const catLabel = document.createElement('label');
+        catLabel.className = "flex items-center gap-2 cursor-pointer hover:text-white";
+        catLabel.innerHTML = `
+          <input type="checkbox" value="${menu.menuId}" class="cat-checkbox accent-gold-500 rounded" onchange="window.applyFiltersAndSort()" />
+          <span>${menu.menuName}</span>
+        `;
+        filterContainer.appendChild(catLabel);
       }
+
+      // Mobile Checkbox
       if (mobileFilterContainer) {
-        mobileFilterContainer.innerHTML += `
-          <label class="flex items-center gap-2.5 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300 cursor-pointer">
-            <input type="checkbox" value="${menu.menuId}" class="mob-cat-checkbox accent-gold-500 rounded" onchange="window.syncCategoryCheckboxes('${menu.menuId}', this.checked)" />
-            <span>${menu.menuName}</span>
-          </label>`;
+        const mobLabel = document.createElement('label');
+        mobLabel.className = "flex items-center gap-2.5 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300 cursor-pointer";
+        mobLabel.innerHTML = `
+          <input type="checkbox" value="${menu.menuId}" class="mob-cat-checkbox accent-gold-500 rounded" onchange="window.syncCategoryCheckboxes('${menu.menuId}', this.checked)" />
+          <span>${menu.menuName}</span>
+        `;
+        mobileFilterContainer.appendChild(mobLabel);
       }
     });
 
@@ -96,4 +107,56 @@ export async function loadMenuSubmenu() {
 
 export function scrollMenus(offset) {
   document.getElementById('categoryNavContainer')?.scrollBy({ left: offset, behavior: 'smooth' });
+}
+
+export function syncCategoryCheckboxes(id, isChecked) {
+  document.querySelectorAll(`.cat-checkbox[value="${id}"]`).forEach(c => c.checked = isChecked);
+}
+
+// Mobile Drawer & Sort Handlers
+export function openMobileFilterDrawer() {
+  document.getElementById('mobileFilterDrawerBackdrop')?.classList.remove('hidden');
+  const drawer = document.getElementById('mobileFilterDrawer');
+  if (drawer) drawer.style.transform = 'translateY(0%)';
+}
+
+export function closeMobileFilterDrawer() {
+  document.getElementById('mobileFilterDrawerBackdrop')?.classList.add('hidden');
+  const drawer = document.getElementById('mobileFilterDrawer');
+  if (drawer) drawer.style.transform = 'translateY(100%)';
+  applyFiltersAndSort();
+}
+
+export function toggleMobileSortModal() {
+  const modal = document.getElementById('mobileSortModal');
+  modal?.classList.toggle('hidden');
+  updateSortCheckmarks();
+}
+
+export function selectMobileSort(mode) {
+  const sortSelect = document.getElementById('sortSelect');
+  if (sortSelect) sortSelect.value = mode;
+  toggleMobileSortModal();
+  applyFiltersAndSort();
+}
+
+export function updateSortCheckmarks() {
+  const val = document.getElementById('sortSelect')?.value;
+  ['relevance', 'price_low', 'price_high', 'rating'].forEach(m => {
+    const el = document.getElementById(`sortCheck-${m}`);
+    if (el) {
+      if (m === val) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    }
+  });
+}
+
+export function syncMobilePrice(val) {
+  const radio = document.querySelector(`input[name="priceRange"][value="${val}"]`);
+  if (radio) radio.checked = true;
+}
+
+export function syncMobileRating(checked) {
+  const cb = document.getElementById('filterRating4');
+  if (cb) cb.checked = checked;
 }
