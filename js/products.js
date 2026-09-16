@@ -5,6 +5,7 @@ const PAGE_LIMIT = 50;
 let isLoadingMore = false;
 let hasMoreProducts = true;
 
+// 1. INITIAL & INFINITE PRODUCT FETCH
 export async function loadProducts(isAppend = false) {
   if (!db || isLoadingMore || (!hasMoreProducts && isAppend)) return;
   isLoadingMore = true;
@@ -33,12 +34,13 @@ export async function loadProducts(isAppend = false) {
     currentOffset += data.length;
     applyFiltersAndSort(isAppend);
   } catch (err) {
-    console.error("Products error:", err.message);
+    console.error("Products fetch error:", err.message);
   } finally {
     isLoadingMore = false;
   }
 }
 
+// 2. RENDER GRID (WITH FLIPKART STYLE PRODUCT CLICK REDIRECT)
 export function renderProductGrid(items, isAppend = false) {
   const grid = document.getElementById('productGrid');
   const counter = document.getElementById('productCounter');
@@ -53,6 +55,7 @@ export function renderProductGrid(items, isAppend = false) {
       <div class="col-span-full py-16 text-center text-slate-400 bg-noir-900/60 border border-gold-500/10 rounded-3xl space-y-3">
         <i data-lucide="package-search" class="w-10 h-10 mx-auto text-gold-400/40"></i>
         <p class="text-sm font-bold text-slate-200">No matching products found.</p>
+        <p class="text-xs text-slate-500">Try adjusting your filters or search keywords.</p>
       </div>`;
     refreshIcons();
     return;
@@ -113,21 +116,98 @@ export function renderProductGrid(items, isAppend = false) {
   refreshIcons();
 }
 
-// Redirect to Flipkart-style Product Detail
+// Redirect to Product Detail Page
 window.openProductDetail = function(productId) {
   window.location.href = `product-detail.html?id=${productId}`;
 };
 
+window.toggleWishlist = function(productId) {
+  alert("Item added to your luxury wishlist!");
+};
+
+// 3. SEARCH CONTROLLER (WITH EXPORT)
+export function handleSearchInput(e) {
+  const term = e.target.value.trim();
+  const clearBtn = document.getElementById('clearSearchBtn');
+  const hero = document.getElementById('heroBannerSection');
+  const heading = document.getElementById('searchHeading');
+  const subtext = document.getElementById('searchSubtext');
+  
+  if (term.length > 0) {
+    clearBtn?.classList.remove('hidden');
+    hero?.classList.add('hidden');
+    if (heading) heading.innerText = `"${term}"`;
+    if (subtext) subtext.innerText = `Showing results matching your query`;
+  } else {
+    clearBtn?.classList.add('hidden');
+    hero?.classList.remove('hidden');
+    if (heading) heading.innerText = "The Heritage Edit";
+    if (subtext) subtext.innerText = "Live catalogue directly synced with database inventory";
+  }
+
+  applyFiltersAndSort();
+}
+
+export function resetSearch() {
+  const input = document.getElementById('searchInput');
+  if (input) input.value = '';
+  document.getElementById('clearSearchBtn')?.classList.add('hidden');
+  document.getElementById('heroBannerSection')?.classList.remove('hidden');
+  
+  const heading = document.getElementById('searchHeading');
+  const subtext = document.getElementById('searchSubtext');
+  if (heading) heading.innerText = "The Heritage Edit";
+  if (subtext) subtext.innerText = "Live catalogue directly synced with database inventory";
+  
+  applyFiltersAndSort();
+}
+
+export function triggerSearch() {
+  document.getElementById('products-section')?.scrollIntoView({ behavior: 'smooth' });
+  applyFiltersAndSort();
+}
+
+// 4. TAXONOMY SELECTION (WITH EXPORT)
+export function selectMenu(menuId, submenuId, title) {
+  state.activeMenuId = menuId ? String(menuId).trim() : null;
+  state.activeSubmenuId = submenuId ? String(submenuId).trim() : null;
+  
+  const heading = document.getElementById('searchHeading');
+  const subtext = document.getElementById('searchSubtext');
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearSearchBtn');
+  const hero = document.getElementById('heroBannerSection');
+
+  if (heading) heading.innerText = title || 'The Heritage Edit';
+  if (searchInput) searchInput.value = '';
+  clearBtn?.classList.add('hidden');
+
+  if (menuId || submenuId) {
+    hero?.classList.add('hidden');
+    if (subtext) subtext.innerText = `Showing filtered collection for ${title}`;
+  } else {
+    hero?.classList.remove('hidden');
+    if (subtext) subtext.innerText = "Live catalogue directly synced with database inventory";
+  }
+
+  document.querySelectorAll('.cat-checkbox, .mob-cat-checkbox').forEach(cb => {
+    cb.checked = (cb.value === menuId);
+  });
+
+  applyFiltersAndSort();
+}
+
+// 5. MULTI-VARIABLE DATABASE FILTER & SORT (WITH EXPORT)
 export function applyFiltersAndSort(isAppend = false) {
   let filtered = [...state.allProducts];
 
   const term = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
   if (term) {
     filtered = filtered.filter(p => {
-      const title = p.title?.toLowerCase() || '';
-      const code = p.product_code?.toLowerCase() || '';
-      const menuCode = p.menu_code?.toString().toLowerCase() || '';
-      const subCode = p.submenu_code?.toLowerCase() || '';
+      const title = p.title ? p.title.toLowerCase() : '';
+      const code = p.product_code ? p.product_code.toLowerCase() : '';
+      const menuCode = p.menu_code ? p.menu_code.toString().toLowerCase() : '';
+      const subCode = p.submenu_code ? p.submenu_code.toLowerCase() : '';
       return title.includes(term) || code.includes(term) || menuCode === term || subCode.includes(term);
     });
   }
@@ -144,22 +224,73 @@ export function applyFiltersAndSort(isAppend = false) {
   }
 
   const priceVal = document.querySelector('input[name="priceRange"]:checked')?.value;
-  if (priceVal === 'under2000') filtered = filtered.filter(p => p.price < 2000);
-  else if (priceVal === '2000to5000') filtered = filtered.filter(p => p.price >= 2000 && p.price <= 5000);
-  else if (priceVal === 'above5000') filtered = filtered.filter(p => p.price > 5000);
+  if (priceVal === 'under2000') {
+    filtered = filtered.filter(p => p.price < 2000);
+  } else if (priceVal === '2000to5000') {
+    filtered = filtered.filter(p => p.price >= 2000 && p.price <= 5000);
+  } else if (priceVal === 'above5000') {
+    filtered = filtered.filter(p => p.price > 5000);
+  }
 
-  const r4 = document.getElementById('filterRating4')?.checked || document.getElementById('mobileFilterRating4')?.checked;
-  if (r4) filtered = filtered.filter(p => (p.rating || 5) >= 4.0);
+  const r4Desktop = document.getElementById('filterRating4')?.checked;
+  const r4Mobile = document.getElementById('mobileFilterRating4')?.checked;
+  if (r4Desktop || r4Mobile) {
+    filtered = filtered.filter(p => (p.rating || 5) >= 4.0);
+  }
 
   const sortMode = document.getElementById('sortSelect')?.value || 'relevance';
-  if (sortMode === 'price_low') filtered.sort((a, b) => a.price - b.price);
-  else if (sortMode === 'price_high') filtered.sort((a, b) => b.price - a.price);
-  else if (sortMode === 'rating') filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  if (sortMode === 'price_low') {
+    filtered.sort((a, b) => a.price - b.price);
+  } else if (sortMode === 'price_high') {
+    filtered.sort((a, b) => b.price - a.price);
+  } else if (sortMode === 'rating') {
+    filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  }
+
+  const activeFilterCount = checkedCategories.length + (priceVal && priceVal !== 'all' ? 1 : 0) + (r4Desktop || r4Mobile ? 1 : 0);
+  const dot = document.getElementById('mobileFilterDot');
+  if (dot) {
+    if (activeFilterCount > 0) dot.classList.remove('hidden');
+    else dot.classList.add('hidden');
+  }
 
   renderProductGrid(filtered, isAppend);
 }
 
-// Infinite Scroll Trigger (Loads next 50 products when reaching page bottom)
+// 6. RESET ALL FILTERS (WITH EXPORT)
+export function resetAllFilters() {
+  state.activeMenuId = null;
+  state.activeSubmenuId = null;
+  
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+  document.getElementById('clearSearchBtn')?.classList.add('hidden');
+  document.getElementById('heroBannerSection')?.classList.remove('hidden');
+
+  const heading = document.getElementById('searchHeading');
+  const subtext = document.getElementById('searchSubtext');
+  if (heading) heading.innerText = "The Heritage Edit";
+  if (subtext) subtext.innerText = "Live catalogue directly synced with database inventory";
+
+  document.querySelectorAll('.cat-checkbox, .mob-cat-checkbox').forEach(cb => cb.checked = false);
+
+  const allPricesRadio = document.querySelector('input[name="priceRange"][value="all"]');
+  if (allPricesRadio) allPricesRadio.checked = true;
+  const mobAllPricesRadio = document.querySelector('input[name="mobilePriceRange"][value="all"]');
+  if (mobAllPricesRadio) mobAllPricesRadio.checked = true;
+
+  const r4 = document.getElementById('filterRating4');
+  if (r4) r4.checked = false;
+  const r4m = document.getElementById('mobileFilterRating4');
+  if (r4m) r4m.checked = false;
+
+  const sortSelect = document.getElementById('sortSelect');
+  if (sortSelect) sortSelect.value = 'relevance';
+
+  applyFiltersAndSort();
+}
+
+// 7. AUTO-SCROLL TRIGGER (NEXT 50 ITEMS WHEN REACHING BOTTOM)
 window.addEventListener('scroll', () => {
   if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 600) {
     if (!isLoadingMore && hasMoreProducts) {
