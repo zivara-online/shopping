@@ -1,0 +1,204 @@
+<!-- CATALOGUE & SEARCH RESULTS -->
+<div id="products-section" class="space-y-4 pt-2">
+  
+  <!-- Top Dynamic Header & Desktop Sort -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gold-500/20 pb-4">
+    <div>
+      <h2 id="searchHeading" class="text-xl sm:text-2xl font-serif text-white tracking-tight capitalize">The Heritage Edit</h2>
+      <p id="searchSubtext" class="text-xs text-slate-400">Live catalogue directly synced with database inventory</p>
+    </div>
+
+    <div class="hidden sm:flex items-center gap-3 self-end sm:self-auto">
+      <div class="flex items-center bg-noir-900 border border-gold-500/30 rounded-xl px-3 py-2 text-xs">
+        <span class="text-slate-400 mr-2 shrink-0">Sort by:</span>
+        <select id="sortSelect" onchange="window.applyFiltersAndSort()" class="bg-transparent text-gold-400 font-bold focus:outline-none cursor-pointer">
+          <option value="relevance" class="bg-noir-900 text-white">Relevance</option>
+          <option value="price_low" class="bg-noir-900 text-white">Price: Low to High</option>
+          <option value="price_high" class="bg-noir-900 text-white">Price: High to Low</option>
+          <option value="rating" class="bg-noir-900 text-white">Customer Rating</option>
+        </select>
+      </div>
+      <span id="productCounter" class="text-xs font-bold uppercase tracking-wider text-gold-400 bg-noir-900 px-3.5 py-2 rounded-xl border border-gold-500/30 shrink-0">
+        0 Items
+      </span>
+    </div>
+  </div>
+
+  <!-- MAIN CATALOGUE CONTAINER: FILTERS ON DESKTOP + PRODUCTS ON RIGHT -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- DESKTOP SIDEBAR (VISIBLE ONLY ON LARGE SCREENS) -->
+    <aside class="hidden lg:block lg:col-span-3 bg-noir-900/90 border border-gold-500/25 rounded-2xl p-5 space-y-6 shadow-xl sticky top-40">
+      <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
+        <div>
+          <h3 class="text-xs font-bold text-white uppercase tracking-wider">Filters</h3>
+          <span id="filterProductCount" class="text-[10px] text-slate-400">0 Products Available</span>
+        </div>
+        <button onclick="window.resetAllFilters()" class="text-[11px] font-semibold text-gold-400 hover:underline">
+          Reset All
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+          <span>Category</span>
+          <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+        </h4>
+        <div id="categoryFilterContainer" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar text-xs text-slate-300 pr-1"></div>
+      </div>
+
+      <div class="space-y-3 border-t border-gold-500/15 pt-4">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+          <span>Price Range</span>
+          <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+        </h4>
+        <div class="space-y-2 text-xs">
+          <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+            <input type="radio" name="priceRange" value="all" checked onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
+            <span>All Prices</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+            <input type="radio" name="priceRange" value="under2000" onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
+            <span>Under ₹2,000</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+            <input type="radio" name="priceRange" value="2000to5000" onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
+            <span>₹2,000 - ₹5,000</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+            <input type="radio" name="priceRange" value="above5000" onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
+            <span>Above ₹5,000</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="space-y-3 border-t border-gold-500/15 pt-4">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+          <span>Customer Rating</span>
+          <i data-lucide="star" class="w-3.5 h-3.5"></i>
+        </h4>
+        <div class="space-y-2 text-xs">
+          <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+            <input type="checkbox" id="filterRating4" onchange="window.applyFiltersAndSort()" class="accent-gold-500 rounded" />
+            <span>4.0 ★ & Above</span>
+          </label>
+        </div>
+      </div>
+    </aside>
+
+    <!-- PRODUCTS GRID (FULL WIDTH ON MOBILE, 9 COLS ON DESKTOP) -->
+    <section class="col-span-1 lg:col-span-9 w-full">
+      <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 min-h-[380px]">
+        <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+        <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- FLIPKART STYLE STICKY BOTTOM FILTER STRIP (MOBILE ONLY) -->
+<div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-noir-900/98 backdrop-blur-md border-t border-gold-500/30 flex items-center h-14 divide-x divide-gold-500/20 shadow-2xl">
+  <button onclick="window.toggleMobileSortModal()" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-200 active:bg-noir-800 h-full">
+    <i data-lucide="arrow-up-down" class="w-4 h-4 text-gold-400"></i>
+    <span>Sort</span>
+  </button>
+  <button onclick="window.openMobileFilterDrawer()" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-gold-400 active:bg-noir-800 h-full">
+    <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+    <span>Filters</span>
+    <span id="mobileFilterDot" class="hidden w-2 h-2 rounded-full bg-gold-400"></span>
+  </button>
+</div>
+
+<!-- FLIPKART STYLE MOBILE SLIDE-UP FILTER DRAWER -->
+<div id="mobileFilterDrawerBackdrop" onclick="window.closeMobileFilterDrawer()" class="fixed inset-0 bg-black/80 z-[100] hidden backdrop-blur-sm transition-opacity"></div>
+<div id="mobileFilterDrawer" class="fixed inset-x-0 bottom-0 z-[101] bg-noir-900 border-t border-gold-500/40 rounded-t-3xl max-h-[85vh] flex flex-col translate-y-full lg:hidden shadow-2xl">
+  
+  <!-- Drawer Header -->
+  <div class="p-4 border-b border-gold-500/20 flex items-center justify-between bg-noir-950 rounded-t-3xl">
+    <div class="flex items-center gap-2">
+      <i data-lucide="sliders-horizontal" class="w-4 h-4 text-gold-400"></i>
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">Filters</h3>
+    </div>
+    <button onclick="window.resetAllFilters()" class="text-xs text-gold-400 font-semibold uppercase">Reset All</button>
+    <button onclick="window.closeMobileFilterDrawer()" class="p-1 rounded-full text-slate-400 hover:text-white">
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+  </div>
+
+  <!-- Drawer Content -->
+  <div class="p-5 overflow-y-auto custom-scrollbar space-y-6 flex-1 text-xs">
+    
+    <!-- Category Options -->
+    <div class="space-y-3">
+      <h4 class="font-bold text-gold-400 uppercase tracking-wider">Category</h4>
+      <div id="mobileCategoryFilterContainer" class="space-y-2.5 max-h-48 overflow-y-auto custom-scrollbar"></div>
+    </div>
+
+    <!-- Price Range -->
+    <div class="space-y-3 border-t border-gold-500/15 pt-4">
+      <h4 class="font-bold text-gold-400 uppercase tracking-wider">Price Range</h4>
+      <div class="grid grid-cols-2 gap-2">
+        <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+          <input type="radio" name="mobilePriceRange" value="all" checked onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
+          <span>All</span>
+        </label>
+        <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+          <input type="radio" name="mobilePriceRange" value="under2000" onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
+          <span>&lt; ₹2,000</span>
+        </label>
+        <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+          <input type="radio" name="mobilePriceRange" value="2000to5000" onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
+          <span>₹2k - ₹5k</span>
+        </label>
+        <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+          <input type="radio" name="mobilePriceRange" value="above5000" onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
+          <span>&gt; ₹5,000</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Rating -->
+    <div class="space-y-3 border-t border-gold-500/15 pt-4">
+      <h4 class="font-bold text-gold-400 uppercase tracking-wider">Customer Rating</h4>
+      <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+        <input type="checkbox" id="mobileFilterRating4" onchange="window.syncMobileRating(this.checked)" class="accent-gold-500 rounded" />
+        <span>4.0 ★ & Above</span>
+      </label>
+    </div>
+
+  </div>
+
+  <!-- Drawer Footer Actions -->
+  <div class="p-3 bg-noir-950 border-t border-gold-500/20 flex gap-3">
+    <button onclick="window.closeMobileFilterDrawer()" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 font-bold uppercase tracking-widest py-3 rounded-xl shadow-lg">
+      Apply Filters
+    </button>
+  </div>
+</div>
+
+<!-- MOBILE SORT MODAL (BOTTOM POPUP) -->
+<div id="mobileSortModal" class="fixed inset-x-0 bottom-0 z-[101] bg-noir-900 border-t border-gold-500/40 rounded-t-3xl p-5 hidden lg:hidden space-y-4 shadow-2xl">
+  <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Sort By</h3>
+    <button onclick="window.toggleMobileSortModal()"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i></button>
+  </div>
+  <div class="space-y-2 text-xs">
+    <button onclick="window.selectMobileSort('relevance')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+      <span>Relevance</span>
+      <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-relevance"></i>
+    </button>
+    <button onclick="window.selectMobileSort('price_low')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+      <span>Price: Low to High</span>
+      <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-price_low"></i>
+    </button>
+    <button onclick="window.selectMobileSort('price_high')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+      <span>Price: High to Low</span>
+      <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-price_high"></i>
+    </button>
+    <button onclick="window.selectMobileSort('rating')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+      <span>Customer Rating</span>
+      <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-rating"></i>
+    </button>
+  </div>
+</div>
