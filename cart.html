@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Shopping Bag - Zivara</title>
   
-  <!-- Tailwind CSS CDN -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D4AF37'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <script>
@@ -15,150 +15,149 @@
       theme: {
         extend: {
           colors: {
-            gold: {
-              300: '#F5D77F',
-              400: '#E5C06E',
-              500: '#D4AF37',
-              600: '#AA820A',
-              700: '#856404'
-            },
-            noir: {
-              900: '#0B0B0C',
-              850: '#121214',
-              800: '#18181B',
-              700: '#27272A'
-            }
+            gold: { 300: '#F5D77F', 400: '#E5C06E', 500: '#D4AF37', 600: '#AA820A', 700: '#856404' },
+            noir: { 950: '#070708', 900: '#0B0B0C', 850: '#121214', 800: '#18181B', 700: '#27272A' }
           }
         }
       }
     }
   </script>
+
+  <style>
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-gold-500 selection:text-noir-950">
 
   <!-- TOP LUXURY ANNOUNCEMENT STRIP -->
   <div class="bg-noir-900 text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
-    ✨ Zivara Bag | Compliments on Orders Above ₹1,499 | 100% Insured Delivery
+    ✨ Zivara Privé Bag | Compliments on Orders Above ₹1,499 | 100% Insured Delivery
   </div>
 
   <!-- NAVBAR -->
-  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      
-      <!-- Brand Logo -->
-      <a href="index.html" class="flex items-center gap-3">
-        <img 
-          src="Logo.png" 
-          alt="Zivara Logo" 
-          class="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition transform hover:scale-105"
-        />
-      </a>
+  <header class="bg-noir-900/90 backdrop-blur-xl border-b border-gold-500/20 h-20 px-4 sm:px-10 flex items-center justify-between shadow-xl sticky top-0 z-40">
+    <a href="index.html" class="flex items-center gap-3">
+      <img src="Logo.png" alt="Zivara Logo" class="h-12 sm:h-14 w-auto object-contain drop-shadow-md transition transform hover:scale-105" onerror="this.src='Logo.png'" />
+    </a>
 
-      <!-- Back to Shop Link -->
-      <a href="index.html" class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-600 hover:text-gold-600 flex items-center gap-1.5 transition">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        Continue Shopping
-      </a>
-    </div>
+    <a href="index.html" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-400 hover:text-gold-400 flex items-center gap-1.5 transition">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      <span>Continue Shopping</span>
+    </a>
   </header>
 
   <!-- MAIN CART CONTAINER -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-    <div class="mb-6 border-b border-slate-200/80 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+    
+    <!-- Header Summary Strip -->
+    <div class="mb-6 border-b border-gold-500/20 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-serif text-slate-900 tracking-tight">Your Shopping Bag</h1>
-        <p id="cartItemsSubtitle" class="text-xs text-slate-500 mt-1">Review your bespoke selections</p>
+        <h1 class="text-2xl sm:text-3xl font-serif text-white tracking-tight">Your Shopping Bag</h1>
+        <p id="cartItemsSubtitle" class="text-xs text-slate-400 mt-1">Review your bespoke selections</p>
       </div>
-      <div class="flex items-center gap-2 text-xs text-slate-500">
-        <i data-lucide="shield-check" class="w-4 h-4 text-gold-600"></i>
+      <div class="flex items-center gap-2 text-xs text-gold-400/90">
+        <i data-lucide="shield-check" class="w-4 h-4 text-gold-400"></i>
         <span>Guaranteed Authenticity & Secure Checkout</span>
       </div>
     </div>
 
-    <!-- CART LAYOUT (Items List + Summary Sidebar) -->
+    <!-- CART LAYOUT -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       
-      <!-- ITEMS CONTAINER (Left Side - 8 Cols) -->
+      <!-- ITEMS CONTAINER (8 COLS) -->
       <div class="lg:col-span-8 space-y-4">
         
         <!-- Cart Items Dynamic List -->
-        <div id="cartItemsList" class="space-y-4">
-          <!-- Populated by JavaScript -->
-        </div>
+        <div id="cartItemsList" class="space-y-4"></div>
 
         <!-- Empty Cart State -->
-        <div id="emptyCartState" class="hidden bg-white p-12 text-center rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
-          <div class="w-20 h-20 bg-noir-900 text-gold-400 border border-gold-500/30 rounded-2xl flex items-center justify-center mx-auto shadow-md">
+        <div id="emptyCartState" class="hidden bg-noir-900/90 p-10 sm:p-14 text-center rounded-3xl border border-gold-500/20 shadow-2xl space-y-5">
+          <div class="w-20 h-20 bg-noir-950 text-gold-400 border border-gold-500/30 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
             <i data-lucide="shopping-bag" class="w-9 h-9"></i>
           </div>
-          <div class="space-y-1">
-            <h3 class="text-xl font-serif font-bold text-slate-900">Your bag is empty</h3>
-            <p class="text-xs text-slate-500 max-w-sm mx-auto">Discover statement jewelry, haute couture, and handcrafted timepieces to curate your collection.</p>
+          <div class="space-y-1.5">
+            <h3 class="text-xl font-serif font-bold text-white">Your bag is empty</h3>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto">Discover statement jewelry, haute couture, and handcrafted timepieces to curate your luxury collection.</p>
           </div>
-          <div>
-            <a href="index.html" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-900 text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-full shadow hover:from-gold-400 hover:to-gold-300 transition transform hover:-translate-y-0.5">
-              Explore The Maison <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          <div class="pt-2">
+            <a href="index.html" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-full shadow-lg transition transform hover:-translate-y-0.5">
+              <span>Explore Collections</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
           </div>
         </div>
 
       </div>
 
-      <!-- ORDER SUMMARY (Right Side - 4 Cols) -->
-      <div id="orderSummarySection" class="lg:col-span-4 sticky top-24">
-        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 space-y-6">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 class="text-base font-serif font-bold text-slate-900 tracking-tight">Order Summary</h2>
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700 bg-gold-50 px-2 py-0.5 rounded border border-gold-400/30">VIP Checkout</span>
+      <!-- ORDER SUMMARY (4 COLS) -->
+      <div id="orderSummarySection" class="lg:col-span-4 sticky top-28">
+        <div class="bg-noir-900/95 border border-gold-500/25 rounded-3xl p-6 space-y-6 shadow-2xl">
+          
+          <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+            <h2 class="text-base font-serif font-bold text-white tracking-tight">Order Summary</h2>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">VIP Privilege</span>
           </div>
 
-          <!-- Price Details -->
+          <!-- Price Calculations -->
           <div class="space-y-3 text-xs">
-            <div class="flex justify-between text-slate-600">
+            <div class="flex justify-between text-slate-300">
               <span>Bag Subtotal</span>
-              <span id="bagTotal" class="font-semibold text-slate-900">₹0</span>
+              <span id="bagTotal" class="font-bold text-white">₹0</span>
             </div>
-            <div class="flex justify-between text-emerald-600">
-              <span>Bespoke Privilege Discount</span>
-              <span id="bagDiscount" class="font-semibold">-₹0</span>
+            <div class="flex justify-between text-emerald-400">
+              <span>Privilege Discount</span>
+              <span id="bagDiscount" class="font-bold">-₹0</span>
             </div>
-            <div class="flex justify-between text-slate-600">
-              <span>Insured Courier Delivery</span>
-              <span id="deliveryFee" class="font-semibold text-slate-900">₹0</span>
+            <div id="couponDiscountRow" class="flex justify-between text-gold-400 hidden">
+              <span>Promo Code (ZIVARA10)</span>
+              <span id="couponDiscount" class="font-bold">-₹0</span>
             </div>
-            <div class="border-t border-slate-100 pt-3 flex justify-between text-sm font-black text-slate-900">
+            <div class="flex justify-between text-slate-300">
+              <span>Insured White-Glove Transit</span>
+              <span id="deliveryFee" class="font-bold text-white">₹0</span>
+            </div>
+            <div class="border-t border-gold-500/20 pt-3 flex justify-between text-sm font-black text-white">
               <span>Total Payable</span>
-              <span id="finalTotal" class="text-gold-700 text-base font-black">₹0</span>
+              <span id="finalTotal" class="text-gold-400 text-base font-black">₹0</span>
             </div>
           </div>
 
-          <!-- Coupon Input -->
-          <div class="pt-1">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Apply Privilege Code</label>
+          <!-- Promo Code Input -->
+          <div class="space-y-1.5 pt-1">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Apply Promo Code</label>
             <div class="flex gap-2">
               <input 
                 type="text" 
-                placeholder="E.G. ZIVARA10" 
-                class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs uppercase font-semibold focus:outline-none focus:border-gold-500 focus:bg-white transition"
+                id="couponInput"
+                placeholder="TRY ZIVARA10" 
+                class="flex-1 bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-xs text-white uppercase font-mono font-semibold focus:outline-none focus:border-gold-400 transition"
               />
-              <button class="bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/30 text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">
+              <button 
+                type="button"
+                onclick="applyCoupon()" 
+                class="bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 text-xs font-bold px-4 py-2.5 rounded-xl transition shadow">
                 Apply
               </button>
             </div>
+            <p id="couponMsg" class="text-[11px] font-medium hidden"></p>
           </div>
 
           <!-- Checkout Button -->
           <button 
+            type="button"
             onclick="proceedToCheckout()" 
-            class="w-full bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/40 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-[0.98]">
-            <span>Proceed to Checkout</span>
-            <i data-lucide="lock" class="w-4 h-4 text-gold-400"></i>
+            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xl transition active:scale-[0.98]">
+            <span>Proceed to Secure Checkout</span>
+            <i data-lucide="lock" class="w-4 h-4 text-noir-950"></i>
           </button>
 
-          <!-- Badges -->
-          <div class="text-[11px] text-slate-400 text-center flex items-center justify-center gap-2 pt-1 border-t border-slate-100">
-            <i data-lucide="award" class="w-4 h-4 text-gold-500"></i>
-            <span>Encrypted 256-bit Payment Gateway Protection</span>
+          <!-- Security Badge -->
+          <div class="text-[11px] text-slate-400 text-center flex items-center justify-center gap-2 pt-2 border-t border-gold-500/10">
+            <i data-lucide="award" class="w-4 h-4 text-gold-400"></i>
+            <span>Encrypted 256-bit Payment Protection</span>
           </div>
         </div>
       </div>
@@ -167,10 +166,10 @@
   </main>
 
   <!-- LUXURY FOOTER -->
-  <footer class="bg-noir-900 text-slate-400 text-xs mt-auto border-t border-gold-500/20 py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+  <footer class="bg-noir-900 text-slate-400 text-xs border-t border-gold-500/20 py-5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
       <div class="flex items-center gap-3">
-        <img src="Logo.png" alt="Zivara Logo" class="h-10 w-auto object-contain brightness-110" />
+        <img src="Logo.png" alt="Zivara Logo" class="h-9 w-auto object-contain brightness-110" onerror="this.src='Logo.png'" />
         <span class="text-[11px] text-slate-400">Fashion • Style • You</span>
       </div>
       <div class="text-[11px] text-slate-500">
@@ -179,66 +178,88 @@
     </div>
   </footer>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- JAVASCRIPT ENGINE -->
   <script>
-    lucide.createIcons();
-
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
+    let isCouponApplied = false;
 
     const itemsContainer = document.getElementById('cartItemsList');
     const emptyState = document.getElementById('emptyCartState');
     const summarySection = document.getElementById('orderSummarySection');
     const itemsSubtitle = document.getElementById('cartItemsSubtitle');
 
+    function refreshIcons() {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+
     function renderCart() {
-      if (cart.length === 0) {
+      if (!cart || cart.length === 0) {
         itemsContainer.innerHTML = '';
         emptyState.classList.remove('hidden');
         summarySection.classList.add('hidden');
         itemsSubtitle.innerText = 'No items in your bag';
+        refreshIcons();
         return;
       }
 
       emptyState.classList.add('hidden');
       summarySection.classList.remove('hidden');
       
-      const totalCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-      itemsSubtitle.innerText = `${totalCount} luxury item${totalCount > 1 ? 's' : ''} in your collection`;
+      const totalCount = cart.reduce((acc, item) => acc + (item.quantity || 1), 0);
+      itemsSubtitle.innerText = `${totalCount} bespoke item${totalCount > 1 ? 's' : ''} in your collection`;
 
       itemsContainer.innerHTML = cart.map(item => {
-        const itemTotal = item.price * item.quantity;
+        const qty = item.quantity || 1;
+        const itemTotal = Number(item.price) * qty;
+        const displayImg = item.image || item.thumbnail_url || 'Cover.png';
+
         return `
-          <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 transition hover:border-gold-500/40">
+          <div class="bg-noir-900/90 p-4 sm:p-5 rounded-3xl border border-gold-500/20 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 transition hover:border-gold-400/50">
             
+            <!-- Product Thumbnail & Details -->
             <div class="flex items-center gap-4 w-full sm:w-auto">
-              <img src="${item.image}" alt="${item.title}" class="w-20 h-24 object-cover rounded-2xl bg-slate-100 flex-shrink-0 shadow-sm" />
+              <img 
+                src="${displayImg}" 
+                alt="${item.title || 'Product'}" 
+                class="w-20 h-24 object-cover rounded-2xl bg-noir-950 border border-gold-500/20 shrink-0 shadow-md"
+                onerror="this.src='Cover.png'"
+              />
               <div class="space-y-1">
-                <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700">${item.category}</span>
-                <h3 class="text-xs sm:text-sm font-semibold text-slate-900 line-clamp-1">${item.title}</h3>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 font-mono">
+                  ${item.category || item.product_code || 'ZIV-LUX'}
+                </span>
+                <h3 class="text-xs sm:text-sm font-semibold text-white line-clamp-1">${item.title}</h3>
                 <div class="flex items-center gap-2 pt-0.5">
-                  <span class="text-sm sm:text-base font-black text-slate-900">₹${item.price.toLocaleString('en-IN')}</span>
-                  ${item.originalPrice ? `<span class="text-xs text-slate-400 line-through">₹${item.originalPrice.toLocaleString('en-IN')}</span>` : ''}
+                  <span class="text-sm sm:text-base font-black text-white">₹${Number(item.price).toLocaleString('en-IN')}</span>
+                  ${item.originalPrice ? `<span class="text-xs text-slate-500 line-through">₹${Number(item.originalPrice).toLocaleString('en-IN')}</span>` : ''}
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
-              <div class="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
-                <button onclick="changeQuantity('${item.id}', -1)" class="p-2 hover:bg-slate-200 text-slate-600 transition">
+            <!-- Quantity & Remove Actions -->
+            <div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-gold-500/10">
+              
+              <!-- Quantity Stepper -->
+              <div class="flex items-center border border-gold-500/30 rounded-xl overflow-hidden bg-noir-950">
+                <button onclick="changeQuantity('${item.id || item.product_id}', -1)" class="p-2 hover:bg-noir-800 text-slate-300 hover:text-gold-400 transition">
                   <i data-lucide="minus" class="w-3.5 h-3.5"></i>
                 </button>
-                <span class="px-3.5 text-xs font-bold text-slate-900">${item.quantity}</span>
-                <button onclick="changeQuantity('${item.id}', 1)" class="p-2 hover:bg-slate-200 text-slate-600 transition">
+                <span class="px-3 text-xs font-bold text-white font-mono">${qty}</span>
+                <button onclick="changeQuantity('${item.id || item.product_id}', 1)" class="p-2 hover:bg-noir-800 text-slate-300 hover:text-gold-400 transition">
                   <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
 
-              <div class="text-right min-w-[80px]">
+              <!-- Item Subtotal -->
+              <div class="text-right min-w-[85px]">
                 <div class="text-[10px] uppercase font-bold text-slate-400">Total</div>
-                <div class="text-sm font-black text-slate-900">₹${itemTotal.toLocaleString('en-IN')}</div>
+                <div class="text-sm font-black text-white">₹${itemTotal.toLocaleString('en-IN')}</div>
               </div>
 
-              <button onclick="removeFromCart('${item.id}')" class="text-slate-400 hover:text-rose-600 transition p-1.5 rounded-lg hover:bg-rose-50" title="Remove item">
+              <!-- Delete Button -->
+              <button onclick="removeFromCart('${item.id || item.product_id}')" class="text-slate-500 hover:text-rose-400 transition p-2 rounded-xl hover:bg-rose-950/30" title="Remove selection">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
@@ -248,15 +269,15 @@
       }).join('');
 
       calculateSummary();
-      lucide.createIcons();
+      refreshIcons();
     }
 
     function changeQuantity(id, delta) {
-      const itemIndex = cart.findIndex(i => i.id === id);
-      if (itemIndex > -1) {
-        cart[itemIndex].quantity += delta;
-        if (cart[itemIndex].quantity <= 0) {
-          cart.splice(itemIndex, 1);
+      const idx = cart.findIndex(i => (i.id === id || i.product_id === id));
+      if (idx > -1) {
+        cart[idx].quantity = (cart[idx].quantity || 1) + delta;
+        if (cart[idx].quantity <= 0) {
+          cart.splice(idx, 1);
         }
         localStorage.setItem('zivara_cart', JSON.stringify(cart));
         renderCart();
@@ -264,7 +285,7 @@
     }
 
     function removeFromCart(id) {
-      cart = cart.filter(i => i.id !== id);
+      cart = cart.filter(i => (i.id !== id && i.product_id !== id));
       localStorage.setItem('zivara_cart', JSON.stringify(cart));
       renderCart();
     }
@@ -274,26 +295,62 @@
       let finalPayable = 0;
 
       cart.forEach(item => {
-        const orig = item.originalPrice || item.price;
-        rawTotal += orig * item.quantity;
-        finalPayable += item.price * item.quantity;
+        const qty = item.quantity || 1;
+        const orig = Number(item.originalPrice || item.price);
+        rawTotal += orig * qty;
+        finalPayable += Number(item.price) * qty;
       });
 
-      const discount = rawTotal - finalPayable;
-      const delivery = finalPayable >= 1499 || finalPayable === 0 ? 0 : 150;
-      const totalAmount = finalPayable + delivery;
+      const catalogDiscount = rawTotal - finalPayable;
+      let couponDiscountAmount = 0;
+
+      if (isCouponApplied && finalPayable > 0) {
+        couponDiscountAmount = Math.round(finalPayable * 0.10); // 10% privilege discount
+        finalPayable -= couponDiscountAmount;
+        document.getElementById('couponDiscountRow').classList.remove('hidden');
+        document.getElementById('couponDiscount').innerText = `-₹${couponDiscountAmount.toLocaleString('en-IN')}`;
+      } else {
+        document.getElementById('couponDiscountRow').classList.add('hidden');
+      }
+
+      // Free courier delivery over ₹1,499
+      const delivery = (finalPayable >= 1499 || finalPayable === 0) ? 0 : 150;
+      const grandTotal = finalPayable + delivery;
 
       document.getElementById('bagTotal').innerText = `₹${rawTotal.toLocaleString('en-IN')}`;
-      document.getElementById('bagDiscount').innerText = `-₹${discount.toLocaleString('en-IN')}`;
+      document.getElementById('bagDiscount').innerText = `-₹${catalogDiscount.toLocaleString('en-IN')}`;
       document.getElementById('deliveryFee').innerText = delivery === 0 ? 'COMPLIMENTARY' : `₹${delivery}`;
-      document.getElementById('finalTotal').innerText = `₹${totalAmount.toLocaleString('en-IN')}`;
+      document.getElementById('finalTotal').innerText = `₹${grandTotal.toLocaleString('en-IN')}`;
+    }
+
+    function applyCoupon() {
+      const code = (document.getElementById('couponInput')?.value || '').trim().toUpperCase();
+      const msg = document.getElementById('couponMsg');
+
+      if (code === 'ZIVARA10') {
+        isCouponApplied = true;
+        msg.className = "text-[11px] font-semibold text-emerald-400 mt-1.5 block";
+        msg.innerText = "✨ Promo Code Applied: 10% Privilege Discount Unlocked!";
+        calculateSummary();
+      } else {
+        isCouponApplied = false;
+        msg.className = "text-[11px] font-semibold text-rose-400 mt-1.5 block";
+        msg.innerText = "Invalid Promo Code. Try: ZIVARA10";
+        calculateSummary();
+      }
     }
 
     function proceedToCheckout() {
-      alert('Proceeding to VIP Encrypted Checkout!');
+      if (cart.length === 0) {
+        alert("Your bag is currently empty.");
+        return;
+      }
+      alert("Redirecting to Zivara Privé 256-Bit Encrypted Gateway...");
     }
 
-    renderCart();
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCart();
+    });
   </script>
 </body>
 </html>
