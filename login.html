@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign In / Register - Zivara</title>
   
-  <!-- Tailwind CSS CDN -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D4AF37'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
@@ -17,26 +16,22 @@
       theme: {
         extend: {
           colors: {
-            gold: {
-              300: '#F5D77F',
-              400: '#E5C06E',
-              500: '#D4AF37',
-              600: '#AA820A',
-              700: '#856404'
-            },
-            noir: {
-              900: '#0B0B0C',
-              850: '#121214',
-              800: '#18181B',
-              700: '#27272A'
-            }
+            gold: { 300: '#F5D77F', 400: '#E5C06E', 500: '#D4AF37', 600: '#AA820A', 700: '#856404' },
+            noir: { 950: '#070708', 900: '#0B0B0C', 850: '#121214', 800: '#18181B', 700: '#27272A' }
           }
         }
       }
     }
   </script>
+
+  <style>
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-gold-500 selection:text-noir-950">
 
   <!-- TOP LUXURY ANNOUNCEMENT STRIP -->
   <div class="bg-noir-900 text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
@@ -44,17 +39,12 @@
   </div>
 
   <!-- NAVBAR -->
-  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 h-20 px-6 sm:px-12 flex items-center justify-between shadow-sm">
-    <!-- Brand Logo: Relative path to Logo.png in root -->
+  <header class="bg-noir-900/90 backdrop-blur-xl border-b border-gold-500/20 h-20 px-6 sm:px-12 flex items-center justify-between shadow-xl">
     <a href="index.html" class="flex items-center gap-3">
-      <img 
-        src="Logo.png" 
-        alt="Zivara Logo" 
-        class="h-14 sm:h-16 w-auto object-contain drop-shadow-sm transition transform hover:scale-105"
-      />
+      <img src="Logo.png" alt="Zivara Logo" class="h-12 sm:h-14 w-auto object-contain drop-shadow-md transition transform hover:scale-105" onerror="this.src='Logo.png'" />
     </a>
 
-    <a href="index.html" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-500 hover:text-gold-600 flex items-center gap-1.5 transition">
+    <a href="index.html" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-400 hover:text-gold-400 flex items-center gap-1.5 transition">
       <i data-lucide="x" class="w-4 h-4"></i>
       Cancel
     </a>
@@ -62,133 +52,210 @@
 
   <!-- MAIN AUTH CONTAINER -->
   <main class="flex-1 flex items-center justify-center p-4 sm:p-6 my-6">
-    <div class="w-full max-w-md bg-white rounded-3xl border border-slate-200/80 shadow-2xl overflow-hidden p-7 sm:p-9 space-y-6">
+    <div class="w-full max-w-md bg-noir-900 rounded-3xl border border-gold-500/30 shadow-2xl overflow-hidden p-7 sm:p-9 space-y-6">
 
-      <!-- STEP 1: MOBILE NUMBER INPUT -->
-      <section id="stepPhone" class="space-y-6">
-        <div class="text-center space-y-1.5">
-          <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700 bg-gold-50 px-2.5 py-0.5 rounded border border-gold-400/30">
-            Exclusive Sign In
-          </span>
-          <h1 class="text-2xl font-serif text-slate-900 tracking-tight pt-1">Welcome to Zivara</h1>
-          <p class="text-xs text-slate-500">Enter your mobile phone number to sign in or register</p>
+      <!-- LOGGED IN STATE -->
+      <section id="loggedInState" class="space-y-6 hidden text-center">
+        <div class="w-16 h-16 bg-gold-500/10 border border-gold-500/30 text-gold-400 rounded-full flex items-center justify-center mx-auto shadow-inner">
+          <i data-lucide="user-check" class="w-8 h-8"></i>
+        </div>
+        <div class="space-y-1">
+          <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400">Authenticated Member</span>
+          <h2 id="loggedUserName" class="text-2xl font-serif text-white">Welcome Back</h2>
+          <p id="loggedUserDetail" class="text-xs text-slate-400"></p>
+        </div>
+        <div class="space-y-3 pt-2">
+          <a href="index.html" class="block w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3 px-4 rounded-xl text-xs transition shadow-lg">
+            Return to Store
+          </a>
+          <button onclick="handleSignOut()" class="w-full bg-noir-950 hover:bg-noir-800 text-rose-400 border border-rose-500/20 font-bold uppercase tracking-widest py-3 px-4 rounded-xl text-xs transition">
+            Sign Out
+          </button>
+        </div>
+      </section>
+
+      <!-- AUTH BOX -->
+      <div id="authBoxContainer" class="space-y-6">
+        <!-- MODE TOGGLE TABS -->
+        <div class="grid grid-cols-2 p-1 bg-noir-950 border border-gold-500/20 rounded-xl text-xs font-semibold">
+          <button id="tabOtpBtn" onclick="switchAuthTab('otp')" class="py-2 rounded-lg transition bg-gold-500 text-noir-950 font-bold shadow">Mobile OTP</button>
+          <button id="tabEmailBtn" onclick="switchAuthTab('email')" class="py-2 rounded-lg transition text-slate-400 hover:text-white">Email & Password</button>
         </div>
 
-        <form onsubmit="handleSendOtp(event)" class="space-y-4">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">Mobile Phone Number</label>
-            <div class="relative flex items-center">
-              <span class="absolute left-3.5 text-sm font-bold text-slate-500 border-r border-slate-200 pr-2.5">+91</span>
+        <!-- ================= PHONE OTP FLOW ================= -->
+        <div id="phoneOtpFlow" class="space-y-6">
+          <!-- STEP 1: PHONE NUMBER INPUT -->
+          <section id="stepPhone" class="space-y-6">
+            <div class="text-center space-y-1.5">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
+                Exclusive Sign In
+              </span>
+              <h1 class="text-2xl font-serif text-white tracking-tight pt-1">Welcome to Zivara</h1>
+              <p class="text-xs text-slate-400">Enter your mobile phone number to sign in or register</p>
+            </div>
+
+            <form onsubmit="handleSendOtp(event)" class="space-y-4">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2">Mobile Phone Number</label>
+                <div class="relative flex items-center">
+                  <span class="absolute left-3.5 text-sm font-bold text-slate-400 border-r border-gold-500/20 pr-2.5">+91</span>
+                  <input 
+                    type="tel" 
+                    id="phoneInput" 
+                    required 
+                    maxlength="10" 
+                    pattern="[6-9][0-9]{9}" 
+                    placeholder="Enter 10-digit number" 
+                    class="w-full pl-16 pr-4 py-3 bg-noir-950 border border-gold-500/20 rounded-xl text-sm font-semibold tracking-wide text-white focus:outline-none focus:border-gold-400 transition"
+                  />
+                </div>
+                <p class="text-[11px] text-slate-500 mt-2">A 6-digit OTP will be sent via SMS for verification.</p>
+              </div>
+
+              <button 
+                type="submit" 
+                class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
+                <span>Continue</span>
+                <i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>
+              </button>
+            </form>
+          </section>
+
+          <!-- STEP 2: OTP VERIFICATION -->
+          <section id="stepOtp" class="space-y-6 hidden">
+            <div class="text-center space-y-1.5">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
+                Security Check
+              </span>
+              <h2 class="text-2xl font-serif text-white tracking-tight pt-1">Verify Credentials</h2>
+              <p class="text-xs text-slate-400">
+                Sent to <span id="displayPhone" class="font-bold text-slate-200">+91 XXXXXXXXXX</span> 
+                <button onclick="editPhone()" class="text-gold-400 font-bold ml-1 hover:underline text-[11px]">Edit</button>
+              </p>
+            </div>
+
+            <form onsubmit="handleVerifyOtp(event)" class="space-y-5">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-3 text-center">Enter 6-Digit OTP</label>
+                <div class="flex justify-between gap-2">
+                  <input type="text" maxlength="1" class="otp-digit w-11 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+                  <input type="text" maxlength="1" class="otp-digit w-11 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+                  <input type="text" maxlength="1" class="otp-digit w-11 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+                  <input type="text" maxlength="1" class="otp-digit w-11 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+                  <input type="text" maxlength="1" class="otp-digit w-11 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+                  <input type="text" maxlength="1" class="otp-digit w-11 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+                </div>
+                <p id="otpHint" class="text-[11px] text-center text-slate-400 mt-3">Demo verification OTP: <span class="font-bold text-gold-400">123456</span></p>
+              </div>
+
+              <div class="flex items-center justify-between text-xs">
+                <span id="timerText" class="text-slate-400 font-medium">Resend OTP in <b id="countdown" class="text-slate-200">30</b>s</span>
+                <button type="button" id="resendBtn" onclick="resendOtp()" disabled class="font-bold text-slate-500 cursor-not-allowed">Resend OTP</button>
+              </div>
+
+              <button 
+                type="submit" 
+                class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
+                <span>Verify & Enter</span>
+                <i data-lucide="shield-check" class="w-4 h-4 text-noir-950"></i>
+              </button>
+            </form>
+          </section>
+
+          <!-- STEP 3: NEW USER REGISTRATION -->
+          <section id="stepRegister" class="space-y-6 hidden">
+            <div class="text-center space-y-1.5">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
+                Create Profile
+              </span>
+              <h2 class="text-2xl font-serif text-white tracking-tight pt-1">Complete Registration</h2>
+              <p class="text-xs text-slate-400">Provide details to establish your Zivara Privé profile</p>
+            </div>
+
+            <form onsubmit="handleCompleteRegistration(event)" class="space-y-4">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Full Name</label>
+                <input 
+                  type="text" 
+                  id="userNameInput" 
+                  required 
+                  placeholder="e.g. Rahul Sharma" 
+                  class="w-full px-4 py-3 bg-noir-950 border border-gold-500/20 text-white rounded-xl text-sm font-medium focus:outline-none focus:border-gold-400 transition"
+                />
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Email Address</label>
+                <input 
+                  type="email" 
+                  id="userEmailInput" 
+                  required 
+                  placeholder="rahul@example.com" 
+                  class="w-full px-4 py-3 bg-noir-950 border border-gold-500/20 text-white rounded-xl text-sm font-medium focus:outline-none focus:border-gold-400 transition"
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
+                <span>Join Zivara Privé</span>
+                <i data-lucide="check" class="w-4 h-4 text-noir-950"></i>
+              </button>
+            </form>
+          </section>
+        </div>
+
+        <!-- ================= EMAIL PASSWORD FLOW ================= -->
+        <section id="emailPasswordFlow" class="space-y-6 hidden">
+          <div class="text-center space-y-1.5">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
+              Direct Sign In
+            </span>
+            <h2 class="text-2xl font-serif text-white tracking-tight pt-1">Account Login</h2>
+            <p class="text-xs text-slate-400">Sign in with your registered email and password</p>
+          </div>
+
+          <form onsubmit="handleEmailAuth(event)" class="space-y-4">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Email Address</label>
               <input 
-                type="tel" 
-                id="phoneInput" 
+                type="email" 
+                id="directEmailInput" 
                 required 
-                maxlength="10" 
-                pattern="[6-9][0-9]{9}" 
-                placeholder="Enter 10-digit number" 
-                class="w-full pl-16 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold tracking-wide focus:outline-none focus:border-gold-500 focus:bg-white transition"
+                placeholder="name@example.com" 
+                class="w-full px-4 py-3 bg-noir-950 border border-gold-500/20 text-white rounded-xl text-sm font-medium focus:outline-none focus:border-gold-400 transition"
               />
             </div>
-            <p class="text-[11px] text-slate-400 mt-2">A 6-digit OTP will be sent via SMS for verification.</p>
-          </div>
 
-          <button 
-            type="submit" 
-            class="w-full bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/40 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
-            <span>Continue</span>
-            <i data-lucide="arrow-right" class="w-4 h-4 text-gold-400"></i>
-          </button>
-        </form>
-
-        <p class="text-[11px] text-slate-400 text-center leading-relaxed">
-          By continuing, you agree to Zivara's 
-          <a href="T&C.html" class="text-gold-700 font-semibold hover:underline">Conditions of Use</a> and 
-          <a href="T&C.html" class="text-gold-700 font-semibold hover:underline">Privacy Notice</a>.
-        </p>
-      </section>
-
-      <!-- STEP 2: OTP VERIFICATION -->
-      <section id="stepOtp" class="space-y-6 hidden">
-        <div class="text-center space-y-1.5">
-          <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700 bg-gold-50 px-2.5 py-0.5 rounded border border-gold-400/30">
-            Security Check
-          </span>
-          <h2 class="text-2xl font-serif text-slate-900 tracking-tight pt-1">Verify Credentials</h2>
-          <p class="text-xs text-slate-500">
-            Sent to <span id="displayPhone" class="font-bold text-slate-800">+91 XXXXXXXXXX</span> 
-            <button onclick="editPhone()" class="text-gold-700 font-bold ml-1 hover:underline text-[11px]">Edit</button>
-          </p>
-        </div>
-
-        <form onsubmit="handleVerifyOtp(event)" class="space-y-5">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-3 text-center">Enter 6-Digit OTP</label>
-            <div class="flex justify-between gap-2">
-              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
-              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
-              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
-              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
-              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
-              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-gold-500 focus:bg-white transition shadow-sm" />
+            <div>
+              <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Password</label>
+              <input 
+                type="password" 
+                id="directPasswordInput" 
+                required 
+                placeholder="••••••••••••" 
+                class="w-full px-4 py-3 bg-noir-950 border border-gold-500/20 text-white rounded-xl text-sm font-medium focus:outline-none focus:border-gold-400 transition"
+              />
             </div>
-            <p id="otpHint" class="text-[11px] text-center text-slate-400 mt-3">Demo OTP is <span class="font-bold text-gold-700">123456</span></p>
-          </div>
 
-          <div class="flex items-center justify-between text-xs">
-            <span id="timerText" class="text-slate-400 font-medium">Resend OTP in <b id="countdown" class="text-slate-700">30</b>s</span>
-            <button type="button" id="resendBtn" onclick="resendOtp()" disabled class="font-bold text-slate-400 cursor-not-allowed">Resend OTP</button>
-          </div>
+            <p id="emailErrorMsg" class="hidden text-rose-400 text-xs font-semibold"></p>
 
-          <button 
-            type="submit" 
-            class="w-full bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/40 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
-            <span>Verify & Enter</span>
-            <i data-lucide="shield-check" class="w-4 h-4 text-gold-400"></i>
-          </button>
-        </form>
-      </section>
+            <button 
+              type="submit" 
+              class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
+              <span>Sign In</span>
+              <i data-lucide="log-in" class="w-4 h-4 text-noir-950"></i>
+            </button>
+          </form>
+        </section>
 
-      <!-- STEP 3: NEW USER REGISTRATION DETAILS -->
-      <section id="stepRegister" class="space-y-6 hidden">
-        <div class="text-center space-y-1.5">
-          <span class="text-[10px] font-bold uppercase tracking-widest text-gold-700 bg-gold-50 px-2.5 py-0.5 rounded border border-gold-400/30">
-            Create Profile
-          </span>
-          <h2 class="text-2xl font-serif text-slate-900 tracking-tight pt-1">Complete Registration</h2>
-          <p class="text-xs text-slate-500">Provide your credentials to establish your Zivara VIP account</p>
-        </div>
-
-        <form onsubmit="handleCompleteRegistration(event)" class="space-y-4">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Full Name</label>
-            <input 
-              type="text" 
-              id="userNameInput" 
-              required 
-              placeholder="e.g. Rahul Sharma" 
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-gold-500 focus:bg-white transition"
-            />
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address</label>
-            <input 
-              type="email" 
-              id="userEmailInput" 
-              required 
-              placeholder="rahul@example.com" 
-              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:border-gold-500 focus:bg-white transition"
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            class="w-full bg-noir-900 hover:bg-black text-gold-400 border border-gold-500/40 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
-            <span>Join Zivara</span>
-            <i data-lucide="check" class="w-4 h-4 text-gold-400"></i>
-          </button>
-        </form>
-      </section>
+        <!-- FOOTER NOTICE -->
+        <p class="text-[11px] text-slate-500 text-center leading-relaxed border-t border-gold-500/10 pt-4">
+          By signing in, you accept Zivara's 
+          <a href="T&C.html" class="text-gold-400 font-semibold hover:underline">Conditions of Use</a> and 
+          <a href="T&C.html" class="text-gold-400 font-semibold hover:underline">Privacy Charter</a>.
+        </p>
+      </div>
 
     </div>
   </main>
@@ -197,7 +264,7 @@
   <footer class="bg-noir-900 text-slate-400 text-xs border-t border-gold-500/20 py-5">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
       <div class="flex items-center gap-3">
-        <img src="Logo.png" alt="Zivara Logo" class="h-9 w-auto object-contain brightness-110" />
+        <img src="Logo.png" alt="Zivara Logo" class="h-9 w-auto object-contain brightness-110" onerror="this.src='Logo.png'" />
         <span class="text-[11px] text-slate-400">Fashion • Style • You</span>
       </div>
       <div class="text-[11px] text-slate-500">
@@ -206,9 +273,11 @@
     </div>
   </footer>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- SCRIPT -->
   <script>
-    lucide.createIcons();
+    const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo";
+    const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     const stepPhone = document.getElementById('stepPhone');
     const stepOtp = document.getElementById('stepOtp');
@@ -223,6 +292,39 @@
     let timerInterval = null;
     let timerSeconds = 30;
 
+    // Check existing session on load
+    async function checkExistingSession() {
+      // 1. Supabase Auth Session
+      if (db) {
+        const { data: { session } } = await db.auth.getSession();
+        if (session && session.user) {
+          showLoggedInState(session.user.user_metadata?.full_name || 'VIP Member', session.user.email);
+          return;
+        }
+      }
+
+      // 2. Local Session Fallback
+      const localSession = JSON.parse(localStorage.getItem('zivara_session'));
+      if (localSession && (localSession.phone || localSession.email)) {
+        showLoggedInState(localSession.name || 'VIP Member', localSession.phone ? `+91 ${localSession.phone}` : localSession.email);
+      }
+    }
+
+    function showLoggedInState(name, detail) {
+      document.getElementById('authBoxContainer').classList.add('hidden');
+      document.getElementById('loggedInState').classList.remove('hidden');
+      document.getElementById('loggedUserName').innerText = name;
+      document.getElementById('loggedUserDetail').innerText = detail;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    async function handleSignOut() {
+      if (db) await db.auth.signOut();
+      localStorage.removeItem('zivara_session');
+      location.reload();
+    }
+
+    // OTP Inputs Auto-advance
     otpInputs.forEach((input, index) => {
       input.addEventListener('input', (e) => {
         if (e.target.value.length === 1 && index < otpInputs.length - 1) {
@@ -236,11 +338,30 @@
       });
     });
 
-    // STEP 1: SEND OTP
+    function switchAuthTab(tab) {
+      const otpFlow = document.getElementById('phoneOtpFlow');
+      const emailFlow = document.getElementById('emailPasswordFlow');
+      const tabOtpBtn = document.getElementById('tabOtpBtn');
+      const tabEmailBtn = document.getElementById('tabEmailBtn');
+
+      if (tab === 'otp') {
+        otpFlow.classList.remove('hidden');
+        emailFlow.classList.add('hidden');
+        tabOtpBtn.className = "py-2 rounded-lg transition bg-gold-500 text-noir-950 font-bold shadow";
+        tabEmailBtn.className = "py-2 rounded-lg transition text-slate-400 hover:text-white";
+      } else {
+        otpFlow.classList.add('hidden');
+        emailFlow.classList.remove('hidden');
+        tabEmailBtn.className = "py-2 rounded-lg transition bg-gold-500 text-noir-950 font-bold shadow";
+        tabOtpBtn.className = "py-2 rounded-lg transition text-slate-400 hover:text-white";
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // Phone Flow Functions
     async function handleSendOtp(e) {
       e.preventDefault();
       currentPhone = phoneInput.value.trim();
-
       if (currentPhone.length !== 10) {
         alert('Please enter a valid 10-digit mobile number.');
         return;
@@ -251,13 +372,12 @@
       stepOtp.classList.remove('hidden');
       otpInputs[0].focus();
       startTimer();
-      lucide.createIcons();
+      if (window.lucide) window.lucide.createIcons();
     }
 
-    // STEP 2: VERIFY OTP
     async function handleVerifyOtp(e) {
       e.preventDefault();
-      const enteredOtp = Array.from(otpInputs).map(input => input.value).join('');
+      const enteredOtp = Array.from(otpInputs).map(i => i.value).join('');
 
       if (enteredOtp.length !== 6) {
         alert('Please enter the full 6-digit OTP.');
@@ -266,28 +386,25 @@
 
       if (enteredOtp === "123456") {
         clearInterval(timerInterval);
-        
         const existingUsers = JSON.parse(localStorage.getItem('zivara_users')) || {};
-        
+
         if (existingUsers[currentPhone]) {
           localStorage.setItem('zivara_session', JSON.stringify({
             phone: currentPhone,
             name: existingUsers[currentPhone].name,
             email: existingUsers[currentPhone].email
           }));
-          alert(`Welcome back to Zivara, ${existingUsers[currentPhone].name}!`);
           window.location.href = 'index.html';
         } else {
           stepOtp.classList.add('hidden');
           stepRegister.classList.remove('hidden');
-          lucide.createIcons();
+          if (window.lucide) window.lucide.createIcons();
         }
       } else {
-        alert('Invalid OTP. For demo verification, use: 123456');
+        alert('Invalid OTP. For demo verification, enter: 123456');
       }
     }
 
-    // STEP 3: COMPLETE REGISTRATION
     function handleCompleteRegistration(e) {
       e.preventDefault();
       const name = document.getElementById('userNameInput').value.trim();
@@ -296,10 +413,8 @@
       const existingUsers = JSON.parse(localStorage.getItem('zivara_users')) || {};
       existingUsers[currentPhone] = { name, email };
       localStorage.setItem('zivara_users', JSON.stringify(existingUsers));
-
       localStorage.setItem('zivara_session', JSON.stringify({ phone: currentPhone, name, email }));
 
-      alert(`Registration Complete! Welcome to Zivara, ${name}!`);
       window.location.href = 'index.html';
     }
 
@@ -307,7 +422,7 @@
       clearInterval(timerInterval);
       timerSeconds = 30;
       resendBtn.disabled = true;
-      resendBtn.className = "font-bold text-slate-400 cursor-not-allowed";
+      resendBtn.className = "font-bold text-slate-500 cursor-not-allowed";
 
       timerInterval = setInterval(() => {
         timerSeconds--;
@@ -316,7 +431,7 @@
         if (timerSeconds <= 0) {
           clearInterval(timerInterval);
           resendBtn.disabled = false;
-          resendBtn.className = "font-bold text-gold-700 hover:underline cursor-pointer";
+          resendBtn.className = "font-bold text-gold-400 hover:underline cursor-pointer";
         }
       }, 1000);
     }
@@ -335,6 +450,36 @@
       stepPhone.classList.remove('hidden');
       phoneInput.focus();
     }
+
+    // Direct Email/Password Auth
+    async function handleEmailAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('directEmailInput').value.trim();
+      const password = document.getElementById('directPasswordInput').value;
+      const errorEl = document.getElementById('emailErrorMsg');
+
+      errorEl.classList.add('hidden');
+
+      if (!db) {
+        // Local simulation fallback
+        localStorage.setItem('zivara_session', JSON.stringify({ email, name: email.split('@')[0] }));
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+      if (error) {
+        errorEl.innerText = error.message;
+        errorEl.classList.remove('hidden');
+      } else {
+        window.location.href = 'index.html';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) window.lucide.createIcons();
+      checkExistingSession();
+    });
   </script>
 </body>
 </html>
