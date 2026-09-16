@@ -15,8 +15,8 @@
       theme: {
         extend: {
           colors: {
-            gold: { 300: '#F5D77F', 400: '#E5C06E', 500: '#D4AF37', 600: '#AA820A' },
-            noir: { 950: '#070708', 900: '#0B0B0C', 850: '#121214', 800: '#18181B' }
+            gold: { 300: '#F5D77F', 400: '#E5C06E', 500: '#D4AF37', 600: '#AA820A', 700: '#856404' },
+            noir: { 950: '#070708', 900: '#0B0B0C', 850: '#121214', 800: '#18181B', 700: '#27272A' }
           }
         }
       }
@@ -25,7 +25,7 @@
 </head>
 <body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-gold-500 selection:text-noir-950 pb-16 lg:pb-0">
 
-  <!-- DYNAMIC INCLUDED COMPONENTS -->
+  <!-- DYNAMIC COMPONENT ROOTS -->
   <div id="header-root"></div>
   
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1 w-full">
@@ -39,18 +39,37 @@
   <script type="module">
     import { refreshIcons } from './js/config.js';
     import { loadHeroBanners, goToSlide } from './js/slider.js';
-    import { loadMenuSubmenu, scrollMenus } from './js/navbar.js';
-    import { loadProducts, selectMenu, applyFiltersAndSort } from './js/products.js';
+    import { 
+      loadMenuSubmenu, scrollMenus, syncCategoryCheckboxes, 
+      openMobileFilterDrawer, closeMobileFilterDrawer, 
+      toggleMobileSortModal, selectMobileSort, 
+      syncMobilePrice, syncMobileRating 
+    } from './js/navbar.js';
+    import { 
+      loadProducts, selectMenu, applyFiltersAndSort, 
+      handleSearchInput, resetSearch, triggerSearch, resetAllFilters 
+    } from './js/products.js';
     import { addToCart, updateCartBadge } from './js/cart.js';
 
-    // Global accessibility for HTML inline triggers
+    // Global Window Bindings for Component Event Listeners
     window.goToSlide = goToSlide;
     window.scrollMenus = scrollMenus;
     window.selectMenu = selectMenu;
     window.addToCart = addToCart;
     window.applyFiltersAndSort = applyFiltersAndSort;
+    window.handleSearchInput = handleSearchInput;
+    window.resetSearch = resetSearch;
+    window.triggerSearch = triggerSearch;
+    window.resetAllFilters = resetAllFilters;
+    window.syncCategoryCheckboxes = syncCategoryCheckboxes;
+    window.openMobileFilterDrawer = openMobileFilterDrawer;
+    window.closeMobileFilterDrawer = closeMobileFilterDrawer;
+    window.toggleMobileSortModal = toggleMobileSortModal;
+    window.selectMobileSort = selectMobileSort;
+    window.syncMobilePrice = syncMobilePrice;
+    window.syncMobileRating = syncMobileRating;
 
-    // Fast Component Loader
+    // Component Loader Function
     async function loadComponent(id, file) {
       const res = await fetch(file);
       document.getElementById(id).innerHTML = await res.text();
