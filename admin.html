@@ -665,7 +665,7 @@
       const selectedMenu = document.getElementById('prodMenuSelect').value;
       const subSelect = document.getElementById('prodSubmenuSelect');
       const filtered = cachedHierarchy.filter(item => String(item.MenuID || '').trim() === selectedMenu && item.SubmenuID);
-      subSelect.innerHTML = `<option value="">-- No Submenu --</option>` + 
+      subSelect.innerHTML = `<option value="">-- Select Submenu --</option>` + 
         filtered.map(s => `<option value="${String(s.SubmenuID).trim()}">${String(s.SubmenuID).trim()} - ${s.SubName || ''}</option>`).join('');
     }
 
