@@ -83,36 +83,93 @@
       </div>
     </div>
 
-    <!-- COVER SLIDER CONTROLLER -->
+    <!-- COVER SLIDER CONTROLLER (IMAGE UPLOAD + TITLE + SUBTITLE) -->
     <div class="bg-noir-900 border border-gold-500/30 p-6 rounded-2xl shadow-xl space-y-4">
       <div class="flex items-center justify-between">
         <h2 class="text-sm font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
           <i data-lucide="image" class="w-4 h-4"></i> Homepage 4-Sec Cover Carousel Controller
         </h2>
+        <span class="text-[10px] text-slate-400 bg-noir-950 px-2.5 py-1 rounded-full border border-gold-500/20">Auto-Rotates Every 4s on Homepage</span>
       </div>
 
-      <form onsubmit="handleAddBanner(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-        <div>
-          <label class="block text-slate-400 mb-1">Image URL / File Name</label>
-          <input type="text" id="bannerImgUrl" required placeholder="Cover2.png or URL" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+      <form onsubmit="handleAddBanner(event)" class="space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          
+          <!-- Banner Image File Picker -->
+          <div class="space-y-1">
+            <label class="block text-slate-300 font-semibold">Choose Banner Image</label>
+            <input 
+              type="file" 
+              id="bannerFileInput" 
+              accept="image/*" 
+              onchange="handleBannerPreview(event)"
+              class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2 text-white text-xs file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-gold-500 file:text-noir-950 hover:file:bg-gold-400 cursor-pointer" 
+            />
+            <input type="hidden" id="bannerImgUrl" />
+          </div>
+
+          <!-- Banner Title -->
+          <div class="space-y-1">
+            <label class="block text-slate-300 font-semibold">Banner Heading (H1 Title)</label>
+            <input 
+              type="text" 
+              id="bannerHead" 
+              required 
+              placeholder="e.g. Elegance is an Attitude." 
+              class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-gold-400" 
+            />
+          </div>
+
+          <!-- Banner Subtitle / Description -->
+          <div class="space-y-1">
+            <label class="block text-slate-300 font-semibold">Badge Subtitle / Description</label>
+            <input 
+              type="text" 
+              id="bannerSubhead" 
+              required 
+              placeholder="e.g. Curated Luxury Edit 2026" 
+              class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-gold-400" 
+            />
+          </div>
+
+          <!-- Sort Order & Action -->
+          <div class="grid grid-cols-2 gap-2 items-end">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Slide #</label>
+              <input 
+                type="number" 
+                id="bannerSort" 
+                required 
+                value="1" 
+                min="1" 
+                class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white text-center font-bold" 
+              />
+            </div>
+            <button 
+              type="submit" 
+              id="bannerSubmitBtn" 
+              class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold py-2.5 rounded-xl transition shadow text-xs">
+              Upload Slide
+            </button>
+          </div>
+
         </div>
-        <div>
-          <label class="block text-slate-400 mb-1">Banner Heading</label>
-          <input type="text" id="bannerHead" placeholder="e.g. Elegance is an Attitude" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
-        </div>
-        <div>
-          <label class="block text-slate-400 mb-1">Sort Order No.</label>
-          <input type="number" id="bannerSort" required value="1" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
-        </div>
-        <div class="flex items-end">
-          <button type="submit" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 font-bold py-2.5 rounded-xl transition">
-            Add / Update Slide
-          </button>
+
+        <!-- Live Selected Banner Preview Box -->
+        <div id="bannerPreviewContainer" class="hidden flex items-center gap-3 p-3 bg-noir-950 rounded-xl border border-gold-500/20">
+          <img id="bannerPreviewImg" src="" class="h-16 w-32 object-cover rounded-lg border border-gold-500/30" />
+          <div class="text-xs space-y-0.5">
+            <span class="text-gold-400 font-bold" id="previewTitleText">Title Preview</span>
+            <p class="text-slate-400 text-[11px]" id="previewSubText">Subtitle Preview</p>
+          </div>
         </div>
       </form>
 
       <!-- Current Banners List -->
-      <div id="liveBannersContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2"></div>
+      <div class="border-t border-gold-500/10 pt-3">
+        <h4 class="text-xs font-semibold text-slate-400 mb-2">Active Slides in 4-Second Rotation:</h4>
+        <div id="liveBannersContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3"></div>
+      </div>
     </div>
 
     <!-- TAXONOMY & PRODUCT CREATION CARDS -->
@@ -210,33 +267,33 @@
             </div>
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Product Code (SKU)</label>
-              <input type="text" id="prodCode" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white uppercase font-mono" />
+              <input type="text" id="prodCode" required placeholder="e.g. ZIV-WCH-01" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white uppercase font-mono" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Brand Name</label>
-              <input type="text" id="prodBrand" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="text" id="prodBrand" required value="Zivara Maison" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Stock Units</label>
-              <input type="number" id="prodStock" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="number" id="prodStock" required value="10" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
           </div>
 
           <div>
             <label class="block text-slate-400 mb-1 font-semibold">Product Title</label>
-            <input type="text" id="prodTitle" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+            <input type="text" id="prodTitle" required placeholder="e.g. Gold Automatic Chrono Watch" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-slate-400 mb-1 font-semibold">Select Main Menu</label>
+              <label class="block text-slate-400 mb-1 font-semibold">Main Menu</label>
               <select id="prodMenuSelect" onchange="loadSubmenuDropdownForProduct()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white"></select>
             </div>
             <div>
-              <label class="block text-slate-400 mb-1 font-semibold">Select Sub-Menu</label>
+              <label class="block text-slate-400 mb-1 font-semibold">Sub-Menu</label>
               <select id="prodSubmenuSelect" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white"></select>
             </div>
           </div>
@@ -244,11 +301,11 @@
           <div class="grid grid-cols-3 gap-2 items-end">
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Selling Price (₹)</label>
-              <input type="number" id="prodPrice" oninput="calculateDiscountPreview()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white font-bold" />
+              <input type="number" id="prodPrice" required placeholder="4999" oninput="calculateDiscountPreview()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white font-bold" />
             </div>
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">MRP Price (₹)</label>
-              <input type="number" id="prodOrigPrice" oninput="calculateDiscountPreview()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="number" id="prodOrigPrice" placeholder="8999" oninput="calculateDiscountPreview()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
             <div>
               <span id="discountPreviewBadge" class="block w-full bg-noir-950 border border-gold-500/30 text-gold-400 font-bold px-2 py-2 rounded-xl text-center">
@@ -281,12 +338,12 @@
             <!-- Optional Online URL Override -->
             <div>
               <label class="block text-slate-500 mb-0.5 font-semibold text-[10px]">Or Paste Direct Web URL (Optional if local file uploaded)</label>
-              <input type="url" id="prodImageUrl" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-1.5 text-slate-300 text-xs" />
+              <input type="url" id="prodImageUrl" placeholder="https://images.unsplash.com/... or Cover.png" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-1.5 text-slate-300 text-xs" />
             </div>
 
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Video Demonstration URL (YouTube / Shorts / CDN)</label>
-              <input type="url" id="prodVideo" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="url" id="prodVideo" placeholder="https://www.youtube.com/shorts/... or CDN video URL" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
           </div>
 
@@ -297,13 +354,13 @@
             </div>
             <div>
               <label class="block text-slate-400 mb-1 font-semibold">Colors (e.g. Gold, Silver)</label>
-              <input type="text" id="prodColors" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
+              <input type="text" id="prodColors" placeholder="Yellow Gold, Platinum" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2 text-white" />
             </div>
           </div>
 
           <div>
             <label class="block text-slate-400 mb-1 font-semibold">Description</label>
-            <textarea id="prodDesc" rows="2" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2 text-white"></textarea>
+            <textarea id="prodDesc" rows="2" placeholder="Luxury craftsmanship details, purity, guarantee..." class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2 text-white"></textarea>
           </div>
 
           <div class="flex items-center gap-4 pt-1">
@@ -368,6 +425,7 @@
 
     let cachedHierarchy = [];
     let selectedFilesList = [];
+    let selectedBannerFile = null;
 
     function generateRandomProductId() {
       return "ZIV-" + Math.floor(100000 + Math.random() * 900000);
@@ -430,7 +488,114 @@
       }
     }
 
-    // 1. MULTI-IMAGE PREVIEW HANDLER
+    // ===============================================
+    // BANNER CONTROLLER LOGIC (STORAGE + DB SYNC)
+    // ===============================================
+    function handleBannerPreview(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      selectedBannerFile = file;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        document.getElementById('bannerPreviewImg').src = event.target.result;
+        document.getElementById('bannerPreviewContainer').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function fetchBanners() {
+      if (!db) return;
+      const { data, error } = await db.from('hero_banners').select('*').order('sort_order', { ascending: true });
+      const container = document.getElementById('liveBannersContainer');
+      if (!data || data.length === 0) {
+        container.innerHTML = `<p class="text-slate-500 text-xs col-span-full">No custom banners set yet.</p>`;
+        return;
+      }
+      container.innerHTML = data.map(b => `
+        <div class="relative rounded-xl overflow-hidden border border-gold-500/20 bg-noir-950 p-2.5 space-y-1.5 shadow">
+          <img src="${b.image_url}" class="w-full h-24 object-cover rounded-lg" onerror="this.src='Cover.png'" />
+          <div class="space-y-0.5">
+            <span class="text-[9px] font-bold text-gold-400 uppercase tracking-widest block">${b.subtitle || '2026 Collection'}</span>
+            <h5 class="text-xs font-semibold text-white truncate">${b.title || 'Slide Title'}</h5>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-gold-500/10">
+            <span class="font-mono">Order: #${b.sort_order}</span>
+            <button onclick="deleteBanner(${b.id})" class="text-rose-400 hover:text-rose-300 font-semibold">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function handleAddBanner(e) {
+      e.preventDefault();
+      const btn = document.getElementById('bannerSubmitBtn');
+      btn.disabled = true;
+      btn.innerText = "Uploading...";
+
+      try {
+        let finalImageUrl = 'Cover.png';
+
+        // 1. Upload local banner image to Supabase Storage
+        if (selectedBannerFile) {
+          const fileExt = selectedBannerFile.name.split('.').pop();
+          const filePath = `banners/${Date.now()}_banner.${fileExt}`;
+
+          const { error: uploadError } = await db.storage
+            .from('banners')
+            .upload(filePath, selectedBannerFile, { cacheControl: '3600', upsert: true });
+
+          if (uploadError) {
+            console.warn("Banner bucket error, trying product-media fallback:", uploadError.message);
+            // Fallback bucket
+            await db.storage.from('product-media').upload(filePath, selectedBannerFile, { upsert: true });
+            const { data } = db.storage.from('product-media').getPublicUrl(filePath);
+            finalImageUrl = data.publicUrl;
+          } else {
+            const { data } = db.storage.from('banners').getPublicUrl(filePath);
+            finalImageUrl = data.publicUrl;
+          }
+        }
+
+        const title = document.getElementById('bannerHead').value.trim();
+        const subtitle = document.getElementById('bannerSubhead').value.trim();
+        const sort_order = parseInt(document.getElementById('bannerSort').value, 10) || 1;
+
+        // 2. Insert into hero_banners table
+        const { error: insertError } = await db.from('hero_banners').insert([{
+          image_url: finalImageUrl,
+          title: title,
+          subtitle: subtitle,
+          sort_order: sort_order,
+          is_active: true
+        }]);
+
+        if (insertError) {
+          alert("Error saving banner: " + insertError.message);
+        } else {
+          alert("Cover slide published successfully! Homepage will now show this banner in 4-second carousel.");
+          e.target.reset();
+          selectedBannerFile = null;
+          document.getElementById('bannerPreviewContainer').classList.add('hidden');
+          fetchBanners();
+        }
+      } catch (err) {
+        alert("Banner upload failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Upload Slide";
+      }
+    }
+
+    async function deleteBanner(id) {
+      if (!confirm("Remove this slide from homepage rotation?")) return;
+      await db.from('hero_banners').delete().eq('id', id);
+      fetchBanners();
+    }
+
+    // ===============================================
+    // PRODUCT & MEDIA ASSETS CONTROLLERS
+    // ===============================================
     function handleImageSelection(event) {
       const files = Array.from(event.target.files);
       if (!files.length) return;
@@ -455,7 +620,6 @@
       });
     }
 
-    // 2. BACKGROUND STORAGE UPLOAD FUNCTION
     async function uploadImagesToSupabase(files) {
       const uploadedUrls = [];
 
@@ -464,12 +628,12 @@
         const cleanName = file.name.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_');
         const filePath = `products/${Date.now()}_${cleanName}.${fileExt}`;
 
-        const { data, error } = await db.storage
+        const { error } = await db.storage
           .from('product-media')
           .upload(filePath, file, { cacheControl: '3600', upsert: true });
 
         if (error) {
-          console.warn("Storage bucket error, falling back:", error.message);
+          console.warn("Storage upload error:", error.message);
           continue;
         }
 
@@ -483,48 +647,7 @@
       return uploadedUrls;
     }
 
-    // 3. BANNER CONTROLLER LOGIC
-    async function fetchBanners() {
-      if (!db) return;
-      const { data, error } = await db.from('hero_banners').select('*').order('sort_order', { ascending: true });
-      const container = document.getElementById('liveBannersContainer');
-      if (!data || data.length === 0) {
-        container.innerHTML = `<p class="text-slate-500 text-xs col-span-full">No custom banners set yet.</p>`;
-        return;
-      }
-      container.innerHTML = data.map(b => `
-        <div class="relative rounded-xl overflow-hidden border border-gold-500/20 bg-noir-950 p-2 space-y-1">
-          <img src="${b.image_url}" class="w-full h-20 object-cover rounded-lg" onerror="this.src='Cover.png'" />
-          <div class="flex items-center justify-between text-[10px] text-slate-400">
-            <span>Slide #${b.sort_order}</span>
-            <button onclick="deleteBanner(${b.id})" class="text-rose-400 hover:text-rose-300">Remove</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function handleAddBanner(e) {
-      e.preventDefault();
-      const image_url = document.getElementById('bannerImgUrl').value.trim();
-      const title = document.getElementById('bannerHead').value.trim() || 'Elegance is an Attitude.';
-      const sort_order = parseInt(document.getElementById('bannerSort').value, 10) || 1;
-
-      const { error } = await db.from('hero_banners').insert([{ image_url, title, sort_order, is_active: true }]);
-      if (error) alert("Error: " + error.message);
-      else {
-        alert("Banner added to 4-second carousel!");
-        e.target.reset();
-        fetchBanners();
-      }
-    }
-
-    async function deleteBanner(id) {
-      if (!confirm("Remove this slide from homepage?")) return;
-      await db.from('hero_banners').delete().eq('id', id);
-      fetchBanners();
-    }
-
-    // 4. TAXONOMY HANDLERS
+    // TAXONOMY HANDLERS
     async function handleCreateMenu(e) {
       e.preventDefault();
       const menu_id = document.getElementById('menuCode').value.trim();
@@ -557,7 +680,6 @@
       else { alert("Submenu saved!"); e.target.reset(); fetchAllData(); }
     }
 
-    // 5. MASTER PRODUCT CREATION WITH AUTO-STORAGE UPLOAD
     async function handleCreateProduct(e) {
       e.preventDefault();
       const btn = document.getElementById('prodSubmitBtn');
@@ -569,7 +691,6 @@
         let finalThumbnail = document.getElementById('prodImageUrl').value.trim() || 'Cover.png';
         let finalGallery = [];
 
-        // Upload local files if selected
         if (selectedFilesList.length > 0) {
           const uploaded = await uploadImagesToSupabase(selectedFilesList);
           if (uploaded.length > 0) {
@@ -619,7 +740,6 @@
           is_featured
         };
 
-        // Dual-column fallback insert
         let { error } = await db.from('products').insert([payload]);
 
         if (error && error.message.includes("column")) {
@@ -632,7 +752,7 @@
         if (error) {
           alert("Error saving product: " + error.message);
         } else {
-          alert(`Product "${title}" [${product_code}] published successfully!`);
+          alert(`Product "${title}" published successfully!`);
           e.target.reset();
           selectedFilesList = [];
           document.getElementById('imagePreviewGrid').innerHTML = '';
@@ -665,7 +785,7 @@
       const selectedMenu = document.getElementById('prodMenuSelect').value;
       const subSelect = document.getElementById('prodSubmenuSelect');
       const filtered = cachedHierarchy.filter(item => String(item.MenuID || '').trim() === selectedMenu && item.SubmenuID);
-      subSelect.innerHTML = `<option value="">-- Select Submenu --</option>` + 
+      subSelect.innerHTML = `<option value="">-- No Submenu --</option>` + 
         filtered.map(s => `<option value="${String(s.SubmenuID).trim()}">${String(s.SubmenuID).trim()} - ${s.SubName || ''}</option>`).join('');
     }
 
@@ -683,7 +803,6 @@
 
       cachedHierarchy = hierarchy || [];
 
-      // Populate Menu dropdowns
       const parentMenus = [];
       const seen = new Set();
       cachedHierarchy.forEach(m => {
@@ -701,7 +820,6 @@
       loadSubmenuDropdownForProduct();
       autoSuggestSubmenuCode();
 
-      // Render Inventory Table
       const tbody = document.getElementById('inventoryTableBody');
       if (!prods || prods.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">No products uploaded yet.</td></tr>`;
