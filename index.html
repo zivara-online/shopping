@@ -80,11 +80,13 @@
 
 <nav class="bg-noir-900/95 border-b border-gold-500/15 py-2.5 relative z-40">
       <div class="max-w-7xl mx-auto px-4 relative flex items-center">
+        
         <button onclick="window.scrollMenus(-180)" class="hidden md:flex absolute left-1 z-30 bg-noir-950/90 border border-gold-500/30 text-gold-400 p-1.5 rounded-full shadow hover:bg-noir-800 transition">
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
 
-        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-x-auto overflow-y-visible custom-scrollbar scroll-smooth px-2 sm:px-6 py-1">
+        <!-- overflow-visible taaki dropdown niche seamlessly pop-out ho sake -->
+        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-x-auto md:overflow-visible custom-scrollbar px-2 sm:px-6 py-1">
           <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
             <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
           </button>
