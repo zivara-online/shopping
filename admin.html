@@ -83,7 +83,7 @@
       </div>
     </div>
 
-    <!-- COVER SLIDER CONTROLLER (IMAGE UPLOAD + TITLE + SUBTITLE) -->
+    <!-- COVER SLIDER CONTROLLER -->
     <div class="bg-noir-900 border border-gold-500/30 p-6 rounded-2xl shadow-xl space-y-4">
       <div class="flex items-center justify-between">
         <h2 class="text-sm font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
@@ -101,11 +101,11 @@
             <input 
               type="file" 
               id="bannerFileInput" 
+              required
               accept="image/*" 
               onchange="handleBannerPreview(event)"
               class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2 text-white text-xs file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-gold-500 file:text-noir-950 hover:file:bg-gold-400 cursor-pointer" 
             />
-            <input type="hidden" id="bannerImgUrl" />
           </div>
 
           <!-- Banner Title -->
@@ -159,8 +159,8 @@
         <div id="bannerPreviewContainer" class="hidden flex items-center gap-3 p-3 bg-noir-950 rounded-xl border border-gold-500/20">
           <img id="bannerPreviewImg" src="" class="h-16 w-32 object-cover rounded-lg border border-gold-500/30" />
           <div class="text-xs space-y-0.5">
-            <span class="text-gold-400 font-bold" id="previewTitleText">Title Preview</span>
-            <p class="text-slate-400 text-[11px]" id="previewSubText">Subtitle Preview</p>
+            <span class="text-gold-400 font-bold" id="previewTitleText">Selected Banner Preview</span>
+            <p class="text-slate-400 text-[11px]">Ready to upload to storage</p>
           </div>
         </div>
       </form>
@@ -314,11 +314,11 @@
             </div>
           </div>
 
-          <!-- DIRECT LOCAL FILE UPLOAD (MULTI-IMAGE PREVIEW) -->
+          <!-- DIRECT LOCAL FILE UPLOAD -->
           <div class="space-y-2 border-t border-gold-500/10 pt-2">
             <div>
               <label class="block text-slate-400 mb-1 font-semibold flex items-center justify-between">
-                <span>Upload Images (Select 1 or Multiple from Device)</span>
+                <span>Upload Product Images (From Device)</span>
                 <span class="text-gold-400 font-mono text-[10px]">Auto-Storage Upload</span>
               </label>
               <input 
@@ -329,15 +329,13 @@
                 onchange="handleImageSelection(event)"
                 class="w-full bg-noir-950 border border-gold-500/30 rounded-xl p-2 text-white text-xs file:mr-3 file:py-1.5 file:px-3.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-gold-500 file:text-noir-950 hover:file:bg-gold-400 cursor-pointer"
               />
-              <p class="text-[10px] text-slate-500 mt-1">First chosen photo is Main Cover, remaining become Flipkart-style slider gallery.</p>
+              <p class="text-[10px] text-slate-500 mt-1">First photo becomes Cover Thumbnail, others become slider gallery.</p>
             </div>
 
-            <!-- Image Previews -->
             <div id="imagePreviewGrid" class="flex flex-wrap gap-2 pt-1 hidden"></div>
 
-            <!-- Optional Online URL Override -->
             <div>
-              <label class="block text-slate-500 mb-0.5 font-semibold text-[10px]">Or Paste Direct Web URL (Optional if local file uploaded)</label>
+              <label class="block text-slate-500 mb-0.5 font-semibold text-[10px]">Or Paste Direct Web URL</label>
               <input type="url" id="prodImageUrl" placeholder="https://images.unsplash.com/... or Cover.png" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-1.5 text-slate-300 text-xs" />
             </div>
 
@@ -514,7 +512,7 @@
       }
       container.innerHTML = data.map(b => `
         <div class="relative rounded-xl overflow-hidden border border-gold-500/20 bg-noir-950 p-2.5 space-y-1.5 shadow">
-          <img src="${b.image_url}" class="w-full h-24 object-cover rounded-lg" onerror="this.src='Cover.png'" />
+          <img src="${b.image_url}" class="w-full h-24 object-cover rounded-lg border border-gold-500/10" onerror="this.src='Cover.png'" />
           <div class="space-y-0.5">
             <span class="text-[9px] font-bold text-gold-400 uppercase tracking-widest block">${b.subtitle || '2026 Collection'}</span>
             <h5 class="text-xs font-semibold text-white truncate">${b.title || 'Slide Title'}</h5>
@@ -530,38 +528,43 @@
     async function handleAddBanner(e) {
       e.preventDefault();
       const btn = document.getElementById('bannerSubmitBtn');
+
+      if (!selectedBannerFile) {
+        alert("Please select a banner image file from your computer!");
+        return;
+      }
+
       btn.disabled = true;
-      btn.innerText = "Uploading...";
+      btn.innerText = "Uploading Image...";
 
       try {
-        let finalImageUrl = 'Cover.png';
+        // Upload with clean timestamp name directly to storage
+        const fileExt = selectedBannerFile.name.split('.').pop();
+        const filePath = `slide_${Date.now()}.${fileExt}`;
 
-        // 1. Upload local banner image to Supabase Storage
-        if (selectedBannerFile) {
-          const fileExt = selectedBannerFile.name.split('.').pop();
-          const filePath = `banners/${Date.now()}_banner.${fileExt}`;
+        let targetBucket = 'banners';
+        let { error: uploadError } = await db.storage
+          .from(targetBucket)
+          .upload(filePath, selectedBannerFile, { cacheControl: '3600', upsert: true });
 
-          const { error: uploadError } = await db.storage
-            .from('banners')
+        // Fallback to product-media bucket if banners bucket is missing
+        if (uploadError) {
+          targetBucket = 'product-media';
+          const retry = await db.storage
+            .from(targetBucket)
             .upload(filePath, selectedBannerFile, { cacheControl: '3600', upsert: true });
-
-          if (uploadError) {
-            console.warn("Banner bucket error, trying product-media fallback:", uploadError.message);
-            // Fallback bucket
-            await db.storage.from('product-media').upload(filePath, selectedBannerFile, { upsert: true });
-            const { data } = db.storage.from('product-media').getPublicUrl(filePath);
-            finalImageUrl = data.publicUrl;
-          } else {
-            const { data } = db.storage.from('banners').getPublicUrl(filePath);
-            finalImageUrl = data.publicUrl;
-          }
+          if (retry.error) throw retry.error;
         }
+
+        // Get the real permanent public URL
+        const { data: urlData } = db.storage.from(targetBucket).getPublicUrl(filePath);
+        const finalImageUrl = urlData.publicUrl;
 
         const title = document.getElementById('bannerHead').value.trim();
         const subtitle = document.getElementById('bannerSubhead').value.trim();
         const sort_order = parseInt(document.getElementById('bannerSort').value, 10) || 1;
 
-        // 2. Insert into hero_banners table
+        // Save real image URL into database
         const { error: insertError } = await db.from('hero_banners').insert([{
           image_url: finalImageUrl,
           title: title,
@@ -571,16 +574,16 @@
         }]);
 
         if (insertError) {
-          alert("Error saving banner: " + insertError.message);
+          alert("Database Error: " + insertError.message);
         } else {
-          alert("Cover slide published successfully! Homepage will now show this banner in 4-second carousel.");
+          alert("Cover banner successfully published with uploaded image!");
           e.target.reset();
           selectedBannerFile = null;
           document.getElementById('bannerPreviewContainer').classList.add('hidden');
           fetchBanners();
         }
       } catch (err) {
-        alert("Banner upload failed: " + err.message);
+        alert("Upload failed: " + err.message);
       } finally {
         btn.disabled = false;
         btn.innerText = "Upload Slide";
@@ -625,8 +628,7 @@
 
       for (const file of files) {
         const fileExt = file.name.split('.').pop();
-        const cleanName = file.name.split('.')[0].replace(/[^a-zA-Z0-9]/g, '_');
-        const filePath = `products/${Date.now()}_${cleanName}.${fileExt}`;
+        const filePath = `products/${Date.now()}_${Math.floor(Math.random()*1000)}.${fileExt}`;
 
         const { error } = await db.storage
           .from('product-media')
