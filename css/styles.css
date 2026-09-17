@@ -46,3 +46,8 @@ html, body {
 #mobileFilterDrawer {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.group:hover > div {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
