@@ -17,6 +17,7 @@ html, body {
   position: relative;
 }
 
+/* Hover ya Focus hone par dropdown dikhe */
 .menu-parent:hover .dropdown-menu,
 .menu-parent:focus-within .dropdown-menu {
   display: block !important;
@@ -31,8 +32,9 @@ html, body {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(6px);
+  transform: translateY(8px);
   transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 999999 !important;
 }
 
 /* 2. Banner Cross-Fade */
@@ -40,7 +42,7 @@ html, body {
   transition: opacity 0.8s ease-in-out;
 }
 
-/* 3. Flipkart Style Mobile Slide-Up Filter Drawer */
+/* 3. Mobile Slide-Up Filter Drawer */
 #mobileFilterDrawer {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
