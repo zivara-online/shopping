@@ -53,6 +53,7 @@ export async function loadMenuSubmenu() {
     if (filterContainer) filterContainer.innerHTML = '';
     if (mobileFilterContainer) mobileFilterContainer.innerHTML = '';
 
+    // Grouping Menus & Submenus
     const menuMap = new Map();
     state.menuSubmenuList.forEach(item => {
       const mId = String(item.MenuID || '').trim();
@@ -69,8 +70,14 @@ export async function loadMenuSubmenu() {
 
       const subId = item.SubmenuID ? String(item.SubmenuID).trim() : '';
       const subName = item.SubName ? String(item.SubName).trim() : '';
+      
+      // Check if valid submenu
       if (subId && subId !== 'NULL' && subName && subName !== 'NULL') {
-        menuMap.get(mId).submenus.push({ subId, subName });
+        // Prevent duplicates
+        const exists = menuMap.get(mId).submenus.some(s => s.subId === subId);
+        if (!exists) {
+          menuMap.get(mId).submenus.push({ subId, subName });
+        }
       }
     });
 
@@ -78,21 +85,22 @@ export async function loadMenuSubmenu() {
       const hasSubs = menu.submenus.length > 0;
       
       const menuWrapper = document.createElement('div');
-      menuWrapper.className = "relative menu-parent py-1 shrink-0";
+      menuWrapper.className = "relative menu-parent py-1.5 shrink-0 group cursor-pointer";
+      
       menuWrapper.innerHTML = `
         <button onclick="window.selectMenu('${menu.menuId}', null, '${menu.menuName}')" class="category-btn hover:text-gold-400 transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 text-slate-300">
           <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-400"></i>
           <span>${menu.menuName}</span>
-          ${hasSubs ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 transition pointer-events-none"></i>` : ''}
+          ${hasSubs ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 group-hover:text-gold-400 transition-transform group-hover:rotate-180 pointer-events-none"></i>` : ''}
         </button>
 
         ${hasSubs ? `
-          <div class="dropdown-menu absolute left-0 top-full pt-2 z-[99999] min-w-[220px]">
-            <div class="bg-noir-900 border border-gold-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl py-2 divide-y divide-gold-500/10">
+          <div class="dropdown-menu absolute left-0 top-full pt-1.5 min-w-[210px] z-[999999]">
+            <div class="bg-noir-900 border border-gold-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl py-2 divide-y divide-gold-500/10 backdrop-blur-xl">
               ${menu.submenus.map(sub => `
-                <button onclick="window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-[11px] font-semibold text-slate-300 hover:text-gold-400 hover:bg-noir-950 transition flex items-center justify-between">
+                <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-[11px] font-semibold text-slate-300 hover:text-gold-400 hover:bg-noir-950 transition flex items-center justify-between group/sub">
                   <span>${sub.subName}</span>
-                  <span class="text-[9px] text-gold-500/70 border border-gold-500/20 px-1.5 py-0.5 rounded font-mono">${sub.subId}</span>
+                  <span class="text-[9px] text-gold-500/70 border border-gold-500/20 px-1.5 py-0.5 rounded font-mono group-hover/sub:border-gold-400/50">${sub.subId}</span>
                 </button>
               `).join('')}
             </div>
