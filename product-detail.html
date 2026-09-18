@@ -266,34 +266,36 @@
       }
     }
 
-    // 4. RENDER MAIN DETAIL & INLINE MEDIA SWITCHER
+let detailImagesList = [];
+    let currentImageIndex = 0;
+    let detailAutoSlideInterval = null;
+
     function renderMainDetail(p) {
       const container = document.getElementById('productDetailContainer');
       const hasDiscount = p.original_price && p.original_price > p.price;
       const discount = hasDiscount ? Math.round(((p.original_price - p.price) / p.original_price) * 100) : 0;
       
       const primaryImg = p.thumbnail_url || p.image_url || 'Cover.png';
-      const allImages = [primaryImg, ...(p.gallery_images || [])];
+      detailImagesList = [primaryImg, ...(p.gallery_images || [])];
+      currentImageIndex = 0;
 
       const sizes = p.available_sizes || [];
       const colors = p.available_colors || [];
-
       selectedSize = sizes[0] || '';
       selectedColor = colors[0] || '';
 
       container.innerHTML = `
-        <!-- LEFT: MEDIA SHOWCASE AREA WITH INLINE VIDEO/IMAGE PLAYER -->
+        <!-- LEFT: 3-SEC AUTO-SLIDING MEDIA SHOWCASE -->
         <div class="lg:col-span-5 space-y-4">
           <div id="mediaViewerFrame" class="relative w-full h-[360px] sm:h-[460px] bg-noir-950 rounded-2xl overflow-hidden border border-gold-500/30 flex items-center justify-center">
-            <!-- Default Photo Display -->
-            <img id="mainShowcaseImg" src="${primaryImg}" alt="${p.title}" class="w-full h-full object-cover transition-all duration-300" onerror="this.src='Cover.png'" />
+            <img id="mainShowcaseImg" src="${primaryImg}" alt="${p.title}" class="w-full h-full object-cover transition-opacity duration-500" onerror="this.src='Cover.png'" />
             ${hasDiscount ? `<span class="absolute top-3 left-3 bg-noir-950/90 text-gold-400 border border-gold-500/40 text-[10px] font-bold px-2.5 py-1 rounded-md shadow">${discount}% OFF</span>` : ''}
           </div>
 
-          <!-- Thumbnails Row (Images & Inline Video Button) -->
+          <!-- Thumbnails Row -->
           <div class="flex gap-2.5 overflow-x-auto custom-scrollbar py-1">
-            ${allImages.map((img, i) => `
-              <button onclick="switchImage('${img}', this)" class="thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border ${i === 0 ? 'border-gold-400 ring-2 ring-gold-400/40' : 'border-gold-500/20'} bg-noir-950 shrink-0 transition">
+            ${detailImagesList.map((img, i) => `
+              <button onclick="switchImage('${img}', this,${i})" data-index="${i}" class="thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border ${i === 0 ? 'border-gold-400 ring-2 ring-gold-400/40' : 'border-gold-500/20'} bg-noir-950 shrink-0 transition">
                 <img src="${img}" class="w-full h-full object-cover" onerror="this.src='Cover.png'" />
               </button>
             `).join('')}
@@ -325,7 +327,6 @@
             </div>
           </div>
 
-          <!-- Pricing Card -->
           <div class="p-4 rounded-2xl bg-noir-950 border border-gold-500/20 space-y-1">
             <div class="flex items-baseline gap-3">
               <span class="text-2xl sm:text-3xl font-black text-white">₹${Number(p.price).toLocaleString('en-IN')}</span>
@@ -363,15 +364,13 @@
             </div>
           ` : ''}
 
-          <!-- Description -->
           <div class="space-y-2">
             <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider">Editorial Details & Craftsmanship</h4>
             <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-              ${p.description || 'Masterfully engineered and curated exclusively under the Zivara Privé atelier. Certified materials hand-finished to ensure timeless longevity and unmatched aesthetic brilliance.'}
+              ${p.description || 'Masterfully engineered and curated exclusively under the Zivara Privé atelier.'}
             </p>
           </div>
 
-          <!-- Actions -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button onclick="addCurrentToCart()" class="w-full bg-noir-950 border border-gold-500/40 text-gold-400 hover:bg-noir-800 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition flex items-center justify-center gap-2">
               <i data-lucide="shopping-bag" class="w-4 h-4"></i> Add To Bag
@@ -384,19 +383,40 @@
       `;
 
       refreshIcons();
+      startAutoProductSlider();
     }
 
-    // Switch to Image in Main Frame
-    function switchImage(src, btn) {
+    // 3-SECOND AUTOMATIC PRODUCT IMAGE SLIDER
+    function startAutoProductSlider() {
+      if (detailAutoSlideInterval) clearInterval(detailAutoSlideInterval);
+      if (detailImagesList.length <= 1) return;
+
+      detailAutoSlideInterval = setInterval(() => {
+        currentImageIndex = (currentImageIndex + 1) % detailImagesList.length;
+        const nextSrc = detailImagesList[currentImageIndex];
+        const nextBtn = document.querySelector(`.thumbnail-btn[data-index="${currentImageIndex}"]`);
+        switchImage(nextSrc, nextBtn, currentImageIndex, false);
+      }, 3000); // 3-second auto cycle
+    }
+
+    function switchImage(src, btn, index, stopTimer = true) {
+      if (stopTimer && detailAutoSlideInterval) {
+        clearInterval(detailAutoSlideInterval);
+        startAutoProductSlider(); // Reset timer on manual click
+      }
+      currentImageIndex = index;
+
       const frame = document.getElementById('mediaViewerFrame');
       frame.innerHTML = `
-        <img id="mainShowcaseImg" src="${src}" alt="${currentProduct?.title || ''}" class="w-full h-full object-cover transition-all duration-300" onerror="this.src='Cover.png'" />
+        <img id="mainShowcaseImg" src="${src}" alt="${currentProduct?.title || ''}" class="w-full h-full object-cover transition-opacity duration-300" onerror="this.src='Cover.png'" />
       `;
 
       document.querySelectorAll('.thumbnail-btn').forEach(b => {
         b.className = "thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border border-gold-500/20 bg-noir-950 shrink-0 transition";
       });
-      btn.className = "thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border border-gold-400 ring-2 ring-gold-400/40 bg-noir-950 shrink-0 transition";
+      if (btn) {
+        btn.className = "thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border border-gold-400 ring-2 ring-gold-400/40 bg-noir-950 shrink-0 transition";
+      }
     }
 
     function selectVariantSize(val, btn) {
