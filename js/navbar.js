@@ -73,7 +73,6 @@ export async function loadMenuSubmenu() {
       
       // Check if valid submenu
       if (subId && subId !== 'NULL' && subName && subName !== 'NULL') {
-        // Prevent duplicates
         const exists = menuMap.get(mId).submenus.some(s => s.subId === subId);
         if (!exists) {
           menuMap.get(mId).submenus.push({ subId, subName });
@@ -81,11 +80,10 @@ export async function loadMenuSubmenu() {
       }
     });
 
-menuMap.forEach(menu => {
+    menuMap.forEach(menu => {
       const hasSubs = menu.submenus.length > 0;
       
       const menuWrapper = document.createElement('div');
-      // 'group relative' ensures hover detects reliably on both button & dropdown
       menuWrapper.className = "relative group py-1.5 shrink-0 cursor-pointer";
       
       menuWrapper.innerHTML = `
@@ -96,13 +94,13 @@ menuMap.forEach(menu => {
         </button>
 
         ${hasSubs ? `
-          <!-- DROPDOWN BOX (HIDDEN BY DEFAULT, BLOCK ON HOVER) -->
-          <div class="hidden group-hover:block absolute left-0 top-full pt-2 min-w-[220px] z-[999999]">
+          <!-- DROPDOWN BOX (SUBMENU IDs REMOVED) -->
+          <div class="hidden group-hover:block absolute left-0 top-full pt-2 min-w-[200px] z-[999999]">
             <div class="bg-noir-900 border border-gold-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl py-2 divide-y divide-gold-500/10 backdrop-blur-2xl">
               ${menu.submenus.map(sub => `
-                <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-[11px] font-semibold text-slate-300 hover:text-gold-400 hover:bg-noir-950 transition flex items-center justify-between group/item">
+                <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-200 hover:text-gold-400 hover:bg-noir-950 transition flex items-center justify-between group/item">
                   <span>${sub.subName}</span>
-                  <span class="text-[9px] text-gold-500/70 border border-gold-500/20 px-1.5 py-0.5 rounded font-mono group-hover/item:border-gold-400/50">${sub.subId}</span>
+                  <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all text-gold-400"></i>
                 </button>
               `).join('')}
             </div>
