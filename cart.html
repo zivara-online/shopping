@@ -163,23 +163,32 @@
     </div>
   </main>
 
-  <!-- CUSTOMER SHIPPING DETAILS MODAL -->
-  <div id="checkoutModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm transition-opacity"></div>
-  <div id="checkoutModal" class="fixed inset-x-4 top-[10%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4">
+  <!-- CUSTOMER SHIPPING DETAILS MODAL WITH SAVED ADDRESS SELECTOR -->
+  <div id="checkoutModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm transition-opacity" onclick="closeCustomerDetailsModal()"></div>
+  <div id="checkoutModal" class="fixed inset-x-4 top-[8%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4 max-h-[85vh] overflow-y-auto">
     <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
       <div>
         <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Delivery & Contact Details</h3>
-        <p class="text-[10px] text-slate-400">Provide details for white-glove insured dispatch</p>
+        <p class="text-[10px] text-slate-400">Insured white-glove dispatch information</p>
       </div>
       <button onclick="closeCustomerDetailsModal()" class="text-slate-400 hover:text-white">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
-    <form onsubmit="startRazorpayPayment(event)" class="space-y-3 text-xs">
+    <form onsubmit="startRazorpayPayment(event)" class="space-y-3.5 text-xs">
+      
+      <!-- SAVED ADDRESSES SELECTOR DROPDOWN (AUTO-LOADS FOR LOGGED IN USERS) -->
+      <div id="savedAddressSelectorContainer" class="hidden space-y-1 bg-noir-950 p-3 rounded-2xl border border-gold-500/30">
+        <label class="block text-gold-400 font-bold text-[10px] uppercase tracking-wider">Choose From Saved Locations</label>
+        <select id="savedAddressDropdown" onchange="applySavedAddress(this.value)" class="w-full bg-noir-900 border border-gold-500/20 rounded-xl px-3 py-2 text-slate-200 text-xs focus:outline-none focus:border-gold-400">
+          <option value="">-- Select Saved Address --</option>
+        </select>
+      </div>
+
       <div>
         <label class="block text-slate-300 font-semibold mb-1">Full Name</label>
-        <input type="text" id="custName" required placeholder="Aarav Sharma" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-400" />
+        <input type="text" id="custName" required placeholder="e.g. Aarav Sharma" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-400" />
       </div>
 
       <div class="grid grid-cols-2 gap-2">
@@ -195,10 +204,10 @@
 
       <div>
         <label class="block text-slate-300 font-semibold mb-1">Complete Delivery Address & Pincode</label>
-        <textarea id="custAddress" required rows="2" placeholder="House/Flat No, Landmark, City, State, PIN" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
+        <textarea id="custAddress" required rows="3" placeholder="House/Flat No, Street, Landmark, City, State, PIN" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
       </div>
 
-      <button type="submit" id="payNowBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+      <button type="submit" id="payNowBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 rounded-xl shadow-xl transition flex items-center justify-center gap-2 active:scale-95">
         <i data-lucide="credit-card" class="w-4 h-4"></i>
         <span>Pay with Razorpay</span>
       </button>
@@ -275,6 +284,7 @@
                   ${item.product_code || item.category || 'ZIV-PIECE'}
                 </span>
                 <h3 class="text-xs sm:text-sm font-semibold text-slate-100 line-clamp-1">${item.title}</h3>
+                ${item.size ? `<span class="text-[10px] text-slate-400">Size: <b class="text-white">${item.size}</b></span>` : ''}
                 <div class="flex items-center gap-2 pt-0.5">
                   <span class="text-sm sm:text-base font-black text-white">₹${Number(item.price).toLocaleString('en-IN')}</span>
                   ${item.originalPrice || item.original_price ? `<span class="text-xs text-slate-500 line-through">₹${Number(item.originalPrice || item.original_price).toLocaleString('en-IN')}</span>` : ''}
@@ -370,15 +380,48 @@
       document.getElementById('finalTotal').innerText = `₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}`;
     }
 
-    // CUSTOMER DETAILS MODAL CONTROLLER
-    function openCustomerDetailsModal() {
+    // CUSTOMER DETAILS & SAVED ADDRESSES LOADER
+    async function openCustomerDetailsModal() {
       if (cart.length === 0) {
         alert('Your shopping bag is empty.');
         return;
       }
+
+      // Check if user session exists
+      const localSession = JSON.parse(localStorage.getItem('zivara_session'));
+      if (localSession && localSession.phone) {
+        document.getElementById('custName').value = localSession.name || '';
+        document.getElementById('custPhone').value = localSession.phone || '';
+        document.getElementById('custEmail').value = localSession.email || '';
+
+        // Fetch user's saved addresses from Supabase 'users' table
+        if (db) {
+          try {
+            const { data } = await db.from('users').select('addresses').eq('phone', localSession.phone).single();
+            const addresses = data?.addresses || [];
+            const dropdown = document.getElementById('savedAddressDropdown');
+            const container = document.getElementById('savedAddressSelectorContainer');
+
+            if (addresses.length > 0 && dropdown && container) {
+              dropdown.innerHTML = `<option value="">-- Select a Saved Location --</option>` + 
+                addresses.map((a, i) => `<option value="${a.address} (PIN: ${a.pincode})">${a.tag ? a.tag.toUpperCase() : 'Address ' + (i+1)}: ${a.address.substring(0, 32)}...</option>`).join('');
+              container.classList.remove('hidden');
+            }
+          } catch (e) {
+            console.warn("Addresses fetch fallback:", e);
+          }
+        }
+      }
+
       document.getElementById('checkoutModalBackdrop').classList.remove('hidden');
       document.getElementById('checkoutModal').classList.remove('hidden');
       refreshIcons();
+    }
+
+    function applySavedAddress(val) {
+      if (val) {
+        document.getElementById('custAddress').value = val;
+      }
     }
 
     function closeCustomerDetailsModal() {
@@ -402,10 +445,9 @@
         amount: amountInPaise,
         currency: "INR",
         name: "Zivara Maison",
-        description: "Haute Couture & Fine Jewelry Order",
+        description: "Bespoke Order Payment",
         image: "Logo.png",
         handler: async function (response) {
-          // Payment Successful Callback
           try {
             const orderPayload = {
               order_id: "ZIV-ORD-" + Date.now(),
@@ -419,13 +461,13 @@
               status: "paid"
             };
 
-            // Save to Supabase 'orders' Table
+            // Save order to Supabase 'orders' Table
             if (db) {
               const { error } = await db.from('orders').insert([orderPayload]);
-              if (error) console.warn("Supabase order insert notice:", error.message);
+              if (error) console.warn("Supabase order insert warning:", error.message);
             }
 
-            // Clear Cart & Redirect to thank you / home
+            // Clear Shopping Bag
             localStorage.removeItem('zivara_cart');
             closeCustomerDetailsModal();
             alert(`🎉 Payment Successful!\nPayment ID: ${response.razorpay_payment_id}\nOrder ID: ${orderPayload.order_id}\n\nAapka luxury order confirm ho chuka hai!`);
@@ -442,11 +484,11 @@
           contact: phone
         },
         theme: {
-          color: "#D4AF37" // Zivara Luxury Gold
+          color: "#D4AF37" // Luxury Zivara Gold
         },
         modal: {
           ondismiss: function () {
-            console.log("Customer ne payment modal close kiya.");
+            console.log("Customer closed the checkout window.");
           }
         }
       };
