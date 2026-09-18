@@ -11,7 +11,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Razorpay Official Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -42,8 +46,6 @@
   <!-- NAVBAR -->
   <header class="sticky top-0 z-50 bg-noir-900/90 backdrop-blur-xl border-b border-gold-500/20 shadow-xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      
-      <!-- Brand Logo -->
       <a href="index.html" class="flex items-center gap-3">
         <img 
           src="Logo.png" 
@@ -53,7 +55,6 @@
         />
       </a>
 
-      <!-- Back to Shop Link -->
       <a href="index.html" class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-300 hover:text-gold-400 flex items-center gap-1.5 transition">
         <i data-lucide="arrow-left" class="w-4 h-4 text-gold-400"></i>
         Continue Shopping
@@ -79,8 +80,6 @@
       
       <!-- ITEMS CONTAINER (8 Cols) -->
       <div class="lg:col-span-8 space-y-4">
-        
-        <!-- Cart Items Dynamic List -->
         <div id="cartItemsList" class="space-y-4"></div>
 
         <!-- Empty Cart State -->
@@ -98,7 +97,6 @@
             </a>
           </div>
         </div>
-
       </div>
 
       <!-- ORDER SUMMARY (4 Cols) -->
@@ -148,7 +146,7 @@
 
           <!-- Checkout Button -->
           <button 
-            onclick="proceedToCheckout()" 
+            onclick="openCustomerDetailsModal()" 
             class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xl transition active:scale-[0.98]">
             <span>Proceed to Checkout</span>
             <i data-lucide="lock" class="w-4 h-4 text-noir-950"></i>
@@ -157,13 +155,55 @@
           <!-- Badges -->
           <div class="text-[11px] text-slate-500 text-center flex items-center justify-center gap-2 pt-2 border-t border-gold-500/10">
             <i data-lucide="award" class="w-4 h-4 text-gold-400"></i>
-            <span>Encrypted 256-bit Payment Gateway Protection</span>
+            <span>Razorpay 256-bit Encrypted Protection</span>
           </div>
         </div>
       </div>
 
     </div>
   </main>
+
+  <!-- CUSTOMER SHIPPING DETAILS MODAL -->
+  <div id="checkoutModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm transition-opacity"></div>
+  <div id="checkoutModal" class="fixed inset-x-4 top-[10%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4">
+    <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+      <div>
+        <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Delivery & Contact Details</h3>
+        <p class="text-[10px] text-slate-400">Provide details for white-glove insured dispatch</p>
+      </div>
+      <button onclick="closeCustomerDetailsModal()" class="text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <form onsubmit="startRazorpayPayment(event)" class="space-y-3 text-xs">
+      <div>
+        <label class="block text-slate-300 font-semibold mb-1">Full Name</label>
+        <input type="text" id="custName" required placeholder="Aarav Sharma" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-400" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Phone Number</label>
+          <input type="tel" id="custPhone" required placeholder="9876543210" pattern="[0-9]{10}" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-400" />
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Email Address</label>
+          <input type="email" id="custEmail" required placeholder="aarav@gmail.com" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-400" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-slate-300 font-semibold mb-1">Complete Delivery Address & Pincode</label>
+        <textarea id="custAddress" required rows="2" placeholder="House/Flat No, Landmark, City, State, PIN" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
+      </div>
+
+      <button type="submit" id="payNowBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+        <i data-lucide="credit-card" class="w-4 h-4"></i>
+        <span>Pay with Razorpay</span>
+      </button>
+    </form>
+  </div>
 
   <!-- LUXURY FOOTER -->
   <footer class="bg-noir-900 text-slate-400 text-xs mt-auto border-t border-gold-500/20 py-6">
@@ -180,8 +220,15 @@
 
   <!-- SCRIPT LOGIC -->
   <script>
+    const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo";
+    const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    const RAZORPAY_TEST_KEY = "rzp_test_TdT5cFWtR6hAXj";
+
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
     let couponDiscountRate = 0;
+    let calculatedFinalPayable = 0;
 
     const itemsContainer = document.getElementById('cartItemsList');
     const emptyState = document.getElementById('emptyCartState');
@@ -216,8 +263,6 @@
 
         return `
           <div class="bg-noir-900 p-4 sm:p-5 rounded-3xl border border-gold-500/20 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 transition hover:border-gold-500/50">
-            
-            <!-- Product Details & Media -->
             <div class="flex items-center gap-4 w-full sm:w-auto">
               <img 
                 src="${itemImg}" 
@@ -237,10 +282,7 @@
               </div>
             </div>
 
-            <!-- Stepper, Subtotal & Delete -->
             <div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-gold-500/10">
-              
-              <!-- Stepper -->
               <div class="flex items-center border border-gold-500/30 rounded-xl overflow-hidden bg-noir-950">
                 <button onclick="changeQuantity('${item.id || item.product_id}', -1)" class="p-2 hover:bg-noir-800 text-slate-300 transition">
                   <i data-lucide="minus" class="w-3.5 h-3.5"></i>
@@ -251,18 +293,15 @@
                 </button>
               </div>
 
-              <!-- Item Subtotal -->
               <div class="text-right min-w-[80px]">
                 <div class="text-[10px] uppercase font-bold text-slate-400 font-mono">Total</div>
                 <div class="text-sm font-black text-gold-400">₹${itemTotal.toLocaleString('en-IN')}</div>
               </div>
 
-              <!-- Delete Button -->
               <button onclick="removeFromCart('${item.id || item.product_id}')" class="text-slate-400 hover:text-rose-400 transition p-1.5 rounded-lg hover:bg-rose-950/40" title="Remove item">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
-
           </div>
         `;
       }).join('');
@@ -323,20 +362,101 @@
       }
 
       const delivery = finalPayable >= 1499 || finalPayable === 0 ? 0 : 150;
-      const totalAmount = finalPayable + delivery;
+      calculatedFinalPayable = finalPayable + delivery;
 
       document.getElementById('bagTotal').innerText = `₹${Math.round(rawTotal).toLocaleString('en-IN')}`;
       document.getElementById('bagDiscount').innerText = `-₹${Math.round(discount).toLocaleString('en-IN')}`;
       document.getElementById('deliveryFee').innerText = delivery === 0 ? 'COMPLIMENTARY' : `₹${delivery}`;
-      document.getElementById('finalTotal').innerText = `₹${Math.round(totalAmount).toLocaleString('en-IN')}`;
+      document.getElementById('finalTotal').innerText = `₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}`;
     }
 
-    function proceedToCheckout() {
+    // CUSTOMER DETAILS MODAL CONTROLLER
+    function openCustomerDetailsModal() {
       if (cart.length === 0) {
         alert('Your shopping bag is empty.');
         return;
       }
-      alert('Proceeding to Encrypted VIP 256-bit Payment Gateway Protection!');
+      document.getElementById('checkoutModalBackdrop').classList.remove('hidden');
+      document.getElementById('checkoutModal').classList.remove('hidden');
+      refreshIcons();
+    }
+
+    function closeCustomerDetailsModal() {
+      document.getElementById('checkoutModalBackdrop').classList.add('hidden');
+      document.getElementById('checkoutModal').classList.add('hidden');
+    }
+
+    // RAZORPAY PAYMENT GATEWAY FLOW
+    function startRazorpayPayment(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const email = document.getElementById('custEmail').value.trim();
+      const address = document.getElementById('custAddress').value.trim();
+
+      const amountInPaise = Math.round(calculatedFinalPayable * 100);
+
+      const options = {
+        key: RAZORPAY_TEST_KEY,
+        amount: amountInPaise,
+        currency: "INR",
+        name: "Zivara Maison",
+        description: "Haute Couture & Fine Jewelry Order",
+        image: "Logo.png",
+        handler: async function (response) {
+          // Payment Successful Callback
+          try {
+            const orderPayload = {
+              order_id: "ZIV-ORD-" + Date.now(),
+              razorpay_payment_id: response.razorpay_payment_id,
+              customer_name: name,
+              customer_email: email,
+              customer_phone: phone,
+              shipping_address: address,
+              items: cart,
+              amount: calculatedFinalPayable,
+              status: "paid"
+            };
+
+            // Save to Supabase 'orders' Table
+            if (db) {
+              const { error } = await db.from('orders').insert([orderPayload]);
+              if (error) console.warn("Supabase order insert notice:", error.message);
+            }
+
+            // Clear Cart & Redirect to thank you / home
+            localStorage.removeItem('zivara_cart');
+            closeCustomerDetailsModal();
+            alert(`🎉 Payment Successful!\nPayment ID: ${response.razorpay_payment_id}\nOrder ID: ${orderPayload.order_id}\n\nAapka luxury order confirm ho chuka hai!`);
+            window.location.href = "index.html";
+          } catch (err) {
+            console.error("Order processing error:", err);
+            alert("Payment receive ho gayi hai. Details: " + response.razorpay_payment_id);
+            window.location.href = "index.html";
+          }
+        },
+        prefill: {
+          name: name,
+          email: email,
+          contact: phone
+        },
+        theme: {
+          color: "#D4AF37" // Zivara Luxury Gold
+        },
+        modal: {
+          ondismiss: function () {
+            console.log("Customer ne payment modal close kiya.");
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (res) {
+        alert("Payment Failed: " + res.error.description);
+      });
+
+      rzp.open();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
