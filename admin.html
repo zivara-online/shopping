@@ -83,7 +83,7 @@
       </div>
     </div>
 
-    <!-- COVER SLIDER CONTROLLER (IMAGE UPLOAD + SUBTITLE/DESCRIPTION ONLY) -->
+    <!-- COVER SLIDER CONTROLLER -->
     <div class="bg-noir-900 border border-gold-500/30 p-6 rounded-2xl shadow-xl space-y-4">
       <div class="flex items-center justify-between">
         <h2 class="text-sm font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
@@ -94,21 +94,17 @@
 
       <form onsubmit="handleAddBanner(event)" class="space-y-4 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          
-          <!-- Banner Image File Picker -->
           <div class="space-y-1">
             <label class="block text-slate-300 font-semibold">Choose Banner Image</label>
             <input 
               type="file" 
               id="bannerFileInput" 
-              required
               accept="image/*" 
               onchange="handleBannerPreview(event)"
               class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2 text-white text-xs file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-gold-500 file:text-noir-950 hover:file:bg-gold-400 cursor-pointer" 
             />
           </div>
 
-          <!-- Banner Subtitle / Description -->
           <div class="space-y-1">
             <label class="block text-slate-300 font-semibold">Badge Subtitle / Description</label>
             <input 
@@ -120,7 +116,6 @@
             />
           </div>
 
-          <!-- Sort Order & Action Button -->
           <div class="grid grid-cols-2 gap-2 items-end">
             <div>
               <label class="block text-slate-300 font-semibold mb-1">Slide #</label>
@@ -140,10 +135,8 @@
               Upload Slide
             </button>
           </div>
-
         </div>
 
-        <!-- Live Selected Banner Preview Box -->
         <div id="bannerPreviewContainer" class="hidden flex items-center gap-3 p-3 bg-noir-950 rounded-xl border border-gold-500/20">
           <img id="bannerPreviewImg" src="" class="h-16 w-32 object-cover rounded-lg border border-gold-500/30" />
           <div class="text-xs space-y-0.5">
@@ -153,14 +146,13 @@
         </div>
       </form>
 
-      <!-- Current Banners List -->
       <div class="border-t border-gold-500/10 pt-3">
         <h4 class="text-xs font-semibold text-slate-400 mb-2">Active Slides in 4-Second Rotation:</h4>
         <div id="liveBannersContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3"></div>
       </div>
     </div>
 
-    <!-- TAXONOMY & PRODUCT CREATION CARDS -->
+    <!-- TAXONOMY & PRODUCT CREATION/EDITING CARDS -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
       <!-- 1. MAIN MENU (3 COLS) -->
@@ -242,15 +234,24 @@
         </form>
       </div>
 
-      <!-- 3. COMPREHENSIVE PRODUCT CREATION (6 COLS) -->
-      <div class="lg:col-span-6 bg-noir-900 border border-gold-500/20 p-6 rounded-2xl shadow-xl space-y-4">
-        <h2 class="text-sm font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
-          <i data-lucide="package-plus" class="w-5 h-5 text-gold-400"></i> Add Master Product
-        </h2>
-        <form onsubmit="handleCreateProduct(event)" class="space-y-3 text-xs">
+      <!-- 3. COMPREHENSIVE PRODUCT CREATION / EDITING FORM (6 COLS) -->
+      <div id="productFormContainer" class="lg:col-span-6 bg-noir-900 border border-gold-500/20 p-6 rounded-2xl shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 id="productFormHeading" class="text-sm font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="package-plus" class="w-5 h-5 text-gold-400"></i> Add Master Product
+          </h2>
+          <button id="cancelEditBtn" onclick="resetProductFormToCreate()" class="hidden text-xs text-rose-400 hover:underline">
+            Cancel Edit
+          </button>
+        </div>
+
+        <form onsubmit="handleCreateOrUpdateProduct(event)" class="space-y-3 text-xs">
+          <!-- Hidden tracking input for edit mode -->
+          <input type="hidden" id="isEditingMode" value="false" />
+
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-slate-400 mb-1 font-semibold">Product ID (Auto)</label>
+              <label class="block text-slate-400 mb-1 font-semibold">Product ID</label>
               <input type="text" id="prodRandomId" readonly class="w-full bg-noir-950 border border-slate-700 rounded-xl px-3 py-2 text-gold-400 font-mono text-[11px]" />
             </div>
             <div>
@@ -302,11 +303,11 @@
             </div>
           </div>
 
-          <!-- DIRECT LOCAL FILE UPLOAD -->
+          <!-- UNLIMITED LOCAL FILE UPLOAD -->
           <div class="space-y-2 border-t border-gold-500/10 pt-2">
             <div>
               <label class="block text-slate-400 mb-1 font-semibold flex items-center justify-between">
-                <span>Upload Product Images (From Device)</span>
+                <span>Upload Product Images (Select Unlimited Images)</span>
                 <span class="text-gold-400 font-mono text-[10px]">Auto-Storage Upload</span>
               </label>
               <input 
@@ -317,13 +318,14 @@
                 onchange="handleImageSelection(event)"
                 class="w-full bg-noir-950 border border-gold-500/30 rounded-xl p-2 text-white text-xs file:mr-3 file:py-1.5 file:px-3.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-gold-500 file:text-noir-950 hover:file:bg-gold-400 cursor-pointer"
               />
-              <p class="text-[10px] text-slate-500 mt-1">First photo becomes Cover Thumbnail, others become slider gallery.</p>
+              <p class="text-[10px] text-slate-500 mt-1">Pehli photo cover banegi, baaki sabhi photos live site par 3-second auto-slide mein chalengi.</p>
             </div>
 
-            <div id="imagePreviewGrid" class="flex flex-wrap gap-2 pt-1 hidden"></div>
+            <!-- Preview Grid for Selected/Existing Images -->
+            <div id="imagePreviewGrid" class="flex flex-wrap gap-2 pt-1 hidden max-h-40 overflow-y-auto"></div>
 
             <div>
-              <label class="block text-slate-500 mb-0.5 font-semibold text-[10px]">Or Paste Direct Web URL</label>
+              <label class="block text-slate-500 mb-0.5 font-semibold text-[10px]">Or Direct Image URL (Fallback)</label>
               <input type="url" id="prodImageUrl" placeholder="https://images.unsplash.com/... or Cover.png" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-1.5 text-slate-300 text-xs" />
             </div>
 
@@ -362,7 +364,7 @@
 
           <button type="submit" id="prodSubmitBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 font-bold py-3 rounded-xl transition shadow text-xs flex items-center justify-center gap-2 uppercase tracking-wider">
             <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-            <span>Save & Publish Product</span>
+            <span id="prodSubmitBtnText">Save & Publish Product</span>
           </button>
         </form>
       </div>
@@ -374,7 +376,7 @@
       <div class="flex items-center justify-between border-b border-gold-500/15 pb-4">
         <div>
           <h3 class="text-sm font-bold text-white uppercase tracking-wider">Live Inventory Master View</h3>
-          <p class="text-xs text-slate-400">Direct visibility toggle and deletion controls synced with Supabase.</p>
+          <p class="text-xs text-slate-400">Direct Edit, visibility toggle and deletion controls synced with Supabase.</p>
         </div>
         <button onclick="fetchAllData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1">
           <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Grid
@@ -410,8 +412,10 @@
     const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     let cachedHierarchy = [];
+    let cachedProducts = [];
     let selectedFilesList = [];
     let selectedBannerFile = null;
+    let existingGalleryImages = [];
 
     function generateRandomProductId() {
       return "ZIV-" + Math.floor(100000 + Math.random() * 900000);
@@ -474,9 +478,7 @@
       }
     }
 
-    // ===============================================
-    // BANNER CONTROLLER LOGIC (NO TITLE INPUT)
-    // ===============================================
+    // BANNER LOGIC
     function handleBannerPreview(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -533,7 +535,6 @@
           .from(targetBucket)
           .upload(filePath, selectedBannerFile, { cacheControl: '3600', upsert: true });
 
-        // Fallback to product-media if banners bucket is not configured
         if (uploadError) {
           targetBucket = 'product-media';
           const retry = await db.storage
@@ -548,7 +549,6 @@
         const subtitle = document.getElementById('bannerSubhead').value.trim();
         const sort_order = parseInt(document.getElementById('bannerSort').value, 10) || 1;
 
-        // Insert with subtitle and fallback title
         const { error: insertError } = await db.from('hero_banners').insert([{
           image_url: finalImageUrl,
           title: "",
@@ -580,9 +580,7 @@
       fetchBanners();
     }
 
-    // ===============================================
-    // PRODUCT & MEDIA ASSETS CONTROLLERS
-    // ===============================================
+    // MULTI-IMAGE PREVIEW (UNLIMITED)
     function handleImageSelection(event) {
       const files = Array.from(event.target.files);
       if (!files.length) return;
@@ -612,7 +610,7 @@
 
       for (const file of files) {
         const fileExt = file.name.split('.').pop();
-        const filePath = `products/${Date.now()}_${Math.floor(Math.random()*1000)}.${fileExt}`;
+        const filePath = `products/${Date.now()}_${Math.floor(Math.random()*10000)}.${fileExt}`;
 
         const { error } = await db.storage
           .from('product-media')
@@ -666,22 +664,101 @@
       else { alert("Submenu saved!"); e.target.reset(); fetchAllData(); }
     }
 
-    async function handleCreateProduct(e) {
+    // EDIT MODE LOGIC
+    window.startEditProduct = function(productId) {
+      const product = cachedProducts.find(p => p.product_id === productId);
+      if (!product) return;
+
+      document.getElementById('isEditingMode').value = "true";
+      document.getElementById('productFormHeading').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-gold-400"></i> Edit Product: ${product.product_code}`;
+      document.getElementById('prodSubmitBtnText').innerText = "Update & Save Changes";
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+      // Populate form values
+      document.getElementById('prodRandomId').value = product.product_id;
+      document.getElementById('prodCode').value = product.product_code || '';
+      document.getElementById('prodBrand').value = product.brand_name || 'Zivara Maison';
+      document.getElementById('prodStock').value = product.stock_quantity || 10;
+      document.getElementById('prodTitle').value = product.title || '';
+      document.getElementById('prodPrice').value = product.price || '';
+      document.getElementById('prodOrigPrice').value = product.original_price || '';
+      document.getElementById('prodImageUrl').value = product.thumbnail_url || product.image_url || '';
+      document.getElementById('prodVideo').value = product.video_url || '';
+      document.getElementById('prodSizes').value = (product.available_sizes || []).join(', ');
+      document.getElementById('prodColors').value = (product.available_colors || []).join(', ');
+      document.getElementById('prodDesc').value = product.description || '';
+      document.getElementById('prodActive').checked = product.is_active !== false;
+      document.getElementById('prodFeatured').checked = product.is_featured === true;
+
+      document.getElementById('prodMenuSelect').value = product.menu_code || '';
+      loadSubmenuDropdownForProduct();
+      document.getElementById('prodSubmenuSelect').value = product.submenu_code || '';
+
+      // Preview existing gallery
+      existingGalleryImages = product.gallery_images || [];
+      const previewGrid = document.getElementById('imagePreviewGrid');
+      previewGrid.innerHTML = '';
+      previewGrid.classList.remove('hidden');
+
+      const allImgs = [product.thumbnail_url || product.image_url, ...existingGalleryImages].filter(Boolean);
+      allImgs.forEach((src, idx) => {
+        const card = document.createElement('div');
+        card.className = `relative w-14 h-16 rounded-lg overflow-hidden border ${idx === 0 ? 'border-gold-400 ring-2 ring-gold-400/40' : 'border-gold-500/20'} bg-noir-950`;
+        card.innerHTML = `
+          <img src="${src}" class="w-full h-full object-cover" onerror="this.src='Cover.png'" />
+          ${idx === 0 ? `<span class="absolute top-0.5 left-0.5 bg-gold-500 text-noir-950 text-[7px] font-black px-1 rounded">COVER</span>` : ''}
+        `;
+        previewGrid.appendChild(card);
+      });
+
+      calculateDiscountPreview();
+      document.getElementById('productFormContainer').scrollIntoView({ behavior: 'smooth' });
+      if (window.lucide) window.lucide.createIcons();
+    };
+
+    window.resetProductFormToCreate = function() {
+      document.getElementById('isEditingMode').value = "false";
+      document.getElementById('productFormHeading').innerHTML = `<i data-lucide="package-plus" class="w-5 h-5 text-gold-400"></i> Add Master Product`;
+      document.getElementById('prodSubmitBtnText').innerText = "Save & Publish Product";
+      document.getElementById('cancelEditBtn').classList.add('hidden');
+
+      document.getElementById('prodRandomId').value = generateRandomProductId();
+      document.getElementById('prodCode').value = '';
+      document.getElementById('prodTitle').value = '';
+      document.getElementById('prodPrice').value = '';
+      document.getElementById('prodOrigPrice').value = '';
+      document.getElementById('prodImageUrl').value = '';
+      document.getElementById('prodVideo').value = '';
+      document.getElementById('prodSizes').value = '';
+      document.getElementById('prodColors').value = '';
+      document.getElementById('prodDesc').value = '';
+      document.getElementById('imagePreviewGrid').innerHTML = '';
+      document.getElementById('imagePreviewGrid').classList.add('hidden');
+      document.getElementById('discountPreviewBadge').innerText = "0% OFF";
+      selectedFilesList = [];
+      existingGalleryImages = [];
+      if (window.lucide) window.lucide.createIcons();
+    };
+
+    // CREATE OR UPDATE CONTROLLER
+    async function handleCreateOrUpdateProduct(e) {
       e.preventDefault();
+      const isEditing = document.getElementById('isEditingMode').value === "true";
       const btn = document.getElementById('prodSubmitBtn');
       btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Uploading & Processing...</span>`;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Processing Images...</span>`;
       if (window.lucide) window.lucide.createIcons();
 
       try {
         let finalThumbnail = document.getElementById('prodImageUrl').value.trim() || 'Cover.png';
-        let finalGallery = [];
+        let finalGallery = isEditing ? [...existingGalleryImages] : [];
 
+        // Upload any newly selected images
         if (selectedFilesList.length > 0) {
           const uploaded = await uploadImagesToSupabase(selectedFilesList);
           if (uploaded.length > 0) {
             finalThumbnail = uploaded[0];
-            finalGallery = uploaded.slice(1);
+            finalGallery = isEditing ? [...existingGalleryImages, ...uploaded.slice(1)] : uploaded.slice(1);
           }
         }
 
@@ -706,7 +783,6 @@
         const is_featured = document.getElementById('prodFeatured').checked;
 
         const payload = {
-          product_id,
           product_code,
           brand_name,
           stock_quantity,
@@ -726,29 +802,23 @@
           is_featured
         };
 
-        let { error } = await db.from('products').insert([payload]);
-
-        if (error && error.message.includes("column")) {
-          if (error.message.includes("image_url")) delete payload.image_url;
-          else if (error.message.includes("thumbnail_url")) delete payload.thumbnail_url;
-          const retry = await db.from('products').insert([payload]);
-          error = retry.error;
-        }
-
-        if (error) {
-          alert("Error saving product: " + error.message);
+        if (isEditing) {
+          // UPDATE
+          const { error: updateError } = await db.from('products').update(payload).eq('product_id', product_id);
+          if (updateError) throw updateError;
+          alert(`Product [${product_code}] updated successfully!`);
         } else {
+          // INSERT
+          payload.product_id = product_id;
+          const { error: insertError } = await db.from('products').insert([payload]);
+          if (insertError) throw insertError;
           alert(`Product "${title}" published successfully!`);
-          e.target.reset();
-          selectedFilesList = [];
-          document.getElementById('imagePreviewGrid').innerHTML = '';
-          document.getElementById('imagePreviewGrid').classList.add('hidden');
-          document.getElementById('prodRandomId').value = generateRandomProductId();
-          document.getElementById('discountPreviewBadge').innerText = "0% OFF";
-          fetchAllData();
         }
+
+        resetProductFormToCreate();
+        fetchAllData();
       } catch (err) {
-        alert("Upload error: " + err.message);
+        alert("Error saving: " + err.message);
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<i data-lucide="upload-cloud" class="w-4 h-4"></i><span>Save & Publish Product</span>`;
@@ -788,6 +858,7 @@
       const { data: prods } = await db.from('products').select('*').order('created_at', { ascending: false });
 
       cachedHierarchy = hierarchy || [];
+      cachedProducts = prods || [];
 
       const parentMenus = [];
       const seen = new Set();
@@ -830,9 +901,16 @@
                 </button>
               </td>
               <td class="p-3 text-right">
-                <button onclick="deleteProduct('${p.product_id}')" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg hover:bg-rose-950/40 transition">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
+                <div class="flex items-center justify-end gap-2">
+                  <!-- EDIT BUTTON -->
+                  <button onclick="window.startEditProduct('${p.product_id}')" class="text-gold-400 hover:text-gold-300 p-1.5 rounded-lg hover:bg-gold-500/10 transition" title="Edit Product">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                  </button>
+                  <!-- DELETE BUTTON -->
+                  <button onclick="deleteProduct('${p.product_id}')" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg hover:bg-rose-950/40 transition" title="Delete Product">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           `;
