@@ -100,21 +100,18 @@
   <!-- MAIN BODY -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1 w-full">
 
-    <!-- HERO SECTION (BLUR REMOVED, BIGGER TITLE, COMPACT SUBTITLE, ADJUSTED BUTTON) -->
+    <!-- HERO SECTION -->
     <div id="heroBannerSection" class="transition-all duration-300">
       <div class="bg-white/95 p-2 sm:p-4 rounded-3xl sm:rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(255,255,255,0.08)] border border-white/40">
         <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner bg-noir-900 min-h-[300px] sm:min-h-[420px] flex items-center">
           
-          <!-- Banner Slides Track (Clean Picture Display) -->
+          <!-- Banner Slides Track -->
           <div id="bannerSlidesTrack" class="absolute inset-0 w-full h-full">
             <div class="banner-slide absolute inset-0 w-full h-full bg-cover bg-center opacity-100" style="background-image: url('Cover.png');"></div>
           </div>
 
-          <!-- Content Overlay (Adjusted Placement, Bigger Title & Subtitle Below) -->
+          <!-- Content Overlay -->
           <div class="relative z-20 max-w-2xl p-6 sm:p-14 space-y-2.5">
-          
-
-            <!-- Get The Shopping Button (Pushed Down & Styled) -->
             <div class="pt-5 sm:pt-7">
               <a id="bannerBtn" href="#products-section" class="inline-flex items-center gap-2.5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 px-7 sm:px-8 py-3 sm:py-3.5 rounded-full font-extrabold text-xs uppercase tracking-widest shadow-2xl transition transform hover:-translate-y-1 hover:shadow-gold-500/20 active:scale-95">
                 <span>Get The Shopping</span>
@@ -241,7 +238,7 @@
 
   </main>
 
-  <!-- MOBILE FILTER BAR (FLIPKART STYLE) -->
+  <!-- MOBILE FILTER BAR -->
   <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-noir-900/98 backdrop-blur-md border-t border-gold-500/30 flex items-center h-14 divide-x divide-gold-500/20 shadow-2xl">
     <button onclick="window.toggleMobileSortModal()" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-200 active:bg-noir-800 h-full">
       <i data-lucide="arrow-up-down" class="w-4 h-4 text-gold-400"></i>
@@ -338,7 +335,7 @@
     </div>
   </div>
 
-  <!-- LUXURY FOOTER COMPONENT -->
+  <!-- LUXURY FOOTER COMPONENT WITH WORKING TRACK SHIPMENT -->
   <footer class="bg-noir-950 text-slate-400 text-xs mt-20 border-t border-gold-500/20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
       <div class="space-y-3">
@@ -350,7 +347,11 @@
       <div>
         <h5 class="text-gold-400 uppercase font-bold tracking-widest text-[11px] mb-3">Concierge</h5>
         <ul class="space-y-2">
-          <li><a href="#" class="hover:text-white transition">Track Shipment</a></li>
+          <li>
+            <button onclick="window.openTrackModal()" class="hover:text-white transition text-left cursor-pointer">
+              Track Shipment
+            </button>
+          </li>
           <li><a href="#" class="hover:text-white transition">Authenticity Guarantee</a></li>
         </ul>
       </div>
@@ -373,9 +374,38 @@
     </div>
   </footer>
 
+  <!-- LIVE SHIPMENT TRACKING MODAL -->
+  <div id="trackModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm" onclick="window.closeTrackModal()"></div>
+  <div id="trackModal" class="fixed inset-x-4 top-[15%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4">
+    <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+      <div>
+        <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Track Your Shipment</h3>
+        <p class="text-[10px] text-slate-400">Enter Order ID or Mobile Number to get live dispatch status</p>
+      </div>
+      <button onclick="window.closeTrackModal()" class="text-slate-400 hover:text-white p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div class="space-y-3 text-xs">
+      <div>
+        <label class="block text-slate-300 font-semibold mb-1">Order ID (ZIV-ORD-...) or 10-Digit Mobile</label>
+        <div class="flex gap-2">
+          <input type="text" id="trackInputQuery" placeholder="e.g. ZIV-ORD-1789976... or 9876543210" class="flex-1 bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-400 uppercase font-mono text-xs" />
+          <button onclick="window.executeTrackQuery()" class="bg-gold-500 hover:bg-gold-400 text-noir-950 font-bold px-4 py-2.5 rounded-xl transition shadow cursor-pointer">
+            Track
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Result Display Box -->
+      <div id="trackResultContainer" class="hidden p-4 bg-noir-950 border border-gold-500/20 rounded-2xl space-y-2.5"></div>
+    </div>
+  </div>
+
   <!-- MODULE ENTRY POINT -->
   <script type="module">
-    import { refreshIcons } from './js/config.js';
+    import { refreshIcons, db } from './js/config.js';
     import { loadHeroBanners, goToSlide } from './js/slider.js';
     import { 
       loadMenuSubmenu, scrollMenus, syncCategoryCheckboxes, 
@@ -406,6 +436,76 @@
     window.selectMobileSort = selectMobileSort;
     window.syncMobilePrice = syncMobilePrice;
     window.syncMobileRating = syncMobileRating;
+
+    // LIVE TRACKING MODAL FUNCTIONS
+    window.openTrackModal = function() {
+      document.getElementById('trackModalBackdrop')?.classList.remove('hidden');
+      document.getElementById('trackModal')?.classList.remove('hidden');
+      refreshIcons();
+    };
+
+    window.closeTrackModal = function() {
+      document.getElementById('trackModalBackdrop')?.classList.add('hidden');
+      document.getElementById('trackModal')?.classList.add('hidden');
+    };
+
+    window.executeTrackQuery = async function() {
+      const q = (document.getElementById('trackInputQuery')?.value || '').trim();
+      const resContainer = document.getElementById('trackResultContainer');
+      if (!q) {
+        alert("Kripya apna Order ID ya Mobile Number enter karein!");
+        return;
+      }
+
+      resContainer.classList.remove('hidden');
+      resContainer.innerHTML = `<p class="text-center text-slate-400 text-xs py-2">Searching live courier tracking...</p>`;
+
+      try {
+        const { data: orders, error } = await db
+          .from('orders')
+          .select('*')
+          .or(`order_id.eq.${q},customer_phone.eq.${q}`)
+          .order('created_at', { ascending: false });
+
+        if (error || !orders || orders.length === 0) {
+          resContainer.innerHTML = `<p class="text-center text-rose-400 text-xs py-2">Koi order nahi mila! Kripya sahi Order ID ya Phone number dalein.</p>`;
+          return;
+        }
+
+        const o = orders[0];
+        const isDispatched = o.status === 'dispatched' || o.shiprocket_order_id;
+        const isDelivered = o.status === 'delivered';
+
+        resContainer.innerHTML = `
+          <div class="flex items-center justify-between border-b border-gold-500/10 pb-2">
+            <span class="font-mono text-gold-400 font-bold text-[11px]">${o.order_id}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isDelivered ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' : 'bg-gold-500/20 text-gold-400 border border-gold-500/30'}">
+              ${(o.status || 'Processing').toUpperCase()}
+            </span>
+          </div>
+
+          <div class="space-y-1.5 text-slate-300 text-[11px] pt-1">
+            <div>Customer: <b class="text-white">${o.customer_name}</b></div>
+            <div>Delivery Address: <span class="text-slate-400 line-clamp-1">${o.shipping_address}</span></div>
+            ${o.awb_code ? `<div>AWB Tracking Code: <b class="text-emerald-400 font-mono">${o.awb_code}</b></div>` : ''}
+            ${o.shiprocket_order_id ? `<div>Shiprocket Consignment: <b class="text-slate-200">#${o.shiprocket_order_id}</b></div>` : ''}
+          </div>
+
+          <div class="pt-2.5 border-t border-gold-500/10 flex items-center justify-between">
+            <span class="text-[10px] text-slate-400">${isDispatched ? 'Courier Picked Up / In Transit' : 'Packing in Atelier'}</span>
+            ${o.awb_code ? `
+              <a href="https://shiprocket.co/tracking/${o.awb_code}" target="_blank" class="text-[10px] text-gold-400 hover:underline font-bold flex items-center gap-1">
+                <span>Live Courier Map</span>
+                <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            ` : ''}
+          </div>
+        `;
+        refreshIcons();
+      } catch (err) {
+        resContainer.innerHTML = `<p class="text-rose-400 text-xs text-center py-2">Error checking status: ${err.message}</p>`;
+      }
+    };
 
     window.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
