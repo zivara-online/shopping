@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Zivara - Fashion • Style • You</title>
   
-  <!-- Inline Favicon to prevent 404 -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D4AF37'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -62,9 +61,17 @@
         </div>
 
         <div class="flex items-center gap-4 sm:gap-6 shrink-0 text-xs font-semibold tracking-wider uppercase">
-          <a href="login.html" id="userAuthBtn" class="flex flex-col items-center gap-1 text-slate-300 hover:text-gold-400 transition">
-            <i data-lucide="user" class="w-5 h-5 text-gold-400"></i>
-            <span id="userAuthText" class="text-[10px] sm:text-[11px] hidden sm:inline">Profile</span>
+          
+          <!-- DYNAMIC USER PROFILE / AVATAR BUTTON -->
+          <a href="login.html" id="userAuthBtn" class="flex items-center gap-2 text-slate-300 hover:text-gold-400 transition group">
+            <div id="userAvatarWrap" class="w-8 h-8 rounded-full bg-gold-500/15 border border-gold-500/40 text-gold-400 flex items-center justify-center font-bold text-xs shadow transition group-hover:scale-105 group-hover:border-gold-400">
+              <i data-lucide="user" id="defaultUserIcon" class="w-4 h-4 text-gold-400"></i>
+              <span id="userInitialText" class="hidden uppercase font-serif"></span>
+            </div>
+            <div class="hidden sm:flex flex-col items-start leading-tight">
+              <span class="text-[9px] text-slate-400 font-normal lowercase" id="userStatusTag">account</span>
+              <span id="userAuthText" class="text-[11px] font-bold text-white group-hover:text-gold-400">Sign In</span>
+            </div>
           </a>
 
           <a href="cart.html" class="flex flex-col items-center gap-1 text-slate-300 hover:text-gold-400 transition relative">
@@ -105,12 +112,10 @@
       <div class="bg-white/95 p-2 sm:p-4 rounded-3xl sm:rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(255,255,255,0.08)] border border-white/40">
         <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner bg-noir-900 min-h-[300px] sm:min-h-[420px] flex items-center">
           
-          <!-- Banner Slides Track -->
           <div id="bannerSlidesTrack" class="absolute inset-0 w-full h-full">
             <div class="banner-slide absolute inset-0 w-full h-full bg-cover bg-center opacity-100" style="background-image: url('Cover.png');"></div>
           </div>
 
-          <!-- Content Overlay -->
           <div class="relative z-20 max-w-2xl p-6 sm:p-14 space-y-2.5">
             <div class="pt-5 sm:pt-7">
               <a id="bannerBtn" href="#products-section" class="inline-flex items-center gap-2.5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 px-7 sm:px-8 py-3 sm:py-3.5 rounded-full font-extrabold text-xs uppercase tracking-widest shadow-2xl transition transform hover:-translate-y-1 hover:shadow-gold-500/20 active:scale-95">
@@ -120,7 +125,6 @@
             </div>
           </div>
 
-          <!-- Slide Indicators (Dots) -->
           <div id="bannerDots" class="absolute bottom-4 right-6 z-20 flex items-center gap-2"></div>
         </div>
       </div>
@@ -167,7 +171,6 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <!-- DESKTOP SIDEBAR -->
         <aside class="hidden lg:block lg:col-span-3 bg-noir-900/90 border border-gold-500/25 rounded-2xl p-5 space-y-6 shadow-xl sticky top-40">
           <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
             <div>
@@ -335,7 +338,7 @@
     </div>
   </div>
 
-  <!-- LUXURY FOOTER COMPONENT WITH WORKING TRACK SHIPMENT -->
+  <!-- LUXURY FOOTER COMPONENT -->
   <footer class="bg-noir-950 text-slate-400 text-xs mt-20 border-t border-gold-500/20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
       <div class="space-y-3">
@@ -398,7 +401,6 @@
         </div>
       </div>
 
-      <!-- Live Result Display Box -->
       <div id="trackResultContainer" class="hidden p-4 bg-noir-950 border border-gold-500/20 rounded-2xl space-y-2.5"></div>
     </div>
   </div>
@@ -419,7 +421,6 @@
     } from './js/products.js';
     import { addToCart, updateCartBadge } from './js/cart.js';
 
-    // Global Bindings for inline HTML handlers
     window.goToSlide = goToSlide;
     window.scrollMenus = scrollMenus;
     window.selectMenu = selectMenu;
@@ -436,6 +437,33 @@
     window.selectMobileSort = selectMobileSort;
     window.syncMobilePrice = syncMobilePrice;
     window.syncMobileRating = syncMobileRating;
+
+    // USER AVATAR / SESSION SYNC IN HEADER
+    function syncHeaderUserAvatar() {
+      const session = JSON.parse(localStorage.getItem('zivara_session'));
+      const defaultIcon = document.getElementById('defaultUserIcon');
+      const initialText = document.getElementById('userInitialText');
+      const authText = document.getElementById('userAuthText');
+      const statusTag = document.getElementById('userStatusTag');
+
+      if (session && (session.name || session.phone)) {
+        const displayName = session.name || 'Member';
+        const initial = displayName.trim().charAt(0).toUpperCase() || 'Z';
+        
+        if (defaultIcon) defaultIcon.classList.add('hidden');
+        if (initialText) {
+          initialText.innerText = initial;
+          initialText.classList.remove('hidden');
+        }
+        if (authText) authText.innerText = displayName.split(' ')[0];
+        if (statusTag) statusTag.innerText = 'Privé Club';
+      } else {
+        if (defaultIcon) defaultIcon.classList.remove('hidden');
+        if (initialText) initialText.classList.add('hidden');
+        if (authText) authText.innerText = 'Sign In';
+        if (statusTag) statusTag.innerText = 'account';
+      }
+    }
 
     // LIVE TRACKING MODAL FUNCTIONS
     window.openTrackModal = function() {
@@ -510,6 +538,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
       updateCartBadge();
+      syncHeaderUserAvatar();
       loadHeroBanners();
       loadMenuSubmenu();
       loadProducts();
