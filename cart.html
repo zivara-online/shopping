@@ -152,10 +152,9 @@
             <i data-lucide="lock" class="w-4 h-4 text-noir-950"></i>
           </button>
 
-          <!-- Badges -->
           <div class="text-[11px] text-slate-500 text-center flex items-center justify-center gap-2 pt-2 border-t border-gold-500/10">
             <i data-lucide="award" class="w-4 h-4 text-gold-400"></i>
-            <span>Razorpay & Shiprocket Express Protection</span>
+            <span>Razorpay & Express Delivery Protection</span>
           </div>
         </div>
       </div>
@@ -206,8 +205,8 @@
       </div>
     </div>
 
-    <!-- STEP B: DELIVERY DETAILS (WITH SAVED ADDRESS) -->
-    <form id="checkoutAddressStep" onsubmit="startRazorpayPayment(event)" class="hidden space-y-3.5 text-xs">
+    <!-- STEP B: DELIVERY DETAILS (WITH PINCODE CONDITIONAL COD LOGIC) -->
+    <form id="checkoutAddressStep" onsubmit="handleFinalCheckoutSubmit(event)" class="hidden space-y-3.5 text-xs">
       
       <!-- SAVED ADDRESSES SELECTOR DROPDOWN -->
       <div id="savedAddressSelectorContainer" class="hidden space-y-1 bg-noir-950 p-3 rounded-2xl border border-gold-500/30">
@@ -235,12 +234,41 @@
 
       <div>
         <label class="block text-slate-300 font-semibold mb-1">Complete Delivery Address & Pincode</label>
-        <textarea id="custAddress" required rows="3" placeholder="House/Flat No, Street, Landmark, City, State, PIN (e.g. 110001)" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
+        <textarea id="custAddress" required rows="3" oninput="checkPincodeForCod()" placeholder="House/Flat No, Street, Landmark, City, State, PIN (e.g. 825104)" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
       </div>
 
-      <button type="submit" id="payNowBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 rounded-xl shadow-xl transition flex items-center justify-center gap-2 active:scale-95">
-        <i data-lucide="credit-card" class="w-4 h-4"></i>
-        <span>Pay with Razorpay & Dispatch</span>
+      <!-- PAYMENT MODE SELECTOR (COD AUTO UNLOCKS FOR PIN 825104) -->
+      <div class="p-3 bg-noir-950 rounded-2xl border border-gold-500/30 space-y-2">
+        <label class="block text-[10px] font-bold text-gold-400 uppercase tracking-wider">Select Payment Mode</label>
+        
+        <div class="space-y-2">
+          <!-- Option 1: Prepaid Online Razorpay -->
+          <label class="flex items-center justify-between p-2.5 rounded-xl border border-gold-500/30 bg-noir-900 cursor-pointer hover:border-gold-400 transition">
+            <div class="flex items-center gap-2.5">
+              <input type="radio" name="paymentMethod" value="online" checked onchange="togglePaymentSelection('online')" class="accent-gold-500" />
+              <span class="text-white font-semibold">Prepaid (Razorpay / UPI / Card)</span>
+            </div>
+            <span class="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">Recommended</span>
+          </label>
+
+          <!-- Option 2: Cash On Delivery (Controlled strictly for Pincode 825104) -->
+          <label id="codOptionWrapper" class="hidden flex items-center justify-between p-2.5 rounded-xl border border-amber-500/40 bg-noir-900 cursor-pointer hover:border-amber-400 transition">
+            <div class="flex items-center gap-2.5">
+              <input type="radio" name="paymentMethod" value="cod" onchange="togglePaymentSelection('cod')" class="accent-gold-500" />
+              <span class="text-white font-semibold">Cash on Delivery (COD)</span>
+            </div>
+            <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono font-bold">PIN 825104 SPECIAL</span>
+          </label>
+        </div>
+
+        <p id="codUnavailableNote" class="text-[10px] text-slate-400 leading-tight pt-1">
+          ℹ️ Cash on Delivery (COD) sirf Pincode <b class="text-gold-400 font-mono">825104</b> ke liye upalabdha hai. Baaki sabhi locations ke liye 100% insured prepaid Razorpay gateway uplabdh hai.
+        </p>
+      </div>
+
+      <button type="submit" id="payNowBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 rounded-xl shadow-xl transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+        <i data-lucide="credit-card" id="btnPaymentIcon" class="w-4 h-4"></i>
+        <span id="btnPaymentText">Pay with Razorpay & Dispatch</span>
       </button>
     </form>
   </div>
@@ -270,6 +298,7 @@
     let couponDiscountRate = 0;
     let calculatedFinalPayable = 0;
     let isOtpSentInModal = false;
+    let currentPaymentMode = "online"; // "online" or "cod"
 
     const itemsContainer = document.getElementById('cartItemsList');
     const emptyState = document.getElementById('emptyCartState');
@@ -277,9 +306,7 @@
     const itemsSubtitle = document.getElementById('cartItemsSubtitle');
 
     function refreshIcons() {
-      if (window.lucide) {
-        window.lucide.createIcons();
-      }
+      if (window.lucide) window.lucide.createIcons();
     }
 
     function renderCart() {
@@ -316,7 +343,12 @@
                   ${item.product_code || item.category || 'ZIV-PIECE'}
                 </span>
                 <h3 class="text-xs sm:text-sm font-semibold text-slate-100 line-clamp-1">${item.title}</h3>
-                ${item.size ? `<span class="text-[10px] text-slate-400">Size: <b class="text-white">${item.size}</b></span>` : ''}
+                
+                <div class="flex flex-wrap items-center gap-2 pt-0.5">
+                  ${item.size ? `<span class="text-[10px] text-slate-400 font-mono">Size: <b class="text-white">${item.size}</b></span>` : ''}
+                  ${item.color ? `<span class="text-[10px] text-gold-400 font-mono">Color: <b class="text-gold-300">${item.color}</b></span>` : ''}
+                </div>
+
                 <div class="flex items-center gap-2 pt-0.5">
                   <span class="text-sm sm:text-base font-black text-white">₹${Number(item.price).toLocaleString('en-IN')}</span>
                   ${item.originalPrice || item.original_price ? `<span class="text-xs text-slate-500 line-through">₹${Number(item.originalPrice || item.original_price).toLocaleString('en-IN')}</span>` : ''}
@@ -340,7 +372,7 @@
                 <div class="text-sm font-black text-gold-400">₹${itemTotal.toLocaleString('en-IN')}</div>
               </div>
 
-              <button onclick="removeFromCart('${item.id || item.product_id}')" class="text-slate-400 hover:text-rose-400 transition p-1.5 rounded-lg hover:bg-rose-950/40" title="Remove item">
+              <button onclick="removeFromCart('${item.id || item.product_id}')" class="text-slate-400 hover:text-rose-400 transition p-1.5 rounded-lg hover:bg-rose-950/40 cursor-pointer" title="Remove item">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
@@ -412,7 +444,7 @@
       document.getElementById('finalTotal').innerText = `₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}`;
     }
 
-    // SYSTEMATIC 2-STEP CHECKOUT INITIALIZER
+    // CHECKOUT INITIALIZER
     function openCustomerDetailsModal() {
       if (cart.length === 0) {
         alert('Your shopping bag is empty.');
@@ -445,10 +477,49 @@
 
       document.getElementById('checkoutModalBackdrop').classList.remove('hidden');
       document.getElementById('checkoutModal').classList.remove('hidden');
+      checkPincodeForCod();
       refreshIcons();
     }
 
-    // CHECKOUT MODAL OTP CONTROLLER
+    // PINCODE CHECK: ONLY 825104 UNLOCKS COD
+    window.checkPincodeForCod = function() {
+      const addressVal = (document.getElementById('custAddress')?.value || '').trim();
+      const codOption = document.getElementById('codOptionWrapper');
+      const noteEl = document.getElementById('codUnavailableNote');
+
+      // Check if text contains 825104
+      const has825104 = addressVal.includes('825104');
+
+      if (has825104) {
+        codOption.classList.remove('hidden');
+        noteEl.innerHTML = `✅ Pincode <b class="text-emerald-400 font-mono">825104 Verified</b>! Aap Cash on Delivery (COD) ya Online Razorpay choose kar sakte hain.`;
+      } else {
+        codOption.classList.add('hidden');
+        // Reset to online if COD was previously selected
+        const onlineRadio = document.querySelector('input[name="paymentMethod"][value="online"]');
+        if (onlineRadio) onlineRadio.checked = true;
+        togglePaymentSelection('online');
+        noteEl.innerHTML = `ℹ️ Cash on Delivery (COD) sirf Pincode <b class="text-gold-400 font-mono">825104</b> ke liye upalabdha hai. Baaki sabhi locations ke liye 100% insured prepaid Razorpay gateway uplabdh hai.`;
+      }
+      refreshIcons();
+    };
+
+    window.togglePaymentSelection = function(mode) {
+      currentPaymentMode = mode;
+      const btnText = document.getElementById('btnPaymentText');
+      const btnIcon = document.getElementById('btnPaymentIcon');
+
+      if (mode === 'cod') {
+        btnText.innerText = `Confirm Order with Cash on Delivery (₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')})`;
+        btnIcon.setAttribute('data-lucide', 'package-check');
+      } else {
+        btnText.innerText = `Pay with Razorpay & Dispatch (₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')})`;
+        btnIcon.setAttribute('data-lucide', 'credit-card');
+      }
+      refreshIcons();
+    };
+
+    // MODAL OTP FLOW
     async function handleCheckoutOtpFlow() {
       const phoneInput = document.getElementById('checkoutPhoneInput');
       const phone = phoneInput.value.trim();
@@ -507,6 +578,7 @@
           document.getElementById('custPhone').value = phone;
           document.getElementById('custEmail').value = userEmail;
           loadSavedAddressesDropdown(phone);
+          checkPincodeForCod();
           refreshIcons();
         } else {
           alert("Invalid OTP! For demo verification, enter: 123456");
@@ -535,6 +607,7 @@
     function applySavedAddress(val) {
       if (val) {
         document.getElementById('custAddress').value = val;
+        checkPincodeForCod();
       }
     }
 
@@ -543,12 +616,97 @@
       document.getElementById('checkoutModal').classList.add('hidden');
     }
 
-    // ==========================================================
-    // RAZORPAY + SHIPROCKET AUTOMATED DISPATCH INTEGRATION
-    // ==========================================================
-    function startRazorpayPayment(e) {
+    // FORM SUBMIT HANDLER (DISPATCHES ONLINE OR COD)
+    function handleFinalCheckoutSubmit(e) {
       e.preventDefault();
 
+      const address = document.getElementById('custAddress').value.trim();
+      const has825104 = address.includes('825104');
+
+      if (currentPaymentMode === 'cod') {
+        if (!has825104) {
+          alert("Cash on Delivery sirf Pincode 825104 ke liye allow hai! Kripya Online Payment karein.");
+          return;
+        }
+        processCashOnDeliveryOrder();
+      } else {
+        startRazorpayPayment();
+      }
+    }
+
+    // 1. CASH ON DELIVERY (COD) ORDER PROCESSOR
+    async function processCashOnDeliveryOrder() {
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const email = document.getElementById('custEmail').value.trim();
+      const address = document.getElementById('custAddress').value.trim();
+      const payBtn = document.getElementById('payNowBtn');
+
+      payBtn.disabled = true;
+      payBtn.innerHTML = `<span>Booking COD Order & Courier...</span>`;
+
+      try {
+        const orderId = "ZIV-ORD-" + Date.now();
+        const orderPayload = {
+          order_id: orderId,
+          razorpay_payment_id: "COD-" + Date.now(),
+          customer_name: name,
+          customer_email: email,
+          customer_phone: phone,
+          shipping_address: address,
+          items: cart,
+          amount: calculatedFinalPayable,
+          status: "placed" // Placed for COD
+        };
+
+        // Insert into Supabase
+        if (db) {
+          await db.from('orders').insert([orderPayload]);
+          await db.from('users').update({ name: name, email: email }).eq('phone', phone);
+        }
+
+        // Push to Shiprocket via super-function
+        try {
+          const shiprocketRes = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": SUPABASE_ANON_KEY,
+              "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ ...orderPayload, payment_method: "COD" })
+          });
+
+          const shiprocketData = await shiprocketRes.json();
+          if (shiprocketData && shiprocketData.order_id) {
+            await db.from('orders').update({
+              shiprocket_order_id: String(shiprocketData.order_id),
+              shiprocket_shipment_id: String(shiprocketData.shipment_id || ''),
+              awb_code: String(shiprocketData.awb_code || '')
+            }).eq('order_id', orderId);
+          }
+        } catch (srErr) {
+          console.warn("Shiprocket COD dispatch sync notice:", srErr.message);
+        }
+
+        // Clean Bag
+        localStorage.setItem('zivara_session', JSON.stringify({ phone, name, email }));
+        localStorage.removeItem('zivara_cart');
+        closeCustomerDetailsModal();
+
+        alert(`🎉 Cash on Delivery Order Placed Successfully!\n\nOrder ID: ${orderId}\nTotal to Pay at Delivery: ₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}\nDestination: Pincode 825104\n\nAapka luxury order confirm ho chuka hai!`);
+        window.location.href = "index.html";
+
+      } catch (err) {
+        console.error("COD processing error:", err);
+        alert("Order save karne me samasya aayi: " + err.message);
+      } finally {
+        payBtn.disabled = false;
+      }
+    }
+
+    // 2. ONLINE RAZORPAY PAYMENT GATEWAY FLOW
+    function startRazorpayPayment() {
       const name = document.getElementById('custName').value.trim();
       const phone = document.getElementById('custPhone').value.trim();
       const email = document.getElementById('custEmail').value.trim();
@@ -582,53 +740,44 @@
               status: "paid"
             };
 
-            // 1. Order Supabase 'orders' table me save karein
             if (db) {
-              const { error: dbError } = await db.from('orders').insert([orderPayload]);
-              if (dbError) console.warn("Supabase orders insert warning:", dbError.message);
-              
-              // Customer profile data update karein
+              await db.from('orders').insert([orderPayload]);
               await db.from('users').update({ name: name, email: email }).eq('phone', phone);
             }
 
-            // 2. Shiprocket Edge Function call karein
             try {
-  const shiprocketRes = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "apikey": SUPABASE_ANON_KEY,
-      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-    },
-    body: JSON.stringify(orderPayload)
-  });
+              const shiprocketRes = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "apikey": SUPABASE_ANON_KEY,
+                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify(orderPayload)
+              });
 
-  const shiprocketData = await shiprocketRes.json();
-  console.log("Shiprocket Response:", shiprocketData);
-  
-  // Shiprocket order IDs Supabase me update karein
-  if (shiprocketData && shiprocketData.order_id) {
-    await db.from('orders').update({
-      shiprocket_order_id: String(shiprocketData.order_id),
-      shiprocket_shipment_id: String(shiprocketData.shipment_id || ''),
-      awb_code: String(shiprocketData.awb_code || '')
-    }).eq('order_id', orderId);
-  }
-} catch (srErr) {
-  console.warn("Shiprocket automated dispatch warning:", srErr.message);
-}
+              const shiprocketData = await shiprocketRes.json();
+              if (shiprocketData && shiprocketData.order_id) {
+                await db.from('orders').update({
+                  shiprocket_order_id: String(shiprocketData.order_id),
+                  shiprocket_shipment_id: String(shiprocketData.shipment_id || ''),
+                  awb_code: String(shiprocketData.awb_code || '')
+                }).eq('order_id', orderId);
+              }
+            } catch (srErr) {
+              console.warn("Shiprocket automated dispatch warning:", srErr.message);
+            }
 
-            // 3. Session & Cart clean karein
             localStorage.setItem('zivara_session', JSON.stringify({ phone, name, email }));
             localStorage.removeItem('zivara_cart');
             closeCustomerDetailsModal();
 
-            alert(`🎉 Payment Successful!\nOrder ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}\n\nAapka order confirm ho chuka hai aur Shiprocket automated dispatch queue me add ho gaya hai!`);
+            alert(`🎉 Payment Successful!\nOrder ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}\n\nAapka order confirm ho chuka hai!`);
             window.location.href = "index.html";
 
           } catch (err) {
             console.error("Order completion error:", err);
-            alert("Payment successful rahi. Transaction ID: " + response.razorpay_payment_id);
+            alert("Payment receive ho gayi hai. Details: " + response.razorpay_payment_id);
             window.location.href = "index.html";
           }
         },
@@ -638,11 +787,11 @@
           contact: phone
         },
         theme: {
-          color: "#D4AF37" // Luxury Zivara Gold
+          color: "#D4AF37"
         },
         modal: {
           ondismiss: function () {
-            console.log("Customer ne payment modal band kiya.");
+            console.log("Customer closed payment modal.");
           }
         }
       };
