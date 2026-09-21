@@ -234,10 +234,10 @@
 
       <div>
         <label class="block text-slate-300 font-semibold mb-1">Complete Delivery Address & Pincode</label>
-        <textarea id="custAddress" required rows="3" oninput="checkPincodeForCod()" placeholder="House/Flat No, Street, Landmark, City, State, PIN (e.g. 825104)" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
+        <textarea id="custAddress" required rows="3" oninput="checkPincodeForCod()" placeholder="House/Flat No, Street, Landmark, City, State, PIN (e.g. 829104)" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
       </div>
 
-      <!-- PAYMENT MODE SELECTOR (COD AUTO UNLOCKS FOR PIN 825104) -->
+      <!-- PAYMENT MODE SELECTOR (COD AUTO UNLOCKS FOR PIN 829104) -->
       <div class="p-3 bg-noir-950 rounded-2xl border border-gold-500/30 space-y-2">
         <label class="block text-[10px] font-bold text-gold-400 uppercase tracking-wider">Select Payment Mode</label>
         
@@ -251,18 +251,18 @@
             <span class="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">Recommended</span>
           </label>
 
-          <!-- Option 2: Cash On Delivery (Controlled strictly for Pincode 825104) -->
+          <!-- Option 2: Cash On Delivery (Controlled strictly for Pincode 829104) -->
           <label id="codOptionWrapper" class="hidden flex items-center justify-between p-2.5 rounded-xl border border-amber-500/40 bg-noir-900 cursor-pointer hover:border-amber-400 transition">
             <div class="flex items-center gap-2.5">
               <input type="radio" name="paymentMethod" value="cod" onchange="togglePaymentSelection('cod')" class="accent-gold-500" />
               <span class="text-white font-semibold">Cash on Delivery (COD)</span>
             </div>
-            <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono font-bold">PIN 825104 SPECIAL</span>
+            <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono font-bold">PIN 829104 SPECIAL</span>
           </label>
         </div>
 
         <p id="codUnavailableNote" class="text-[10px] text-slate-400 leading-tight pt-1">
-          ℹ️ Cash on Delivery (COD) sirf Pincode <b class="text-gold-400 font-mono">825104</b> ke liye upalabdha hai. Baaki sabhi locations ke liye 100% insured prepaid Razorpay gateway uplabdh hai.
+          ℹ️ Cash on Delivery (COD) sirf Pincode <b class="text-gold-400 font-mono">829104</b> ke liye upalabdha hai. Baaki sabhi locations ke liye 100% insured prepaid Razorpay gateway uplabdh hai.
         </p>
       </div>
 
@@ -481,25 +481,25 @@
       refreshIcons();
     }
 
-    // PINCODE CHECK: ONLY 825104 UNLOCKS COD
+    // PINCODE CHECK: ONLY 829104 UNLOCKS COD
     window.checkPincodeForCod = function() {
       const addressVal = (document.getElementById('custAddress')?.value || '').trim();
       const codOption = document.getElementById('codOptionWrapper');
       const noteEl = document.getElementById('codUnavailableNote');
 
-      // Check if text contains 825104
-      const has825104 = addressVal.includes('825104');
+      // Check if text contains 829104
+      const has829104 = addressVal.includes('829104');
 
-      if (has825104) {
+      if (has829104) {
         codOption.classList.remove('hidden');
-        noteEl.innerHTML = `✅ Pincode <b class="text-emerald-400 font-mono">825104 Verified</b>! Aap Cash on Delivery (COD) ya Online Razorpay choose kar sakte hain.`;
+        noteEl.innerHTML = `✅ Pincode <b class="text-emerald-400 font-mono">829104 Verified</b>! Aap Cash on Delivery (COD) ya Online Razorpay choose kar sakte hain.`;
       } else {
         codOption.classList.add('hidden');
         // Reset to online if COD was previously selected
         const onlineRadio = document.querySelector('input[name="paymentMethod"][value="online"]');
         if (onlineRadio) onlineRadio.checked = true;
         togglePaymentSelection('online');
-        noteEl.innerHTML = `ℹ️ Cash on Delivery (COD) sirf Pincode <b class="text-gold-400 font-mono">825104</b> ke liye upalabdha hai. Baaki sabhi locations ke liye 100% insured prepaid Razorpay gateway uplabdh hai.`;
+        noteEl.innerHTML = `ℹ️ Cash on Delivery (COD) sirf Pincode <b class="text-gold-400 font-mono">829104</b> ke liye upalabdha hai. Baaki sabhi locations ke liye 100% insured prepaid Razorpay gateway uplabdh hai.`;
       }
       refreshIcons();
     };
@@ -621,11 +621,11 @@
       e.preventDefault();
 
       const address = document.getElementById('custAddress').value.trim();
-      const has825104 = address.includes('825104');
+      const has829104 = address.includes('829104');
 
       if (currentPaymentMode === 'cod') {
-        if (!has825104) {
-          alert("Cash on Delivery sirf Pincode 825104 ke liye allow hai! Kripya Online Payment karein.");
+        if (!has829104) {
+          alert("Cash on Delivery sirf Pincode 829104 ke liye allow hai! Kripya Online Payment karein.");
           return;
         }
         processCashOnDeliveryOrder();
@@ -694,7 +694,7 @@
         localStorage.removeItem('zivara_cart');
         closeCustomerDetailsModal();
 
-        alert(`🎉 Cash on Delivery Order Placed Successfully!\n\nOrder ID: ${orderId}\nTotal to Pay at Delivery: ₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}\nDestination: Pincode 825104\n\nAapka luxury order confirm ho chuka hai!`);
+        alert(`🎉 Cash on Delivery Order Placed Successfully!\n\nOrder ID: ${orderId}\nTotal to Pay at Delivery: ₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}\nDestination: Pincode 829104\n\nAapka luxury order confirm ho chuka hai!`);
         window.location.href = "index.html";
 
       } catch (err) {
