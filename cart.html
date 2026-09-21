@@ -593,28 +593,30 @@
 
             // 2. Shiprocket Edge Function call karein
             try {
-              const shiprocketRes = await fetch(`${SUPABASE_URL}/functions/v1/shiprocket-order`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "apikey": SUPABASE_ANON_KEY,
-                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-                },
-                body: JSON.stringify(orderPayload)
-              });
+  const shiprocketRes = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify(orderPayload)
+  });
 
-              const shiprocketData = await shiprocketRes.json();
-              
-              // Shiprocket order IDs Supabase me save karein
-              if (shiprocketData && shiprocketData.order_id) {
-                await db.from('orders').update({
-                  shiprocket_order_id: String(shiprocketData.order_id),
-                  shiprocket_shipment_id: String(shiprocketData.shipment_id || '')
-                }).eq('order_id', orderId);
-              }
-            } catch (srErr) {
-              console.warn("Shiprocket automated dispatch warning:", srErr.message);
-            }
+  const shiprocketData = await shiprocketRes.json();
+  console.log("Shiprocket Response:", shiprocketData);
+  
+  // Shiprocket order IDs Supabase me update karein
+  if (shiprocketData && shiprocketData.order_id) {
+    await db.from('orders').update({
+      shiprocket_order_id: String(shiprocketData.order_id),
+      shiprocket_shipment_id: String(shiprocketData.shipment_id || ''),
+      awb_code: String(shiprocketData.awb_code || '')
+    }).eq('order_id', orderId);
+  }
+} catch (srErr) {
+  console.warn("Shiprocket automated dispatch warning:", srErr.message);
+}
 
             // 3. Session & Cart clean karein
             localStorage.setItem('zivara_session', JSON.stringify({ phone, name, email }));
