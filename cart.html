@@ -75,7 +75,7 @@
       </div>
     </div>
 
-    <!-- CART LAYOUT (Items List + Summary Sidebar) -->
+    <!-- CART LAYOUT -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       
       <!-- ITEMS CONTAINER (8 Cols) -->
@@ -163,22 +163,53 @@
     </div>
   </main>
 
-  <!-- CUSTOMER SHIPPING DETAILS MODAL WITH SAVED ADDRESS SELECTOR -->
+  <!-- SYSTEMATIC 2-STEP AUTH & DELIVERY MODAL -->
   <div id="checkoutModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm transition-opacity" onclick="closeCustomerDetailsModal()"></div>
   <div id="checkoutModal" class="fixed inset-x-4 top-[8%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4 max-h-[85vh] overflow-y-auto">
+    
     <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
       <div>
-        <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Delivery & Contact Details</h3>
-        <p class="text-[10px] text-slate-400">Insured white-glove dispatch information</p>
+        <h3 id="modalFlowTitle" class="text-sm font-serif font-bold text-white uppercase tracking-wider">Member Verification</h3>
+        <p id="modalFlowSub" class="text-[10px] text-slate-400">Step 1: Verify mobile number to proceed</p>
       </div>
-      <button onclick="closeCustomerDetailsModal()" class="text-slate-400 hover:text-white">
+      <button onclick="closeCustomerDetailsModal()" class="text-slate-400 hover:text-white p-1">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
-    <form onsubmit="startRazorpayPayment(event)" class="space-y-3.5 text-xs">
+    <!-- STEP A: GUEST / PHONE OTP VERIFICATION (Agar login nahi hai) -->
+    <div id="checkoutAuthStep" class="space-y-4 text-xs">
+      <div class="p-3 bg-noir-950 border border-gold-500/20 rounded-2xl text-center space-y-1">
+        <span class="text-gold-400 font-bold uppercase tracking-widest text-[10px]">Secure Authentication</span>
+        <p class="text-slate-400 text-[11px]">VIP white-glove transit ke liye mobile number verify karein.</p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Mobile Phone Number</label>
+          <div class="relative flex items-center">
+            <span class="absolute left-3.5 text-xs font-bold text-slate-400 border-r border-gold-500/20 pr-2.5">+91</span>
+            <input type="tel" id="checkoutPhoneInput" maxlength="10" placeholder="Enter 10-digit number" class="w-full pl-16 pr-4 py-2.5 bg-noir-950 border border-gold-500/20 rounded-xl text-white font-semibold text-xs focus:outline-none focus:border-gold-400" />
+          </div>
+        </div>
+
+        <div id="checkoutOtpBox" class="hidden space-y-2">
+          <label class="block text-slate-300 font-semibold mb-1">Enter 6-Digit OTP</label>
+          <input type="text" id="checkoutOtpInput" maxlength="6" placeholder="123456" class="w-full bg-noir-950 border border-gold-500/40 rounded-xl py-2 px-3 text-center text-base font-mono tracking-widest text-gold-400 font-bold focus:outline-none" />
+          <p class="text-[10px] text-center text-slate-400">Demo verification code: <b class="text-gold-400">123456</b></p>
+        </div>
+
+        <button type="button" id="btnCheckoutSendOtp" onclick="handleCheckoutOtpFlow()" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 font-bold uppercase tracking-widest py-3 rounded-xl transition shadow flex items-center justify-center gap-2">
+          <span>Continue with OTP</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP B: DELIVERY DETAILS (OTP verify hone ke baad ya already logged-in hone par) -->
+    <form id="checkoutAddressStep" onsubmit="startRazorpayPayment(event)" class="hidden space-y-3.5 text-xs">
       
-      <!-- SAVED ADDRESSES SELECTOR DROPDOWN (AUTO-LOADS FOR LOGGED IN USERS) -->
+      <!-- SAVED ADDRESSES SELECTOR DROPDOWN -->
       <div id="savedAddressSelectorContainer" class="hidden space-y-1 bg-noir-950 p-3 rounded-2xl border border-gold-500/30">
         <label class="block text-gold-400 font-bold text-[10px] uppercase tracking-wider">Choose From Saved Locations</label>
         <select id="savedAddressDropdown" onchange="applySavedAddress(this.value)" class="w-full bg-noir-900 border border-gold-500/20 rounded-xl px-3 py-2 text-slate-200 text-xs focus:outline-none focus:border-gold-400">
@@ -194,7 +225,7 @@
       <div class="grid grid-cols-2 gap-2">
         <div>
           <label class="block text-slate-300 font-semibold mb-1">Phone Number</label>
-          <input type="tel" id="custPhone" required placeholder="9876543210" pattern="[0-9]{10}" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-400" />
+          <input type="tel" id="custPhone" readonly class="w-full bg-noir-950/70 border border-slate-700 text-gold-400 font-mono rounded-xl px-3.5 py-2.5" />
         </div>
         <div>
           <label class="block text-slate-300 font-semibold mb-1">Email Address</label>
@@ -238,6 +269,7 @@
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
     let couponDiscountRate = 0;
     let calculatedFinalPayable = 0;
+    let isOtpSentInModal = false;
 
     const itemsContainer = document.getElementById('cartItemsList');
     const emptyState = document.getElementById('emptyCartState');
@@ -380,42 +412,132 @@
       document.getElementById('finalTotal').innerText = `₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}`;
     }
 
-    // CUSTOMER DETAILS & SAVED ADDRESSES LOADER
-    async function openCustomerDetailsModal() {
+    // SYSTEMATIC 2-STEP CHECKOUT INITIALIZER
+    function openCustomerDetailsModal() {
       if (cart.length === 0) {
         alert('Your shopping bag is empty.');
         return;
       }
 
-      // Check if user session exists
       const localSession = JSON.parse(localStorage.getItem('zivara_session'));
+      const authStep = document.getElementById('checkoutAuthStep');
+      const addrStep = document.getElementById('checkoutAddressStep');
+
       if (localSession && localSession.phone) {
+        // User is already verified / logged in
+        authStep.classList.add('hidden');
+        addrStep.classList.remove('hidden');
+        document.getElementById('modalFlowTitle').innerText = "Delivery & Contact Details";
+        document.getElementById('modalFlowSub').innerText = "Insured white-glove dispatch information";
+        
         document.getElementById('custName').value = localSession.name || '';
-        document.getElementById('custPhone').value = localSession.phone || '';
+        document.getElementById('custPhone').value = localSession.phone;
         document.getElementById('custEmail').value = localSession.email || '';
-
-        // Fetch user's saved addresses from Supabase 'users' table
-        if (db) {
-          try {
-            const { data } = await db.from('users').select('addresses').eq('phone', localSession.phone).single();
-            const addresses = data?.addresses || [];
-            const dropdown = document.getElementById('savedAddressDropdown');
-            const container = document.getElementById('savedAddressSelectorContainer');
-
-            if (addresses.length > 0 && dropdown && container) {
-              dropdown.innerHTML = `<option value="">-- Select a Saved Location --</option>` + 
-                addresses.map((a, i) => `<option value="${a.address} (PIN: ${a.pincode})">${a.tag ? a.tag.toUpperCase() : 'Address ' + (i+1)}: ${a.address.substring(0, 32)}...</option>`).join('');
-              container.classList.remove('hidden');
-            }
-          } catch (e) {
-            console.warn("Addresses fetch fallback:", e);
-          }
-        }
+        loadSavedAddressesDropdown(localSession.phone);
+      } else {
+        // User not logged in -> Start Step 1 (Mobile OTP)
+        authStep.classList.remove('hidden');
+        addrStep.classList.add('hidden');
+        document.getElementById('checkoutOtpBox').classList.add('hidden');
+        document.getElementById('btnCheckoutSendOtp').innerHTML = `<span>Continue with OTP</span><i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>`;
+        isOtpSentInModal = false;
+        document.getElementById('modalFlowTitle').innerText = "Member Verification";
+        document.getElementById('modalFlowSub').innerText = "Step 1: Verify mobile number to proceed";
       }
 
       document.getElementById('checkoutModalBackdrop').classList.remove('hidden');
       document.getElementById('checkoutModal').classList.remove('hidden');
       refreshIcons();
+    }
+
+    // CHECKOUT MODAL OTP CONTROLLER
+    async function handleCheckoutOtpFlow() {
+      const phoneInput = document.getElementById('checkoutPhoneInput');
+      const phone = phoneInput.value.trim();
+
+      if (phone.length !== 10) {
+        alert("Please enter a valid 10-digit mobile number.");
+        return;
+      }
+
+      const otpBox = document.getElementById('checkoutOtpBox');
+      const btn = document.getElementById('btnCheckoutSendOtp');
+
+      if (!isOtpSentInModal) {
+        // Step 1: Send OTP
+        otpBox.classList.remove('hidden');
+        btn.innerHTML = `<span>Verify & Proceed</span><i data-lucide="shield-check" class="w-4 h-4 text-noir-950"></i>`;
+        isOtpSentInModal = true;
+        refreshIcons();
+        alert(`OTP code dispatched to +91 ${phone}. Demo verification code: 123456`);
+      } else {
+        // Step 2: Verify OTP
+        const otpVal = document.getElementById('checkoutOtpInput').value.trim();
+        if (otpVal === "123456") {
+          let userName = 'VIP Member';
+          let userEmail = '';
+
+          // Check if user already exists in Supabase
+          if (db) {
+            try {
+              const { data: userRec } = await db.from('users').select('*').eq('phone', phone).single();
+              if (userRec) {
+                userName = userRec.name || userName;
+                userEmail = userRec.email || userEmail;
+              } else {
+                // Auto create new user profile
+                await db.from('users').insert([{
+                  phone: phone,
+                  name: userName,
+                  email: userEmail,
+                  addresses: []
+                }]);
+              }
+            } catch (err) {
+              console.warn("User sync notice:", err);
+            }
+          }
+
+          // Save session locally
+          localStorage.setItem('zivara_session', JSON.stringify({
+            phone: phone,
+            name: userName,
+            email: userEmail
+          }));
+
+          // Transition to Step 2 (Address Form)
+          document.getElementById('checkoutAuthStep').classList.add('hidden');
+          document.getElementById('checkoutAddressStep').classList.remove('hidden');
+          document.getElementById('modalFlowTitle').innerText = "Delivery & Contact Details";
+          document.getElementById('modalFlowSub').innerText = "Insured white-glove dispatch information";
+          
+          document.getElementById('custName').value = userName === 'VIP Member' ? '' : userName;
+          document.getElementById('custPhone').value = phone;
+          document.getElementById('custEmail').value = userEmail;
+          loadSavedAddressesDropdown(phone);
+          refreshIcons();
+        } else {
+          alert("Invalid OTP! For demo verification, enter: 123456");
+        }
+      }
+    }
+
+    async function loadSavedAddressesDropdown(phone) {
+      if (!db || !phone) return;
+      try {
+        const { data } = await db.from('users').select('addresses').eq('phone', phone).single();
+        const addresses = data?.addresses || [];
+        const dropdown = document.getElementById('savedAddressDropdown');
+        const container = document.getElementById('savedAddressSelectorContainer');
+
+        if (addresses.length > 0 && dropdown && container) {
+          dropdown.innerHTML = `<option value="">-- Select Saved Address --</option>` + 
+            addresses.map((a, i) => `<option value="${a.address} (PIN: ${a.pincode})">${a.tag ? a.tag.toUpperCase() : 'Address ' + (i+1)}: ${a.address.substring(0, 32)}...</option>`).join('');
+          container.classList.remove('hidden');
+        }
+      } catch (e) {
+        console.warn("Addresses fetch notice:", e);
+      }
     }
 
     function applySavedAddress(val) {
@@ -465,7 +587,13 @@
             if (db) {
               const { error } = await db.from('orders').insert([orderPayload]);
               if (error) console.warn("Supabase order insert warning:", error.message);
+              
+              // Update user name and email in users table if needed
+              await db.from('users').update({ name: name, email: email }).eq('phone', phone);
             }
+
+            // Update local session details
+            localStorage.setItem('zivara_session', JSON.stringify({ phone, name, email }));
 
             // Clear Shopping Bag
             localStorage.removeItem('zivara_cart');
