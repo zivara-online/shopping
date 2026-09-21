@@ -83,9 +83,46 @@
       </div>
     </div>
 
+    <!-- QUICK METRICS BAR -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="bg-noir-900 border border-gold-500/20 p-4 rounded-2xl flex items-center justify-between">
+        <div>
+          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Total Sales (Orders)</span>
+          <h4 id="statTotalSales" class="text-xl font-black text-gold-400 font-mono">₹0</h4>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+          <i data-lucide="indian-rupee" class="w-5 h-5"></i>
+        </div>
+      </div>
+      <div class="bg-noir-900 border border-gold-500/20 p-4 rounded-2xl flex items-center justify-between">
+        <div>
+          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Orders Received</span>
+          <h4 id="statTotalOrders" class="text-xl font-black text-white font-mono">0</h4>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+        </div>
+      </div>
+      <div class="bg-noir-900 border border-gold-500/20 p-4 rounded-2xl flex items-center justify-between">
+        <div>
+          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Registered Members</span>
+          <h4 id="statTotalUsers" class="text-xl font-black text-white font-mono">0</h4>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+          <i data-lucide="users" class="w-5 h-5"></i>
+        </div>
+      </div>
+    </div>
+
     <!-- TABS BAR -->
     <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gold-500/10 text-xs font-semibold">
-      <button onclick="switchAdminTab('inventory')" id="tabBtn-inventory" class="tab-btn px-4 py-2.5 rounded-xl bg-gold-500 text-noir-950 font-bold transition flex items-center gap-2 shrink-0">
+      <button onclick="switchAdminTab('orders')" id="tabBtn-orders" class="tab-btn px-4 py-2.5 rounded-xl bg-gold-500 text-noir-950 font-bold transition flex items-center gap-2 shrink-0">
+        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Orders Summary
+      </button>
+      <button onclick="switchAdminTab('users')" id="tabBtn-users" class="tab-btn px-4 py-2.5 rounded-xl bg-noir-900 hover:bg-noir-850 text-slate-300 hover:text-white transition flex items-center gap-2 shrink-0 border border-gold-500/15">
+        <i data-lucide="users" class="w-4 h-4"></i> Users Directory
+      </button>
+      <button onclick="switchAdminTab('inventory')" id="tabBtn-inventory" class="tab-btn px-4 py-2.5 rounded-xl bg-noir-900 hover:bg-noir-850 text-slate-300 hover:text-white transition flex items-center gap-2 shrink-0 border border-gold-500/15">
         <i data-lucide="package" class="w-4 h-4"></i> Live Inventory
       </button>
       <button onclick="switchAdminTab('productForm')" id="tabBtn-productForm" class="tab-btn px-4 py-2.5 rounded-xl bg-noir-900 hover:bg-noir-850 text-slate-300 hover:text-white transition flex items-center gap-2 shrink-0 border border-gold-500/15">
@@ -102,8 +139,74 @@
       </button>
     </div>
 
-    <!-- ================= TAB 1: LIVE INVENTORY ================= -->
-    <section id="tab-inventory" class="tab-content space-y-4">
+    <!-- ================= TAB 1: ORDERS SUMMARY ================= -->
+    <section id="tab-orders" class="tab-content space-y-4">
+      <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gold-500/15 pb-4 gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Live Customer Orders</h3>
+            <p class="text-xs text-slate-400">Razorpay verified transactions and customer shipping dispatches.</p>
+          </div>
+          <button onclick="fetchOrdersData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Orders
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-gold-500/20 text-slate-400">
+                <th class="p-3">Order ID & Date</th>
+                <th class="p-3">Customer Info</th>
+                <th class="p-3">Shipping Address</th>
+                <th class="p-3">Amount</th>
+                <th class="p-3">Razorpay ID</th>
+                <th class="p-3">Items</th>
+                <th class="p-3 text-right">Fulfillment Status</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody" class="divide-y divide-gold-500/10 text-slate-300">
+              <tr><td colspan="7" class="p-4 text-center text-slate-500">Loading live orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: USERS DIRECTORY ================= -->
+    <section id="tab-users" class="tab-content hidden space-y-4">
+      <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gold-500/15 pb-4 gap-3">
+          <div>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Registered Member Accounts</h3>
+            <p class="text-xs text-slate-400">Mobile OTP verified accounts and saved address history from Supabase.</p>
+          </div>
+          <button onclick="fetchUsersData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Users
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-gold-500/20 text-slate-400">
+                <th class="p-3">User</th>
+                <th class="p-3">Phone Number</th>
+                <th class="p-3">Email Address</th>
+                <th class="p-3">Saved Addresses</th>
+                <th class="p-3 text-right">Joined On</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody" class="divide-y divide-gold-500/10 text-slate-300">
+              <tr><td colspan="5" class="p-4 text-center text-slate-500">Loading registered members...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: LIVE INVENTORY ================= -->
+    <section id="tab-inventory" class="tab-content hidden space-y-4">
       <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
         <div class="flex items-center justify-between border-b border-gold-500/15 pb-4">
           <div>
@@ -141,7 +244,7 @@
       </div>
     </section>
 
-    <!-- ================= TAB 2: PRODUCT CREATION / EDITING ================= -->
+    <!-- ================= TAB 4: PRODUCT CREATION / EDITING ================= -->
     <section id="tab-productForm" class="tab-content hidden max-w-4xl mx-auto w-full">
       <div id="productFormContainer" class="bg-noir-900 border border-gold-500/20 p-6 sm:p-8 rounded-3xl shadow-xl space-y-4">
         <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
@@ -276,7 +379,7 @@
       </div>
     </section>
 
-    <!-- ================= TAB 3: HERO CAROUSEL ================= -->
+    <!-- ================= TAB 5: HERO CAROUSEL ================= -->
     <section id="tab-banners" class="tab-content hidden space-y-6 max-w-4xl mx-auto w-full">
       <div class="bg-noir-900 border border-gold-500/30 p-6 sm:p-8 rounded-3xl shadow-xl space-y-5">
         <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
@@ -347,10 +450,8 @@
       </div>
     </section>
 
-    <!-- ================= TAB 4: MAIN MENU CONTROLLER WITH ACTIONS ================= -->
+    <!-- ================= TAB 6: MAIN MENUS ================= -->
     <section id="tab-menu" class="tab-content hidden space-y-6 max-w-4xl mx-auto w-full">
-      
-      <!-- Menu Creation / Edit Card -->
       <div class="bg-noir-900 border border-gold-500/20 p-6 sm:p-8 rounded-3xl shadow-xl space-y-4">
         <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
           <h2 id="mainMenuFormHeading" class="text-sm font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
@@ -400,7 +501,6 @@
         </form>
       </div>
 
-      <!-- Live Menus Action Grid Table -->
       <div class="bg-noir-900 border border-gold-500/20 p-6 rounded-3xl shadow-xl space-y-3">
         <h3 class="text-sm font-bold text-white uppercase tracking-wider">Active Main Menus List</h3>
         <div class="overflow-x-auto">
@@ -420,10 +520,8 @@
       </div>
     </section>
 
-    <!-- ================= TAB 5: SUB-MENU CONTROLLER WITH ACTIONS ================= -->
+    <!-- ================= TAB 7: SUB-MENUS ================= -->
     <section id="tab-submenu" class="tab-content hidden space-y-6 max-w-4xl mx-auto w-full">
-      
-      <!-- Sub-Menu Creation / Edit Card -->
       <div class="bg-noir-900 border border-gold-500/20 p-6 sm:p-8 rounded-3xl shadow-xl space-y-4">
         <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
           <h2 id="subMenuFormHeading" class="text-sm font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
@@ -479,7 +577,6 @@
         </form>
       </div>
 
-      <!-- Live Sub-Menus Action Grid Table -->
       <div class="bg-noir-900 border border-gold-500/20 p-6 rounded-3xl shadow-xl space-y-3">
         <h3 class="text-sm font-bold text-white uppercase tracking-wider">Active Sub-Menus List</h3>
         <div class="overflow-x-auto">
@@ -501,6 +598,21 @@
 
   </div>
 
+  <!-- ORDER DETAILS MODAL (VIEW ORDERED ITEMS) -->
+  <div id="orderDetailsModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm" onclick="closeOrderModal()"></div>
+  <div id="orderDetailsModal" class="fixed inset-x-4 top-[10%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-lg bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4 max-h-[85vh] overflow-y-auto">
+    <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+      <div>
+        <h3 id="modalOrderTitle" class="text-sm font-serif font-bold text-white uppercase tracking-wider">Order Items</h3>
+        <p id="modalOrderSub" class="text-[10px] text-slate-400 font-mono"></p>
+      </div>
+      <button onclick="closeOrderModal()" class="text-slate-400 hover:text-white p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <div id="modalOrderItemsList" class="space-y-2.5 text-xs divide-y divide-gold-500/10"></div>
+  </div>
+
   <!-- SCRIPT ENGINE -->
   <script>
     const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
@@ -509,6 +621,8 @@
 
     let cachedHierarchy = [];
     let cachedProducts = [];
+    let cachedOrders = [];
+    let cachedUsers = [];
     let imageItemList = [];
     let selectedBannerFile = null;
 
@@ -530,6 +644,9 @@
         targetBtn.className = "tab-btn px-4 py-2.5 rounded-xl bg-gold-500 text-noir-950 font-bold transition flex items-center gap-2 shrink-0 shadow";
       }
 
+      if (tabId === 'orders') fetchOrdersData();
+      if (tabId === 'users') fetchUsersData();
+
       if (window.lucide) window.lucide.createIcons();
     };
 
@@ -546,6 +663,8 @@
         document.getElementById('prodRandomId').value = generateRandomProductId();
         fetchAllData();
         fetchBanners();
+        fetchOrdersData();
+        fetchUsersData();
       } else {
         loginSection.classList.remove('hidden');
         dashSection.classList.add('hidden');
@@ -592,7 +711,187 @@
       }
     }
 
-    // BANNER CONTROLLER
+    // ==========================================================
+    // ORDERS CONTROLLER (WITH SUPABASE REALTIME UPDATES)
+    // ==========================================================
+    async function fetchOrdersData() {
+      if (!db) return;
+      const { data: orders, error } = await db.from('orders').select('*').order('created_at', { ascending: false });
+      if (error) {
+        console.warn("Orders fetch error:", error.message);
+        return;
+      }
+
+      cachedOrders = orders || [];
+      
+      // Update Metrics
+      const totalRev = cachedOrders.reduce((sum, ord) => sum + Number(ord.amount || 0), 0);
+      document.getElementById('statTotalSales').innerText = `₹${totalRev.toLocaleString('en-IN')}`;
+      document.getElementById('statTotalOrders').innerText = cachedOrders.length;
+
+      const tbody = document.getElementById('ordersTableBody');
+      if (!cachedOrders.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">No customer orders placed yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = cachedOrders.map(o => {
+        const dateStr = new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const itemsList = Array.isArray(o.items) ? o.items : [];
+        const status = o.status || 'paid';
+
+        return `
+          <tr class="hover:bg-noir-950/40 transition">
+            <td class="p-3">
+              <div class="font-mono font-bold text-gold-400">${o.order_id || 'ZIV-ORD'}</div>
+              <div class="text-[10px] text-slate-500">${dateStr}</div>
+            </td>
+            <td class="p-3">
+              <div class="font-semibold text-white">${o.customer_name || 'Guest User'}</div>
+              <div class="text-[11px] text-slate-400 font-mono">${o.customer_phone ? '+91 ' + o.customer_phone : 'N/A'}</div>
+              <div class="text-[10px] text-slate-500">${o.customer_email || ''}</div>
+            </td>
+            <td class="p-3 max-w-[200px]">
+              <div class="text-slate-300 line-clamp-2 text-[11px]" title="${o.shipping_address || ''}">
+                ${o.shipping_address || 'No address provided'}
+              </div>
+            </td>
+            <td class="p-3 font-mono font-bold text-white text-sm">
+              ₹${Number(o.amount).toLocaleString('en-IN')}
+            </td>
+            <td class="p-3 font-mono text-[10px] text-slate-400">
+              ${o.razorpay_payment_id || 'Direct'}
+            </td>
+            <td class="p-3">
+              <button onclick="viewOrderItems('${o.order_id}')" class="px-2.5 py-1 rounded-lg bg-noir-950 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition font-bold text-[10px] flex items-center gap-1">
+                <i data-lucide="eye" class="w-3 h-3"></i>
+                <span>${itemsList.length} Item${itemsList.length > 1 ? 's' : ''}</span>
+              </button>
+            </td>
+            <td class="p-3 text-right">
+              <select onchange="updateOrderStatus('${o.order_id}', this.value)" class="bg-noir-950 border ${status === 'delivered' ? 'border-emerald-500 text-emerald-400' : (status === 'dispatched' ? 'border-sky-500 text-sky-400' : 'border-gold-500 text-gold-400')} rounded-lg px-2 py-1 text-[11px] font-bold focus:outline-none cursor-pointer">
+                <option value="paid" ${status === 'paid' ? 'selected' : ''}>Paid / Processing</option>
+                <option value="dispatched" ${status === 'dispatched' ? 'selected' : ''}>Dispatched</option>
+                <option value="delivered" ${status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    window.updateOrderStatus = async function(orderId, newStatus) {
+      if (!db) return;
+      const { error } = await db.from('orders').update({ status: newStatus }).eq('order_id', orderId);
+      if (error) {
+        alert("Status update failed: " + error.message);
+      } else {
+        fetchOrdersData();
+      }
+    };
+
+    window.viewOrderItems = function(orderId) {
+      const order = cachedOrders.find(o => o.order_id === orderId);
+      if (!order) return;
+
+      document.getElementById('modalOrderTitle').innerText = `Order: ${order.order_id}`;
+      document.getElementById('modalOrderSub').innerText = `Customer: ${order.customer_name} | Total: ₹${Number(order.amount).toLocaleString('en-IN')}`;
+
+      const items = Array.isArray(order.items) ? order.items : [];
+      const listContainer = document.getElementById('modalOrderItemsList');
+
+      listContainer.innerHTML = items.map(item => `
+        <div class="flex items-center gap-3 pt-2">
+          <img src="${item.thumbnail_url || item.image || item.image_url || 'Cover.png'}" class="w-12 h-14 object-cover rounded-lg bg-noir-950 border border-gold-500/20 shrink-0" onerror="this.src='Cover.png'" />
+          <div class="flex-1">
+            <h5 class="font-semibold text-white text-xs">${item.title}</h5>
+            <div class="text-[10px] text-slate-400 font-mono">
+              SKU: ${item.product_code || 'N/A'} ${item.size ? '| Size: ' + item.size : ''}
+            </div>
+            <div class="text-xs font-bold text-gold-400 mt-0.5">
+              ₹${Number(item.price).toLocaleString('en-IN')} × ${item.quantity || 1}
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('orderDetailsModalBackdrop').classList.remove('hidden');
+      document.getElementById('orderDetailsModal').classList.remove('hidden');
+      if (window.lucide) window.lucide.createIcons();
+    };
+
+    window.closeOrderModal = function() {
+      document.getElementById('orderDetailsModalBackdrop').classList.add('hidden');
+      document.getElementById('orderDetailsModal').classList.add('hidden');
+    };
+
+    // ==========================================================
+    // USERS DIRECTORY CONTROLLER
+    // ==========================================================
+    async function fetchUsersData() {
+      if (!db) return;
+      const { data: users, error } = await db.from('users').select('*').order('created_at', { ascending: false });
+      if (error) {
+        console.warn("Users fetch error:", error.message);
+        return;
+      }
+
+      cachedUsers = users || [];
+      document.getElementById('statTotalUsers').innerText = cachedUsers.length;
+
+      const tbody = document.getElementById('usersTableBody');
+      if (!cachedUsers.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">No registered members yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = cachedUsers.map(u => {
+        const dateJoined = new Date(u.created_at || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const addresses = Array.isArray(u.addresses) ? u.addresses : [];
+
+        return `
+          <tr class="hover:bg-noir-950/40 transition">
+            <td class="p-3">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center font-serif font-black text-gold-400 text-xs">
+                  ${(u.name || 'U').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div class="font-semibold text-white">${u.name || 'VIP Member'}</div>
+                  <span class="text-[9px] font-mono text-gold-400 uppercase bg-gold-500/10 px-1.5 py-0.2 rounded border border-gold-500/20">Privé Member</span>
+                </div>
+              </div>
+            </td>
+            <td class="p-3 font-mono text-slate-300 font-bold">
+              +91 ${u.phone || 'N/A'}
+            </td>
+            <td class="p-3 text-slate-400 text-[11px]">
+              ${u.email || 'Not Provided'}
+            </td>
+            <td class="p-3">
+              <div class="text-[11px] text-slate-300 font-semibold">
+                ${addresses.length} Location${addresses.length > 1 ? 's' : ''} Stored
+              </div>
+              <div class="text-[10px] text-slate-500 truncate max-w-[220px]">
+                ${addresses[0]?.address ? addresses[0].address : 'No address added'}
+              </div>
+            </td>
+            <td class="p-3 text-right font-mono text-slate-400 text-[11px]">
+              ${dateJoined}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // ==========================================================
+    // HERO BANNERS CONTROLLER
+    // ==========================================================
     function handleBannerPreview(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -690,7 +989,9 @@
       fetchBanners();
     }
 
-    // NUMBER-WISE MULTI-IMAGE HANDLERS
+    // ==========================================================
+    // MULTI-IMAGE HANDLERS (UNLIMITED & REORDERABLE)
+    // ==========================================================
     function handleImageSelection(event) {
       const files = Array.from(event.target.files);
       if (!files.length) return;
@@ -781,7 +1082,7 @@
     }
 
     // ==========================================================
-    // MAIN MENUS CONTROLLER (ADD / EDIT / DELETE)
+    // MAIN MENUS CONTROLLER
     // ==========================================================
     async function handleCreateOrUpdateMenu(e) {
       e.preventDefault();
@@ -800,12 +1101,10 @@
       };
 
       if (editDbId) {
-        // UPDATE
         const { error } = await db.from('MenuSubmenu').update(payload).eq('id', editDbId);
         if (error) alert("Update error: " + error.message);
         else alert("Main Menu category updated successfully!");
       } else {
-        // INSERT
         payload["SubmenuID"] = null;
         payload["SubName"] = null;
         payload["SubMenu Serial"] = 0;
@@ -848,9 +1147,7 @@
       if (!confirm("Are you sure you want to remove this Menu?")) return;
       const { error } = await db.from('MenuSubmenu').delete().eq('id', id);
       if (error) alert(error.message);
-      else {
-        fetchAllData();
-      }
+      else fetchAllData();
     };
 
     window.toggleMenuStatus = async function(id, currentStatus) {
@@ -859,7 +1156,7 @@
     };
 
     // ==========================================================
-    // SUB-MENUS CONTROLLER (ADD / EDIT / DELETE)
+    // SUB-MENUS CONTROLLER
     // ==========================================================
     async function handleCreateOrUpdateSubmenu(e) {
       e.preventDefault();
@@ -883,12 +1180,10 @@
       };
 
       if (editDbId) {
-        // UPDATE
         const { error } = await db.from('MenuSubmenu').update(payload).eq('id', editDbId);
         if (error) alert("Update error: " + error.message);
         else alert("Sub-Menu updated successfully!");
       } else {
-        // INSERT
         const { error } = await db.from('MenuSubmenu').insert([payload]);
         if (error) alert("Insert error: " + error.message);
         else alert("Sub-Menu saved successfully!");
@@ -926,7 +1221,9 @@
       if (window.lucide) window.lucide.createIcons();
     };
 
-    // EDIT PRODUCT & RESET ACTIONS
+    // ==========================================================
+    // PRODUCT ACTIONS & FORM MANAGEMENT
+    // ==========================================================
     window.startEditProduct = function(productId) {
       const product = cachedProducts.find(p => p.product_id === productId);
       if (!product) return;
@@ -1007,7 +1304,6 @@
       if (window.lucide) window.lucide.createIcons();
     };
 
-    // CREATE OR UPDATE CONTROLLER
     async function handleCreateOrUpdateProduct(e) {
       e.preventDefault();
       const isEditing = document.getElementById('isEditingMode').value === "true";
@@ -1120,6 +1416,9 @@
       document.getElementById('submenuCode').value = `${selectedMenu}${nextLetter}`;
     }
 
+    // ==========================================================
+    // DATA LOADER & BOOTSTRAP
+    // ==========================================================
     async function fetchAllData() {
       if (!db) return;
       const { data: hierarchy } = await db.from('MenuSubmenu').select('*').order('Menu Serial', { ascending: true });
@@ -1185,7 +1484,7 @@
         }).join('');
       }
 
-      // Render Main Menus Action Table (Distinct Parent rows)
+      // Render Main Menus Action Table
       const menuTableBody = document.getElementById('mainMenusTableBody');
       const parentOnlyRows = cachedHierarchy.filter(m => !m.SubmenuID || m.SubmenuID === 'NULL');
       if (parentOnlyRows.length === 0) {
