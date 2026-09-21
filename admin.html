@@ -599,7 +599,7 @@
 
   </div>
 
-  <!-- ORDER DETAILS MODAL (VIEW ORDERED ITEMS) -->
+  <!-- ORDER DETAILS MODAL (VIEW ORDERED ITEMS WITH PHOTO, SIZE & COLOR) -->
   <div id="orderDetailsModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm" onclick="closeOrderModal()"></div>
   <div id="orderDetailsModal" class="fixed inset-x-4 top-[10%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-lg bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4 max-h-[85vh] overflow-y-auto">
     <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
@@ -811,6 +811,9 @@
       }
     };
 
+    // ==========================================================
+    // ORDER ITEMS MODAL (ENHANCED WITH COLOR, SIZE & VARIANT IMAGE)
+    // ==========================================================
     window.viewOrderItems = function(orderId) {
       const order = cachedOrders.find(o => o.order_id === orderId);
       if (!order) return;
@@ -821,20 +824,41 @@
       const items = Array.isArray(order.items) ? order.items : [];
       const listContainer = document.getElementById('modalOrderItemsList');
 
-      listContainer.innerHTML = items.map(item => `
-        <div class="flex items-center gap-3 pt-2">
-          <img src="${item.thumbnail_url || item.image || item.image_url || 'Cover.png'}" class="w-12 h-14 object-cover rounded-lg bg-noir-950 border border-gold-500/20 shrink-0" onerror="this.src='Cover.png'" />
-          <div class="flex-1">
-            <h5 class="font-semibold text-white text-xs">${item.title}</h5>
-            <div class="text-[10px] text-slate-400 font-mono">
-              SKU: ${item.product_code || 'N/A'} ${item.size ? '| Size: ' + item.size : ''}
-            </div>
-            <div class="text-xs font-bold text-gold-400 mt-0.5">
-              ₹${Number(item.price).toLocaleString('en-IN')} × ${item.quantity || 1}
+      listContainer.innerHTML = items.map(item => {
+        const displayPhoto = item.thumbnail_url || item.image || item.image_url || 'Cover.png';
+        const colorName = item.color || item.colour || '';
+        const sizeName = item.size || '';
+
+        return `
+          <div class="flex items-center gap-3.5 pt-3 pb-2">
+            <img src="${displayPhoto}" class="w-14 h-16 object-cover rounded-xl bg-noir-950 border border-gold-500/30 shrink-0 shadow-md" onerror="this.src='Cover.png'" />
+            <div class="flex-1 space-y-1">
+              <h5 class="font-semibold text-white text-xs leading-snug">${item.title}</h5>
+              
+              <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <span class="text-[10px] text-slate-400 font-mono">SKU: <b class="text-slate-200">${item.product_code || 'ZIV'}</b></span>
+                
+                ${sizeName ? `
+                  <span class="text-[9px] px-2 py-0.5 bg-noir-950 border border-gold-500/30 rounded-md text-gold-300 font-bold font-mono">
+                    Size: ${sizeName}
+                  </span>
+                ` : ''}
+
+                ${colorName ? `
+                  <span class="text-[9px] px-2 py-0.5 bg-gold-500/10 border border-gold-400/40 rounded-md text-gold-400 font-bold font-mono">
+                    Color: ${colorName}
+                  </span>
+                ` : ''}
+              </div>
+
+              <div class="text-xs font-bold text-white pt-0.5">
+                <span class="text-gold-400">₹${Number(item.price).toLocaleString('en-IN')}</span> 
+                <span class="text-slate-400 font-normal">× ${item.quantity || 1} units</span>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       document.getElementById('orderDetailsModalBackdrop').classList.remove('hidden');
       document.getElementById('orderDetailsModal').classList.remove('hidden');
