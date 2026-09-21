@@ -234,7 +234,7 @@
 
       <div>
         <label class="block text-slate-300 font-semibold mb-1">Complete Delivery Address & Pincode</label>
-        <textarea id="custAddress" required rows="3" oninput="checkPincodeForCod()" placeholder="House/Flat No, Street, Landmark, City, State, PIN (e.g. 829104)" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
+        <textarea id="custAddress" required rows="3" oninput="checkPincodeForCod()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
       </div>
 
       <!-- PAYMENT MODE SELECTOR (COD AUTO UNLOCKS FOR PIN 829104) -->
@@ -492,7 +492,6 @@
 
       if (has829104) {
         codOption.classList.remove('hidden');
-        noteEl.innerHTML = `✅ Pincode <b class="text-emerald-400 font-mono">829104 Verified</b>! Aap Cash on Delivery (COD) ya Online Razorpay choose kar sakte hain.`;
       } else {
         codOption.classList.add('hidden');
         // Reset to online if COD was previously selected
