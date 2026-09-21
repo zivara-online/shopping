@@ -693,7 +693,7 @@
         localStorage.removeItem('zivara_cart');
         closeCustomerDetailsModal();
 
-        alert(`🎉 Cash on Delivery Order Placed Successfully!\n\nOrder ID: ${orderId}\nTotal to Pay at Delivery: ₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}\nDestination: Pincode 829104\n\nAapka luxury order confirm ho chuka hai!`);
+        alert(`🎉 Cash on Delivery Order Placed Successfully!\n\nOrder ID: ${orderId}\nTotal to Pay at Delivery: ₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}\nDestination: Pincode 829104\n\n`);
         window.location.href = "index.html";
 
       } catch (err) {
