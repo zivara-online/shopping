@@ -57,12 +57,12 @@
   <!-- PRODUCT DETAIL SECTION -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12 flex-1 w-full">
     
-    <!-- MAIN DETAIL CARD (FLIPKART STYLE: 2 COLUMNS) -->
+    <!-- MAIN DETAIL CARD -->
     <div id="productDetailContainer" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-noir-900/70 border border-gold-500/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
       <div class="lg:col-span-12 py-20 text-center text-gold-400 animate-pulse">Loading bespoke product details...</div>
     </div>
 
-    <!-- HORIZONTAL ROW 1: SIMILAR ITEMS IN THIS COLLECTION (10 ITEMS ONLY) -->
+    <!-- HORIZONTAL ROW 1: SIMILAR ITEMS IN THIS COLLECTION -->
     <section class="space-y-4 pt-4 border-t border-gold-500/20">
       <div class="flex items-center justify-between">
         <div>
@@ -82,7 +82,7 @@
       <div id="relatedRow" class="flex gap-4 overflow-x-auto custom-scrollbar scroll-smooth py-2"></div>
     </section>
 
-    <!-- HORIZONTAL ROW 2: CUSTOMERS ALSO VIEWED (10 ITEMS ONLY) -->
+    <!-- HORIZONTAL ROW 2: CUSTOMERS ALSO VIEWED -->
     <section class="space-y-4">
       <div class="flex items-center justify-between">
         <div>
@@ -102,7 +102,7 @@
       <div id="trendingRow" class="flex gap-4 overflow-x-auto custom-scrollbar scroll-smooth py-2"></div>
     </section>
 
-    <!-- VERTICAL INFINITE DISCOVERY FEED (CURRENT PRODUCT EXCLUDED) -->
+    <!-- VERTICAL INFINITE DISCOVERY FEED -->
     <section class="space-y-6 pt-6 border-t border-gold-500/20">
       <div class="flex items-center justify-between">
         <div>
@@ -137,9 +137,13 @@
     let currentProduct = null;
     let selectedSize = '';
     let selectedColor = '';
+    let currentActivePhoto = ''; // Tracks currently selected variant photo
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
 
-    // Infinite Feed States
+    // Slider & Feed States
+    let detailImagesList = [];
+    let currentImageIndex = 0;
+    let detailAutoSlideInterval = null;
     let feedOffset = 0;
     const FEED_LIMIT = 50;
     let isFeedLoading = false;
@@ -158,7 +162,7 @@
       if (badge) badge.innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
     }
 
-    // 1. ROBUST VIDEO EMBED PARSER (NO-BRANDING & CLEAN CONTROLS)
+    // 1. ROBUST VIDEO EMBED PARSER
     function formatVideoEmbed(url) {
       if (!url) return '';
       const cleanUrl = url.trim();
@@ -182,39 +186,34 @@
       if (videoId) {
         return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&disablekb=1&fs=0`;
       }
-
       return cleanUrl;
     }
 
-    // 2. INLINE VIDEO PLAYER (CSS MASKING & 135% ZOOM CROP TO HIDE ALL YOUTUBE UI)
+    // 2. INLINE VIDEO PLAYER
     function playInlineVideo(rawUrl, btn) {
       const frame = document.getElementById('mediaViewerFrame');
       if (!frame || !rawUrl) return;
+
+      if (detailAutoSlideInterval) clearInterval(detailAutoSlideInterval);
 
       const embedUrl = formatVideoEmbed(rawUrl);
 
       if (embedUrl.includes('youtube.com/embed/')) {
         frame.innerHTML = `
           <div class="relative w-full h-full overflow-hidden flex items-center justify-center bg-black rounded-2xl">
-            <!-- 138% Scale & Absolute Center Clips Channel, Title, Like & Share buttons outside border -->
             <iframe 
               src="${embedUrl}" 
               class="w-[138%] h-[138%] max-w-none pointer-events-none border-0 object-cover transform scale-110" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               tabindex="-1">
             </iframe>
-            
-            <!-- Click Shield: Prevents user clicks from jumping to YouTube channel -->
             <div class="absolute inset-0 z-20 bg-transparent cursor-default"></div>
-
-            <!-- Luxury Studio Audio Badge -->
             <div class="absolute bottom-3 right-3 z-30 bg-noir-950/85 border border-gold-500/30 text-gold-400 text-[9px] font-mono px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
               <i data-lucide="video" class="w-3 h-3"></i> Studio Reel
             </div>
           </div>
         `;
       } else {
-        // Direct MP4 / CDN Video file
         frame.innerHTML = `
           <video 
             src="${rawUrl}" 
@@ -228,7 +227,6 @@
         `;
       }
 
-      // Active state styling for thumbnail buttons
       document.querySelectorAll('.thumbnail-btn').forEach(b => {
         b.className = "thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border border-gold-500/20 bg-noir-950 shrink-0 transition";
       });
@@ -256,7 +254,7 @@
         currentProduct = data;
         renderMainDetail(currentProduct);
         loadRelatedRows(currentProduct);
-        loadInfiniteFeed(); // Automatically excludes current viewing item
+        loadInfiniteFeed();
       } catch (e) {
         document.getElementById('productDetailContainer').innerHTML = `
           <div class="lg:col-span-12 py-16 text-center text-rose-400 space-y-3">
@@ -266,10 +264,7 @@
       }
     }
 
-let detailImagesList = [];
-    let currentImageIndex = 0;
-    let detailAutoSlideInterval = null;
-
+    // 4. RENDER MAIN PRODUCT VIEW
     function renderMainDetail(p) {
       const container = document.getElementById('productDetailContainer');
       const hasDiscount = p.original_price && p.original_price > p.price;
@@ -278,6 +273,7 @@ let detailImagesList = [];
       const primaryImg = p.thumbnail_url || p.image_url || 'Cover.png';
       detailImagesList = [primaryImg, ...(p.gallery_images || [])];
       currentImageIndex = 0;
+      currentActivePhoto = primaryImg;
 
       const sizes = p.available_sizes || [];
       const colors = p.available_colors || [];
@@ -285,7 +281,7 @@ let detailImagesList = [];
       selectedColor = colors[0] || '';
 
       container.innerHTML = `
-        <!-- LEFT: 3-SEC AUTO-SLIDING MEDIA SHOWCASE -->
+        <!-- LEFT: AUTO-SLIDING MEDIA SHOWCASE -->
         <div class="lg:col-span-5 space-y-4">
           <div id="mediaViewerFrame" class="relative w-full h-[360px] sm:h-[460px] bg-noir-950 rounded-2xl overflow-hidden border border-gold-500/30 flex items-center justify-center">
             <img id="mainShowcaseImg" src="${primaryImg}" alt="${p.title}" class="w-full h-full object-cover transition-opacity duration-500" onerror="this.src='Cover.png'" />
@@ -295,7 +291,7 @@ let detailImagesList = [];
           <!-- Thumbnails Row -->
           <div class="flex gap-2.5 overflow-x-auto custom-scrollbar py-1">
             ${detailImagesList.map((img, i) => `
-              <button onclick="switchImage('${img}', this,${i})" data-index="${i}" class="thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border ${i === 0 ? 'border-gold-400 ring-2 ring-gold-400/40' : 'border-gold-500/20'} bg-noir-950 shrink-0 transition">
+              <button onclick="switchImage('${img}', this, ${i})" data-index="${i}" class="thumbnail-btn w-16 h-16 rounded-xl overflow-hidden border ${i === 0 ? 'border-gold-400 ring-2 ring-gold-400/40' : 'border-gold-500/20'} bg-noir-950 shrink-0 transition">
                 <img src="${img}" class="w-full h-full object-cover" onerror="this.src='Cover.png'" />
               </button>
             `).join('')}
@@ -339,7 +335,9 @@ let detailImagesList = [];
           <!-- Variants (Sizes) -->
           ${sizes.length > 0 ? `
             <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Select Size / Fit</label>
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                Select Size / Fit: <span id="displaySelectedSize" class="text-gold-400">${selectedSize}</span>
+              </label>
               <div class="flex flex-wrap gap-2">
                 ${sizes.map((s, idx) => `
                   <button onclick="selectVariantSize('${s}', this)" class="size-btn px-4 py-2 rounded-xl text-xs font-bold border ${idx === 0 ? 'bg-gold-500 text-noir-950 border-gold-400' : 'bg-noir-950 border-gold-500/30 text-slate-300'} transition">
@@ -350,10 +348,12 @@ let detailImagesList = [];
             </div>
           ` : ''}
 
-          <!-- Variants (Colors) -->
+          <!-- Variants (Colors) with Real-Time Display -->
           ${colors.length > 0 ? `
             <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Tone / Material</label>
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                Selected Tone / Color: <span id="displaySelectedColor" class="text-gold-400">${selectedColor}</span>
+              </label>
               <div class="flex flex-wrap gap-2">
                 ${colors.map((c, idx) => `
                   <button onclick="selectVariantColor('${c}', this)" class="color-btn px-4 py-2 rounded-xl text-xs font-bold border ${idx === 0 ? 'bg-gold-500 text-noir-950 border-gold-400' : 'bg-noir-950 border-gold-500/30 text-slate-300'} transition">
@@ -386,7 +386,7 @@ let detailImagesList = [];
       startAutoProductSlider();
     }
 
-    // 3-SECOND AUTOMATIC PRODUCT IMAGE SLIDER
+    // 5. AUTO-SLIDER & IMAGE SWITCHER
     function startAutoProductSlider() {
       if (detailAutoSlideInterval) clearInterval(detailAutoSlideInterval);
       if (detailImagesList.length <= 1) return;
@@ -396,15 +396,16 @@ let detailImagesList = [];
         const nextSrc = detailImagesList[currentImageIndex];
         const nextBtn = document.querySelector(`.thumbnail-btn[data-index="${currentImageIndex}"]`);
         switchImage(nextSrc, nextBtn, currentImageIndex, false);
-      }, 3000); // 3-second auto cycle
+      }, 3000);
     }
 
     function switchImage(src, btn, index, stopTimer = true) {
       if (stopTimer && detailAutoSlideInterval) {
         clearInterval(detailAutoSlideInterval);
-        startAutoProductSlider(); // Reset timer on manual click
+        startAutoProductSlider();
       }
       currentImageIndex = index;
+      currentActivePhoto = src; // Sync active photo for checkout
 
       const frame = document.getElementById('mediaViewerFrame');
       frame.innerHTML = `
@@ -419,23 +420,33 @@ let detailImagesList = [];
       }
     }
 
+    // 6. VARIANT SELECTORS (SIZE & COLOR FIX)
     function selectVariantSize(val, btn) {
       selectedSize = val;
-      document.querySelectorAll('.size-btn').forEach(b => b.className = "size-btn px-4 py-2 rounded-xl text-xs font-bold border bg-noir-950 border-gold-500/30 text-slate-300 transition");
+      const displayEl = document.getElementById('displaySelectedSize');
+      if (displayEl) displayEl.innerText = val;
+
+      document.querySelectorAll('.size-btn').forEach(b => {
+        b.className = "size-btn px-4 py-2 rounded-xl text-xs font-bold border bg-noir-950 border-gold-500/30 text-slate-300 transition";
+      });
       btn.className = "size-btn px-4 py-2 rounded-xl text-xs font-bold border bg-gold-500 text-noir-950 border-gold-400 transition";
     }
 
     function selectVariantColor(val, btn) {
       selectedColor = val;
-      document.querySelectorAll('.color-btn').forEach(b => b.className = "color-btn px-4 py-2 rounded-xl text-xs font-bold border bg-noir-950 border-gold-500/30 text-slate-300 transition");
+      const displayEl = document.getElementById('displaySelectedColor');
+      if (displayEl) displayEl.innerText = val;
+
+      document.querySelectorAll('.color-btn').forEach(b => {
+        b.className = "color-btn px-4 py-2 rounded-xl text-xs font-bold border bg-noir-950 border-gold-500/30 text-slate-300 transition";
+      });
       btn.className = "color-btn px-4 py-2 rounded-xl text-xs font-bold border bg-gold-500 text-noir-950 border-gold-400 transition";
     }
 
-    // 5. LOAD SLIDE-RIGHT CAROUSEL ROWS (10 ITEMS EACH)
+    // 7. CAROUSEL RECOMMENDATION ROWS
     async function loadRelatedRows(p) {
       if (!db) return;
       try {
-        // Row 1: Related by Menu/Category (Excludes current product, Max 10)
         const { data: related } = await db.from('products')
           .select('*')
           .eq('menu_code', p.menu_code)
@@ -443,7 +454,6 @@ let detailImagesList = [];
           .eq('is_active', true)
           .limit(10);
 
-        // Row 2: Trending / Top Viewed (Excludes current product, Max 10)
         const { data: trending } = await db.from('products')
           .select('*')
           .neq('product_id', p.product_id)
@@ -483,7 +493,7 @@ let detailImagesList = [];
       }).join('');
     }
 
-    // 6. INFINITE DISCOVERY FEED (CURRENT PRODUCT EXCLUDED)
+    // 8. INFINITE FEED
     async function loadInfiniteFeed() {
       if (!db || isFeedLoading || !hasMoreFeed || !currentProduct) return;
       isFeedLoading = true;
@@ -533,7 +543,6 @@ let detailImagesList = [];
       }
     }
 
-    // Auto-scroll infinite pagination
     window.addEventListener('scroll', () => {
       if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
         if (!isFeedLoading && hasMoreFeed) {
@@ -542,27 +551,42 @@ let detailImagesList = [];
       }
     });
 
-    // 7. Cart Handlers
+    // 9. CART HANDLERS (COLOR & CHOSEN PHOTO PASS LOGIC)
     function addCurrentToCart() {
       if (!currentProduct) return;
-      const idx = cart.findIndex(i => i.id === currentProduct.product_id);
+
+      const primaryImg = currentActivePhoto || currentProduct.thumbnail_url || currentProduct.image_url || 'Cover.png';
+      const chosenSize = selectedSize || (currentProduct.available_sizes?.[0] || 'Free Size');
+      const chosenColor = selectedColor || (currentProduct.available_colors?.[0] || 'Standard');
+
+      // Check item with exact same size AND color
+      const idx = cart.findIndex(i => 
+        (i.id === currentProduct.product_id || i.product_id === currentProduct.product_id) && 
+        i.size === chosenSize && 
+        i.color === chosenColor
+      );
+
       if (idx > -1) {
         cart[idx].quantity += 1;
       } else {
         cart.push({
           id: currentProduct.product_id,
+          product_id: currentProduct.product_id,
+          product_code: currentProduct.product_code || 'ZIV',
           title: currentProduct.title,
           price: Number(currentProduct.price),
-          originalPrice: currentProduct.original_price ? Number(currentProduct.original_price) : null,
-          image: currentProduct.thumbnail_url || currentProduct.image_url || 'Cover.png',
-          size: selectedSize,
-          color: selectedColor,
+          original_price: currentProduct.original_price ? Number(currentProduct.original_price) : null,
+          thumbnail_url: primaryImg, // Exact photo of selected variant
+          image: primaryImg,
+          size: chosenSize,
+          color: chosenColor, // Selected Color (e.g. Gray)
           quantity: 1
         });
       }
+
       localStorage.setItem('zivara_cart', JSON.stringify(cart));
       updateCartBadge();
-      alert(`"${currentProduct.title}" added to your shopping bag!`);
+      alert(`"${currentProduct.title}" (${chosenColor} / ${chosenSize}) shopping bag me add ho gaya!`);
     }
 
     function buyNowCurrent() {
