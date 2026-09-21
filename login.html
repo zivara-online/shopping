@@ -29,13 +29,15 @@
       max-width: 100%;
       overflow-x: hidden;
     }
+    .custom-scrollbar::-webkit-scrollbar { display: none; }
+    .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-gold-500 selection:text-noir-950">
 
-  <!-- TOP LUXURY STRIP -->
+  <!-- TOP STRIP -->
   <div class="bg-noir-900 text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
-    ✨ Zivara Privé | Member Concierge, Address Book & VIP Privileges
+    ✨ Zivara Privé | Bespoke Member Access, Order Tracking & Privilege Concierge
   </div>
 
   <!-- NAVBAR -->
@@ -49,16 +51,16 @@
     </a>
   </header>
 
-  <!-- MAIN VIEW CONTAINER -->
-  <main class="flex-1 flex items-center justify-center p-4 sm:p-6 my-6 w-full max-w-4xl mx-auto">
+  <!-- MAIN VIEW -->
+  <main class="flex-1 flex items-center justify-center p-4 sm:p-6 my-6 w-full max-w-5xl mx-auto">
 
-    <!-- 1. AUTHENTICATED USER DASHBOARD VIEW -->
+    <!-- 1. AUTHENTICATED USER DASHBOARD (WITH FLIPKART STYLE ORDERS) -->
     <div id="loggedInDashboard" class="w-full bg-noir-900 rounded-3xl border border-gold-500/30 shadow-2xl p-6 sm:p-10 space-y-8 hidden">
       
-      <!-- User Profile Header Card -->
+      <!-- User Profile Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-gold-500/20">
         <div class="flex items-center gap-4">
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-gold-600 to-gold-400 flex items-center justify-center text-noir-950 font-serif font-black text-2xl shadow-lg" id="userAvatarChar">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-gold-600 to-gold-400 flex items-center justify-center text-noir-950 font-serif font-black text-2xl shadow-lg uppercase" id="userAvatarChar">
             Z
           </div>
           <div class="space-y-0.5">
@@ -73,55 +75,80 @@
           </div>
         </div>
 
-        <button onclick="handleSignOut()" class="flex items-center gap-2 px-5 py-2.5 bg-rose-950/40 border border-rose-500/30 hover:bg-rose-900/60 text-rose-300 text-xs font-bold rounded-xl transition self-start sm:self-auto">
+        <button onclick="handleSignOut()" class="flex items-center gap-2 px-5 py-2.5 bg-rose-950/40 border border-rose-500/30 hover:bg-rose-900/60 text-rose-300 text-xs font-bold rounded-xl transition self-start sm:self-auto cursor-pointer">
           <i data-lucide="log-out" class="w-4 h-4"></i>
           <span>Sign Out</span>
         </button>
       </div>
 
-      <!-- VIP Benefits Strip -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div class="bg-noir-950 border border-gold-500/20 p-4 rounded-2xl space-y-1">
-          <div class="text-gold-400 text-xs flex items-center gap-1.5 font-bold">
-            <i data-lucide="crown" class="w-4 h-4"></i> Complimentary Transit
-          </div>
-          <p class="text-[11px] text-slate-400">Zero shipping fees applied across India on your orders.</p>
-        </div>
-        <div class="bg-noir-950 border border-gold-500/20 p-4 rounded-2xl space-y-1">
-          <div class="text-gold-400 text-xs flex items-center gap-1.5 font-bold">
-            <i data-lucide="award" class="w-4 h-4"></i> 100% Certified Assurance
-          </div>
-          <p class="text-[11px] text-slate-400">Insured luxury packaging with lifetime authenticity card.</p>
-        </div>
-        <div class="bg-noir-950 border border-gold-500/20 p-4 rounded-2xl space-y-1">
-          <div class="text-gold-400 text-xs flex items-center gap-1.5 font-bold">
-            <i data-lucide="shield-check" class="w-4 h-4"></i> Concierge Priority
-          </div>
-          <p class="text-[11px] text-slate-400">Dedicated 24/7 client care advisor for all custom fits.</p>
-        </div>
+      <!-- TABS NAVIGATION: ORDERS VS SAVED ADDRESSES -->
+      <div class="flex items-center gap-2 border-b border-gold-500/15 pb-2 text-xs font-bold uppercase tracking-wider">
+        <button onclick="switchProfileTab('orders')" id="tabBtn-orders" class="px-4 py-2 rounded-xl bg-gold-500 text-noir-950 transition flex items-center gap-2">
+          <i data-lucide="package" class="w-4 h-4"></i> My Orders & Tracking
+        </button>
+        <button onclick="switchProfileTab('addresses')" id="tabBtn-addresses" class="px-4 py-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300 hover:text-white transition flex items-center gap-2">
+          <i data-lucide="map-pin" class="w-4 h-4"></i> Saved Addresses
+        </button>
       </div>
 
-      <!-- Address Book Section -->
-      <div class="space-y-4">
+      <!-- SECTION A: ORDERS & TRACKING -->
+      <div id="profileTab-orders" class="space-y-8">
+        
+        <!-- 1. ACTIVE / IN-TRANSIT ORDERS (FLIPKART STYLE) -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-serif font-bold text-white tracking-tight flex items-center gap-2">
+              <i data-lucide="truck" class="w-4 h-4 text-gold-400"></i> Active & In-Transit Orders
+            </h3>
+            <span id="activeOrdersBadge" class="text-[10px] font-mono text-gold-400 bg-gold-500/10 border border-gold-500/30 px-2.5 py-0.5 rounded-full">0 Orders</span>
+          </div>
+
+          <div id="activeOrdersContainer" class="space-y-3">
+            <div class="p-6 text-center text-xs text-slate-500 border border-gold-500/10 rounded-2xl bg-noir-950">
+              No active orders right now. Explore the collection to place your order.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. DELIVERED ORDER HISTORY ARCHIVE -->
+        <div class="space-y-4 pt-4 border-t border-gold-500/10">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-serif font-bold text-slate-300 tracking-tight flex items-center gap-2">
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Delivered Orders History
+            </h3>
+            <span id="deliveredOrdersBadge" class="text-[10px] font-mono text-slate-400 bg-noir-950 border border-slate-700 px-2.5 py-0.5 rounded-full">0 Orders</span>
+          </div>
+
+          <div id="deliveredOrdersContainer" class="space-y-3">
+            <div class="p-6 text-center text-xs text-slate-500 border border-gold-500/10 rounded-2xl bg-noir-950">
+              No completed orders in history yet.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION B: SAVED ADDRESSES -->
+      <div id="profileTab-addresses" class="hidden space-y-4">
         <div class="flex items-center justify-between">
           <div>
             <h3 class="text-base font-serif font-bold text-white tracking-tight flex items-center gap-2">
-              <i data-lucide="map-pin" class="w-4 h-4 text-gold-400"></i> Saved Delivery Addresses
+              <i data-lucide="map-pin" class="w-4 h-4 text-gold-400"></i> Saved Delivery Locations
             </h3>
-            <p class="text-xs text-slate-400">Manage addresses synced with your account for instant one-click checkout.</p>
+            <p class="text-xs text-slate-400">Saved locations for instant checkout on Zivara Maison.</p>
           </div>
-          <button onclick="toggleNewAddressForm()" class="px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 text-xs font-bold rounded-xl transition shadow flex items-center gap-1.5">
-            <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[3]"></i> Add Address
+          <button onclick="toggleNewAddressForm()" class="px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 text-xs font-bold rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[3]"></i> Add Location
           </button>
         </div>
 
-        <!-- Add Address Form Accordion -->
+        <!-- Add Address Form -->
         <div id="newAddressFormContainer" class="hidden bg-noir-950 border border-gold-500/30 rounded-2xl p-5 space-y-4">
           <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider">Add New Shipping Location</h4>
           <form onsubmit="handleAddNewAddress(event)" class="space-y-3 text-xs">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-slate-400 mb-1">Location Tag (Home / Office / Studio)</label>
+                <label class="block text-slate-400 mb-1">Tag (Home / Office / Studio)</label>
                 <input type="text" id="addrTag" required placeholder="e.g. Home" class="w-full bg-noir-900 border border-gold-500/20 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-gold-400" />
               </div>
               <div>
@@ -132,41 +159,37 @@
 
             <div>
               <label class="block text-slate-400 mb-1">Complete Address & Landmark</label>
-              <textarea id="addrText" required rows="2" placeholder="House/Flat No., Apartment, Street, Landmark, City, State" class="w-full bg-noir-900 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
+              <textarea id="addrText" required rows="2" placeholder="House/Flat No., Street, Landmark, City, State" class="w-full bg-noir-900 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
             </div>
 
             <div class="flex items-center gap-3 pt-1">
-              <button type="submit" id="saveAddrBtn" class="px-5 py-2.5 bg-gold-500 hover:bg-gold-400 text-noir-950 font-bold rounded-xl transition">
+              <button type="submit" id="saveAddrBtn" class="px-5 py-2.5 bg-gold-500 hover:bg-gold-400 text-noir-950 font-bold rounded-xl transition cursor-pointer">
                 Save Location
               </button>
-              <button type="button" onclick="toggleNewAddressForm()" class="px-4 py-2.5 text-slate-400 hover:text-white transition">
+              <button type="button" onclick="toggleNewAddressForm()" class="px-4 py-2.5 text-slate-400 hover:text-white transition cursor-pointer">
                 Cancel
               </button>
             </div>
           </form>
         </div>
 
-        <!-- Addresses List Grid -->
-        <div id="addressesListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="p-6 text-center text-xs text-slate-500 col-span-full border border-gold-500/10 rounded-2xl bg-noir-950">
-            No saved addresses found. Add your primary residence to enable fast checkout.
-          </div>
-        </div>
+        <!-- Addresses List -->
+        <div id="addressesListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
       </div>
 
     </div>
 
-    <!-- 2. PURE MOBILE OTP AUTHENTICATION VIEW -->
+    <!-- 2. LOGIN / OTP CARD -->
     <div id="authBoxContainer" class="w-full max-w-md bg-noir-900 rounded-3xl border border-gold-500/30 shadow-2xl overflow-hidden p-7 sm:p-9 space-y-6">
 
-      <!-- STEP 1: MOBILE NUMBER INPUT -->
+      <!-- STEP 1: MOBILE INPUT -->
       <section id="stepPhone" class="space-y-6">
         <div class="text-center space-y-1.5">
           <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
             Member Access
           </span>
           <h1 class="text-2xl font-serif text-white tracking-tight pt-1">Sign In to Zivara</h1>
-          <p class="text-xs text-slate-400">Enter your 10-digit mobile number to access orders & privileges</p>
+          <p class="text-xs text-slate-400">Enter your 10-digit mobile number to view orders & privileges</p>
         </div>
 
         <form onsubmit="handleSendOtp(event)" class="space-y-4">
@@ -184,19 +207,18 @@
                 class="w-full pl-16 pr-4 py-3 bg-noir-950 border border-gold-500/20 rounded-xl text-sm font-semibold tracking-wide text-white focus:outline-none focus:border-gold-400 transition"
               />
             </div>
-            <p class="text-[11px] text-slate-500 mt-2">A 6-digit verification code will be authorized.</p>
           </div>
 
           <button 
             type="submit" 
-            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
+            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
             <span>Proceed with OTP</span>
             <i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>
           </button>
         </form>
       </section>
 
-      <!-- STEP 2: 6-DIGIT OTP VERIFICATION -->
+      <!-- STEP 2: OTP INPUT -->
       <section id="stepOtp" class="space-y-6 hidden">
         <div class="text-center space-y-1.5">
           <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
@@ -205,7 +227,7 @@
           <h2 class="text-2xl font-serif text-white tracking-tight pt-1">Verify Credentials</h2>
           <p class="text-xs text-slate-400">
             Sent to <span id="displayPhone" class="font-bold text-slate-200">+91 XXXXXXXXXX</span> 
-            <button onclick="editPhone()" class="text-gold-400 font-bold ml-1 hover:underline text-[11px]">Edit</button>
+            <button onclick="editPhone()" class="text-gold-400 font-bold ml-1 hover:underline text-[11px] cursor-pointer">Edit</button>
           </p>
         </div>
 
@@ -220,73 +242,86 @@
               <input type="text" maxlength="1" class="otp-digit w-10 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
               <input type="text" maxlength="1" class="otp-digit w-10 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
             </div>
-            <p id="otpHint" class="text-[11px] text-center text-slate-400 mt-3">Demo verification OTP: <span class="font-bold text-gold-400">123456</span></p>
-          </div>
-
-          <div class="flex items-center justify-between text-xs">
-            <span id="timerText" class="text-slate-400 font-medium">Resend in <b id="countdown" class="text-slate-200">30</b>s</span>
-            <button type="button" id="resendBtn" onclick="resendOtp()" disabled class="font-bold text-slate-500 cursor-not-allowed">Resend Code</button>
+            <p class="text-[11px] text-center text-slate-400 mt-3">Demo verification OTP: <b class="text-gold-400">123456</b></p>
           </div>
 
           <button 
             type="submit" 
-            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
+            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
             <span>Verify & Enter</span>
             <i data-lucide="shield-check" class="w-4 h-4 text-noir-950"></i>
           </button>
         </form>
       </section>
 
-      <!-- STEP 3: REGISTRATION FOR FIRST-TIME USERS -->
+      <!-- STEP 3: REGISTRATION -->
       <section id="stepRegister" class="space-y-6 hidden">
         <div class="text-center space-y-1.5">
           <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
-            New Privilege Member
+            Welcome to Privé
           </span>
-          <h2 class="text-2xl font-serif text-white tracking-tight pt-1">Profile Onboarding</h2>
-          <p class="text-xs text-slate-400">Set up your profile to sync orders and delivery locations</p>
+          <h2 class="text-2xl font-serif text-white tracking-tight pt-1">Establish Profile</h2>
+          <p class="text-xs text-slate-400">Set up your profile to sync orders and deliveries</p>
         </div>
 
         <form onsubmit="handleCompleteRegistration(event)" class="space-y-4">
           <div>
             <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Full Name</label>
-            <input 
-              type="text" 
-              id="userNameInput" 
-              required 
-              placeholder="e.g. Devendra Sharma" 
-              class="w-full px-4 py-3 bg-noir-950 border border-gold-500/20 text-white rounded-xl text-sm font-medium focus:outline-none focus:border-gold-400 transition"
-            />
+            <input type="text" id="userNameInput" required placeholder="e.g. Praveen Vishwakarma" class="w-full px-4 py-3 bg-noir-950 border border-gold-500/20 text-white rounded-xl text-sm font-medium focus:outline-none focus:border-gold-400 transition" />
           </div>
 
           <div>
             <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">Email Address</label>
-            <input 
-              type="email" 
-              id="userEmailInput" 
-              required 
-              placeholder="devendra@example.com" 
-              class="w-full px-4 py-3 bg-noir-950 border border-gold-500/20 text-white rounded-xl text-sm font-medium focus:outline-none focus:border-gold-400 transition"
-            />
+            <input type="email" id="userEmailInput" required placeholder="praveen@gmail.com" class="w-full px-4 py-3 bg-noir-950 border border-gold-500/20 text-white rounded-xl text-sm font-medium focus:outline-none focus:border-gold-400 transition" />
           </div>
 
           <button 
             type="submit" 
-            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2">
-            <span>Establish Profile</span>
+            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
+            <span>Complete Onboarding</span>
             <i data-lucide="check" class="w-4 h-4 text-noir-950"></i>
           </button>
         </form>
       </section>
 
-      <!-- Security Notice -->
-      <p class="text-[11px] text-slate-500 text-center leading-relaxed border-t border-gold-500/10 pt-4">
-        Zivara Privé guarantees 256-bit encrypted personal data protection.
-      </p>
-
     </div>
 
   </main>
+
+  <!-- FLIPKART STYLE ORDER DETAILS MODAL -->
+  <div id="userOrderDetailsModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm" onclick="closeUserOrderModal()"></div>
+  <div id="userOrderDetailsModal" class="fixed inset-x-4 top-[8%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4 max-h-[85vh] overflow-y-auto">
+    <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+      <div>
+        <h3 id="modalUserOrderTitle" class="text-sm font-serif font-bold text-white uppercase tracking-wider">Order Details</h3>
+        <p id="modalUserOrderSub" class="text-[10px] text-slate-400 font-mono"></p>
+      </div>
+      <button onclick="closeUserOrderModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- FLIPKART STYLE ORDER TRACKING TIMELINE -->
+    <div id="modalOrderTimeline" class="p-4 bg-noir-950 rounded-2xl border border-gold-500/20 space-y-3"></div>
+
+    <!-- ITEMS IN THIS ORDER -->
+    <div class="space-y-2">
+      <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider">Purchased Items</h4>
+      <div id="modalUserOrderItemsList" class="space-y-3 divide-y divide-gold-500/10"></div>
+    </div>
+
+    <!-- SHIPPING ADDRESS & INVOICE -->
+    <div class="pt-3 border-t border-gold-500/20 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+      <div class="space-y-1">
+        <span class="text-slate-400 font-semibold text-[10px] uppercase">Delivery Address:</span>
+        <p id="modalUserOrderAddress" class="text-slate-200 text-[11px] leading-relaxed"></p>
+      </div>
+      <div class="space-y-1 sm:text-right">
+        <span class="text-slate-400 font-semibold text-[10px] uppercase">Total Paid (Razorpay):</span>
+        <h5 id="modalUserOrderTotal" class="text-base font-black text-gold-400 font-mono">₹0</h5>
+      </div>
+    </div>
+  </div>
 
   <!-- LUXURY FOOTER -->
   <footer class="bg-noir-900 text-slate-400 text-xs border-t border-gold-500/20 py-5">
@@ -314,20 +349,17 @@
     const stepRegister = document.getElementById('stepRegister');
     const phoneInput = document.getElementById('phoneInput');
     const displayPhone = document.getElementById('displayPhone');
-    const countdownEl = document.getElementById('countdown');
-    const resendBtn = document.getElementById('resendBtn');
     const otpInputs = document.querySelectorAll('.otp-digit');
 
     let currentPhone = '';
     let currentUserData = null;
-    let timerInterval = null;
-    let timerSeconds = 30;
+    let userOrdersList = [];
 
     function refreshIcons() {
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // 1. AUTO-CHECK LOGGED IN STATE
+    // 1. SESSION INITIALIZER
     async function checkUserSession() {
       const localSession = JSON.parse(localStorage.getItem('zivara_session'));
       if (!localSession || !localSession.phone) {
@@ -337,55 +369,218 @@
         return;
       }
 
-      // Fetch latest profile & address history from Supabase
       if (db) {
         try {
-          const { data, error } = await db.from('users').select('*').eq('phone', localSession.phone).single();
-          if (data && !error) {
+          const { data } = await db.from('users').select('*').eq('phone', localSession.phone).single();
+          if (data) {
             currentUserData = data;
-            localStorage.setItem('zivara_session', JSON.stringify({
-              phone: data.phone,
-              name: data.name,
-              email: data.email
-            }));
             renderDashboard(currentUserData);
+            loadCustomerOrders(data.phone);
             return;
           }
         } catch (e) {
-          console.warn("Session check fallback:", e);
+          console.warn(e);
         }
       }
 
-      // Fallback local render
       currentUserData = {
         name: localSession.name || 'Privé Member',
         phone: localSession.phone,
-        email: localSession.email || 'Registered Member',
-        addresses: localSession.addresses || []
+        email: localSession.email || '',
+        addresses: []
       };
       renderDashboard(currentUserData);
+      loadCustomerOrders(localSession.phone);
     }
 
-    // 2. RENDER USER DASHBOARD & ADDRESSES
     function renderDashboard(user) {
       authBoxContainer.classList.add('hidden');
       loggedInDashboard.classList.remove('hidden');
 
-      document.getElementById('profileNameDisplay').innerText = user.name || 'Privé Member';
+      document.getElementById('profileNameDisplay').innerText = user.name || 'VIP Member';
       document.getElementById('profilePhoneDisplay').innerText = `+91 ${user.phone}`;
-      document.getElementById('profileEmailDisplay').innerText = user.email || 'No email provided';
+      document.getElementById('profileEmailDisplay').innerText = user.email || 'Email not registered';
       document.getElementById('userAvatarChar').innerText = (user.name || 'Z').charAt(0).toUpperCase();
 
       renderAddressBook(user.addresses || []);
       refreshIcons();
     }
 
+    function switchProfileTab(tab) {
+      const ordersSec = document.getElementById('profileTab-orders');
+      const addrSec = document.getElementById('profileTab-addresses');
+      const btnOrders = document.getElementById('tabBtn-orders');
+      const btnAddr = document.getElementById('tabBtn-addresses');
+
+      if (tab === 'orders') {
+        ordersSec.classList.remove('hidden');
+        addrSec.classList.add('hidden');
+        btnOrders.className = "px-4 py-2 rounded-xl bg-gold-500 text-noir-950 transition flex items-center gap-2";
+        btnAddr.className = "px-4 py-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300 hover:text-white transition flex items-center gap-2";
+      } else {
+        ordersSec.classList.add('hidden');
+        addrSec.classList.remove('hidden');
+        btnAddr.className = "px-4 py-2 rounded-xl bg-gold-500 text-noir-950 transition flex items-center gap-2";
+        btnOrders.className = "px-4 py-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300 hover:text-white transition flex items-center gap-2";
+      }
+      refreshIcons();
+    }
+
+    // 2. LOAD CUSTOMER ORDERS (FLIPKART STYLE ACTIVE VS DELIVERED)
+    async function loadCustomerOrders(phone) {
+      if (!db || !phone) return;
+      try {
+        const { data: orders, error } = await db.from('orders')
+          .select('*')
+          .eq('customer_phone', phone)
+          .order('created_at', { ascending: false });
+
+        if (error || !orders) return;
+        userOrdersList = orders;
+
+        const active = orders.filter(o => (o.status || '').toLowerCase() !== 'delivered');
+        const delivered = orders.filter(o => (o.status || '').toLowerCase() === 'delivered');
+
+        document.getElementById('activeOrdersBadge').innerText = `${active.length} Orders`;
+        document.getElementById('deliveredOrdersBadge').innerText = `${delivered.length} Orders`;
+
+        renderOrdersList('activeOrdersContainer', active, false);
+        renderOrdersList('deliveredOrdersContainer', delivered, true);
+        refreshIcons();
+      } catch (err) {
+        console.warn("Orders error:", err);
+      }
+    }
+
+    function renderOrdersList(containerId, list, isDeliveredList) {
+      const container = document.getElementById(containerId);
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 text-center text-xs text-slate-500 border border-gold-500/10 rounded-2xl bg-noir-950">
+            ${isDeliveredList ? 'No completed orders in history.' : 'No active orders in-transit right now.'}
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(order => {
+        const items = Array.isArray(order.items) ? order.items : [];
+        const dateStr = new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const firstItem = items[0] || {};
+        const displayImg = firstItem.thumbnail_url || firstItem.image || 'Cover.png';
+        const isDispatched = order.status === 'dispatched' || order.shiprocket_order_id;
+        const isDelivered = (order.status || '').toLowerCase() === 'delivered';
+
+        return `
+          <div class="bg-noir-950 border ${isDelivered ? 'border-emerald-500/30' : 'border-gold-500/25'} p-4 sm:p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-gold-400/50 transition">
+            
+            <div class="flex items-center gap-4">
+              <img src="${displayImg}" class="w-16 h-20 object-cover rounded-xl bg-noir-900 border border-gold-500/20 shrink-0" onerror="this.src='Cover.png'" />
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-gold-400 font-bold text-xs">${order.order_id}</span>
+                  <span class="text-[9px] text-slate-500">• ${dateStr}</span>
+                </div>
+                <h4 class="font-semibold text-white text-xs sm:text-sm line-clamp-1">${firstItem.title || 'Luxury Piece'} ${items.length > 1 ? `(+${items.length - 1} more)` : ''}</h4>
+                
+                <div class="flex flex-wrap items-center gap-2 pt-0.5">
+                  <span class="text-xs font-bold text-white font-mono">₹${Number(order.amount).toLocaleString('en-IN')}</span>
+                  ${firstItem.size ? `<span class="text-[9px] px-1.5 py-0.5 bg-noir-900 border border-gold-500/20 text-slate-300 rounded font-mono">Size: ${firstItem.size}</span>` : ''}
+                  ${firstItem.color ? `<span class="text-[9px] px-1.5 py-0.5 bg-gold-500/10 border border-gold-500/30 text-gold-400 rounded font-mono font-bold">Color: ${firstItem.color}</span>` : ''}
+                </div>
+
+                <div class="pt-1 flex items-center gap-1.5 text-[11px] font-semibold ${isDelivered ? 'text-emerald-400' : 'text-gold-400'}">
+                  <i data-lucide="${isDelivered ? 'check-circle' : 'truck'}" class="w-3.5 h-3.5"></i>
+                  <span>${isDelivered ? 'Delivered to your address' : (isDispatched ? 'Out for Delivery / In Transit' : 'Order Confirmed & Atelier Packing')}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-gold-500/10">
+              <button onclick="viewUserOrderDetails('${order.order_id}')" class="px-4 py-2 rounded-xl bg-gold-500/10 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition text-xs font-bold flex items-center gap-1 cursor-pointer">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Details
+              </button>
+
+              ${order.awb_code ? `
+                <a href="https://shiprocket.co/tracking/${order.awb_code}" target="_blank" class="px-4 py-2 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-900 transition text-xs font-bold flex items-center gap-1">
+                  <i data-lucide="map" class="w-3.5 h-3.5"></i> Live Map
+                </a>
+              ` : ''}
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 3. FLIPKART STYLE ORDER DETAILS MODAL
+    window.viewUserOrderDetails = function(orderId) {
+      const order = userOrdersList.find(o => o.order_id === orderId);
+      if (!order) return;
+
+      document.getElementById('modalUserOrderTitle').innerText = `Order: ${order.order_id}`;
+      document.getElementById('modalUserOrderSub').innerText = `Placed on ${new Date(order.created_at).toLocaleString('en-IN')}`;
+      document.getElementById('modalUserOrderAddress').innerText = order.shipping_address || 'Registered Address';
+      document.getElementById('modalUserOrderTotal').innerText = `₹${Number(order.amount).toLocaleString('en-IN')}`;
+
+      // Progress Tracker
+      const status = (order.status || 'paid').toLowerCase();
+      const isDispatched = status === 'dispatched' || order.shiprocket_order_id;
+      const isDelivered = status === 'delivered';
+
+      document.getElementById('modalOrderTimeline').innerHTML = `
+        <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+          <span class="text-gold-400">1. Placed</span>
+          <span class="${isDispatched ? 'text-gold-400' : 'text-slate-600'}">2. Dispatched</span>
+          <span class="${isDelivered ? 'text-emerald-400' : 'text-slate-600'}">3. Delivered</span>
+        </div>
+        <div class="w-full bg-noir-900 h-2 rounded-full overflow-hidden flex border border-gold-500/20">
+          <div class="bg-gold-500 h-full w-1/3"></div>
+          <div class="${isDispatched ? 'bg-gold-500' : 'bg-transparent'} h-full w-1/3 transition-all"></div>
+          <div class="${isDelivered ? 'bg-emerald-500' : 'bg-transparent'} h-full w-1/3 transition-all"></div>
+        </div>
+        <div class="text-[11px] text-slate-300 pt-1 flex items-center justify-between font-mono">
+          <span>AWB: <b>${order.awb_code || 'Pending'}</b></span>
+          <span>Consignment: <b>#${order.shiprocket_order_id || 'N/A'}</b></span>
+        </div>
+      `;
+
+      // Items breakdown
+      const items = Array.isArray(order.items) ? order.items : [];
+      document.getElementById('modalUserOrderItemsList').innerHTML = items.map(it => `
+        <div class="flex items-center gap-3.5 pt-2">
+          <img src="${it.thumbnail_url || it.image || 'Cover.png'}" class="w-12 h-14 object-cover rounded-xl bg-noir-900 border border-gold-500/20 shrink-0" onerror="this.src='Cover.png'" />
+          <div class="flex-1 space-y-0.5">
+            <h5 class="font-semibold text-white text-xs">${it.title}</h5>
+            <div class="flex items-center gap-2 text-[10px] font-mono">
+              <span class="text-slate-400">SKU: ${it.product_code || 'ZIV'}</span>
+              ${it.size ? `<span class="text-gold-300">Size: ${it.size}</span>` : ''}
+              ${it.color ? `<span class="text-gold-400 font-bold">Color: ${it.color}</span>` : ''}
+            </div>
+            <div class="text-xs font-bold text-white pt-0.5">
+              ₹${Number(it.price).toLocaleString('en-IN')} × ${it.quantity || 1} units
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('userOrderDetailsModalBackdrop').classList.remove('hidden');
+      document.getElementById('userOrderDetailsModal').classList.remove('hidden');
+      refreshIcons();
+    };
+
+    window.closeUserOrderModal = function() {
+      document.getElementById('userOrderDetailsModalBackdrop').classList.add('hidden');
+      document.getElementById('userOrderDetailsModal').classList.add('hidden');
+    };
+
+    // 4. ADDRESS BOOK CONTROLLER
     function renderAddressBook(addresses) {
       const container = document.getElementById('addressesListContainer');
       if (!addresses || addresses.length === 0) {
         container.innerHTML = `
           <div class="p-6 text-center text-xs text-slate-500 col-span-full border border-gold-500/10 rounded-2xl bg-noir-950">
-            No saved delivery addresses found. Click "Add Address" to store your locations.
+            No saved delivery addresses found. Add location to speed up checkout.
           </div>`;
         return;
       }
@@ -396,7 +591,7 @@
             <span class="text-[10px] font-bold text-gold-400 uppercase tracking-widest font-mono bg-gold-500/10 px-2 py-0.5 rounded border border-gold-500/20">
               ${addr.tag || 'Address #' + (idx + 1)}
             </span>
-            <button onclick="handleDeleteAddress(${idx})" class="text-slate-500 hover:text-rose-400 p-1 transition" title="Delete Address">
+            <button onclick="handleDeleteAddress(${idx})" class="text-slate-500 hover:text-rose-400 p-1 transition cursor-pointer" title="Delete Address">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             </button>
           </div>
@@ -412,7 +607,6 @@
       document.getElementById('newAddressFormContainer').classList.toggle('hidden');
     }
 
-    // 3. ADD NEW ADDRESS (SYNC DIRECT TO SUPABASE)
     async function handleAddNewAddress(e) {
       e.preventDefault();
       const tag = document.getElementById('addrTag').value.trim();
@@ -425,30 +619,27 @@
 
       const saveBtn = document.getElementById('saveAddrBtn');
       saveBtn.disabled = true;
-      saveBtn.innerText = "Saving Location...";
+      saveBtn.innerText = "Saving...";
 
       try {
         if (db) {
-          const { error } = await db.from('users').update({ addresses: updatedList }).eq('phone', currentUserData.phone);
-          if (error) throw error;
+          await db.from('users').update({ addresses: updatedList }).eq('phone', currentUserData.phone);
         }
-
         currentUserData.addresses = updatedList;
         renderAddressBook(updatedList);
         toggleNewAddressForm();
         e.target.reset();
-        alert("New delivery address saved to your account!");
+        alert("Location saved successfully!");
       } catch (err) {
-        alert("Address save error: " + err.message);
+        alert(err.message);
       } finally {
         saveBtn.disabled = false;
         saveBtn.innerText = "Save Location";
       }
     }
 
-    // 4. DELETE ADDRESS
     async function handleDeleteAddress(index) {
-      if (!confirm("Remove this address from your profile?")) return;
+      if (!confirm("Delete this saved address?")) return;
       const updatedList = [...(currentUserData.addresses || [])];
       updatedList.splice(index, 1);
 
@@ -461,12 +652,10 @@
 
     function handleSignOut() {
       localStorage.removeItem('zivara_session');
-      location.reload();
+      window.location.href = 'index.html';
     }
 
-    // ===============================================
-    // MOBILE OTP AUTHENTICATION FLOW
-    // ===============================================
+    // 5. MOBILE OTP FLOW
     otpInputs.forEach((input, index) => {
       input.addEventListener('input', (e) => {
         if (e.target.value.length === 1 && index < otpInputs.length - 1) {
@@ -492,7 +681,6 @@
       stepPhone.classList.add('hidden');
       stepOtp.classList.remove('hidden');
       otpInputs[0].focus();
-      startTimer();
       refreshIcons();
     }
 
@@ -501,38 +689,35 @@
       const enteredOtp = Array.from(otpInputs).map(i => i.value).join('');
 
       if (enteredOtp.length !== 6) {
-        alert('Please enter the complete 6-digit code.');
+        alert('Please enter complete 6-digit OTP.');
         return;
       }
 
       if (enteredOtp === "123456") {
-        clearInterval(timerInterval);
-
-        // Check if user exists in Supabase
         if (db) {
           try {
-            const { data: userRecord } = await db.from('users').select('*').eq('phone', currentPhone).single();
-            if (userRecord) {
-              currentUserData = userRecord;
+            const { data: userRec } = await db.from('users').select('*').eq('phone', currentPhone).single();
+            if (userRec) {
+              currentUserData = userRec;
               localStorage.setItem('zivara_session', JSON.stringify({
-                phone: userRecord.phone,
-                name: userRecord.name,
-                email: userRecord.email
+                phone: userRec.phone,
+                name: userRec.name,
+                email: userRec.email
               }));
               renderDashboard(currentUserData);
+              loadCustomerOrders(userRec.phone);
               return;
             }
           } catch (err) {
-            console.warn("New user check:", err);
+            console.warn(err);
           }
         }
 
-        // If user doesn't exist, proceed to profile onboarding
         stepOtp.classList.add('hidden');
         stepRegister.classList.remove('hidden');
         refreshIcons();
       } else {
-        alert('Invalid code. For demo verification, enter: 123456');
+        alert('Invalid OTP. Demo verification code: 123456');
       }
     }
 
@@ -541,62 +726,24 @@
       const name = document.getElementById('userNameInput').value.trim();
       const email = document.getElementById('userEmailInput').value.trim();
 
-      const newRecord = {
-        phone: currentPhone,
-        name: name,
-        email: email,
-        addresses: []
-      };
-
+      const newRecord = { phone: currentPhone, name, email, addresses: [] };
       if (db) {
         try {
-          const { data, error } = await db.from('users').insert([newRecord]).select().single();
-          if (error && !error.message.includes("duplicate")) throw error;
+          const { data } = await db.from('users').insert([newRecord]).select().single();
           currentUserData = data || newRecord;
         } catch (err) {
-          console.warn("User create error, using memory fallback:", err.message);
           currentUserData = newRecord;
         }
       } else {
         currentUserData = newRecord;
       }
 
-      localStorage.setItem('zivara_session', JSON.stringify({
-        phone: currentPhone,
-        name: name,
-        email: email
-      }));
-
+      localStorage.setItem('zivara_session', JSON.stringify({ phone: currentPhone, name, email }));
       renderDashboard(currentUserData);
-    }
-
-    function startTimer() {
-      clearInterval(timerInterval);
-      timerSeconds = 30;
-      resendBtn.disabled = true;
-      resendBtn.className = "font-bold text-slate-500 cursor-not-allowed";
-
-      timerInterval = setInterval(() => {
-        timerSeconds--;
-        countdownEl.innerText = timerSeconds;
-
-        if (timerSeconds <= 0) {
-          clearInterval(timerInterval);
-          resendBtn.disabled = false;
-          resendBtn.className = "font-bold text-gold-400 hover:underline cursor-pointer";
-        }
-      }, 1000);
-    }
-
-    function resendOtp() {
-      otpInputs.forEach(i => i.value = '');
-      alert(`OTP resent to +91 ${currentPhone}. Use demo code: 123456`);
-      startTimer();
-      otpInputs[0].focus();
+      loadCustomerOrders(currentPhone);
     }
 
     function editPhone() {
-      clearInterval(timerInterval);
       otpInputs.forEach(i => i.value = '');
       stepOtp.classList.add('hidden');
       stepPhone.classList.remove('hidden');
