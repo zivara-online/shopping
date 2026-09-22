@@ -31,6 +31,13 @@
     }
     .custom-scrollbar::-webkit-scrollbar { display: none; }
     .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    @media print {
+      body * { visibility: hidden; }
+      #userOrderDetailsModal, #userOrderDetailsModal * { visibility: visible; }
+      #userOrderDetailsModal { position: absolute; left: 0; top: 0; width: 100%; max-width: 100%; border: none; background: white; color: black; }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-gold-500 selection:text-noir-950">
@@ -54,7 +61,7 @@
   <!-- MAIN VIEW -->
   <main class="flex-1 flex items-center justify-center p-4 sm:p-6 my-6 w-full max-w-5xl mx-auto">
 
-    <!-- 1. AUTHENTICATED USER DASHBOARD (WITH FLIPKART STYLE ORDERS) -->
+    <!-- 1. AUTHENTICATED USER DASHBOARD -->
     <div id="loggedInDashboard" class="w-full bg-noir-900 rounded-3xl border border-gold-500/30 shadow-2xl p-6 sm:p-10 space-y-8 hidden">
       
       <!-- User Profile Header -->
@@ -67,7 +74,7 @@
             <div class="flex items-center gap-2">
               <h2 id="profileNameDisplay" class="text-xl sm:text-2xl font-serif text-white font-bold">User Name</h2>
               <span class="px-2 py-0.5 bg-gold-500/10 border border-gold-500/40 text-gold-400 rounded-md text-[9px] font-bold uppercase tracking-widest font-mono">
-                Privé Gold
+                Privé Gold Member
               </span>
             </div>
             <p id="profilePhoneDisplay" class="text-xs text-slate-400 font-mono">+91 0000000000</p>
@@ -75,16 +82,22 @@
           </div>
         </div>
 
-        <button onclick="handleSignOut()" class="flex items-center gap-2 px-5 py-2.5 bg-rose-950/40 border border-rose-500/30 hover:bg-rose-900/60 text-rose-300 text-xs font-bold rounded-xl transition self-start sm:self-auto cursor-pointer">
-          <i data-lucide="log-out" class="w-4 h-4"></i>
-          <span>Sign Out</span>
-        </button>
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <a href="https://wa.me/918825337065?text=Hello%20Zivara%20Concierge,%20I%20need%20assistance%20with%20my%20order." target="_blank" class="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-950/40 border border-emerald-500/30 hover:bg-emerald-900/60 text-emerald-300 text-xs font-bold rounded-xl transition cursor-pointer">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            <span>Concierge</span>
+          </a>
+          <button onclick="handleSignOut()" class="flex items-center gap-1.5 px-4 py-2.5 bg-rose-950/40 border border-rose-500/30 hover:bg-rose-900/60 text-rose-300 text-xs font-bold rounded-xl transition cursor-pointer">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span>Sign Out</span>
+          </button>
+        </div>
       </div>
 
-      <!-- TABS NAVIGATION: ORDERS VS SAVED ADDRESSES -->
+      <!-- TABS NAVIGATION -->
       <div class="flex items-center gap-2 border-b border-gold-500/15 pb-2 text-xs font-bold uppercase tracking-wider">
         <button onclick="switchProfileTab('orders')" id="tabBtn-orders" class="px-4 py-2 rounded-xl bg-gold-500 text-noir-950 transition flex items-center gap-2">
-          <i data-lucide="package" class="w-4 h-4"></i> My Orders & Tracking
+          <i data-lucide="package" class="w-4 h-4"></i> My Orders & Dispatches
         </button>
         <button onclick="switchProfileTab('addresses')" id="tabBtn-addresses" class="px-4 py-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300 hover:text-white transition flex items-center gap-2">
           <i data-lucide="map-pin" class="w-4 h-4"></i> Saved Addresses
@@ -94,18 +107,21 @@
       <!-- SECTION A: ORDERS & TRACKING -->
       <div id="profileTab-orders" class="space-y-8">
         
-        <!-- 1. ACTIVE / IN-TRANSIT ORDERS (FLIPKART STYLE) -->
+        <!-- 1. ACTIVE / IN-TRANSIT ORDERS -->
         <div class="space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="text-base font-serif font-bold text-white tracking-tight flex items-center gap-2">
-              <i data-lucide="truck" class="w-4 h-4 text-gold-400"></i> Active & In-Transit Orders
-            </h3>
+            <div>
+              <h3 class="text-base font-serif font-bold text-white tracking-tight flex items-center gap-2">
+                <i data-lucide="truck" class="w-4 h-4 text-gold-400"></i> Active Orders & Tracking
+              </h3>
+              <p class="text-[11px] text-slate-400">Track live Shiprocket courier movement and fulfillment stage</p>
+            </div>
             <span id="activeOrdersBadge" class="text-[10px] font-mono text-gold-400 bg-gold-500/10 border border-gold-500/30 px-2.5 py-0.5 rounded-full">0 Orders</span>
           </div>
 
           <div id="activeOrdersContainer" class="space-y-3">
             <div class="p-6 text-center text-xs text-slate-500 border border-gold-500/10 rounded-2xl bg-noir-950">
-              No active orders right now. Explore the collection to place your order.
+              Loading your live orders...
             </div>
           </div>
         </div>
@@ -113,9 +129,12 @@
         <!-- 2. DELIVERED ORDER HISTORY ARCHIVE -->
         <div class="space-y-4 pt-4 border-t border-gold-500/10">
           <div class="flex items-center justify-between">
-            <h3 class="text-base font-serif font-bold text-slate-300 tracking-tight flex items-center gap-2">
-              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Delivered Orders History
-            </h3>
+            <div>
+              <h3 class="text-base font-serif font-bold text-slate-300 tracking-tight flex items-center gap-2">
+                <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Delivered Orders Archive
+              </h3>
+              <p class="text-[11px] text-slate-400">Completed bespoke deliveries and tax receipts</p>
+            </div>
             <span id="deliveredOrdersBadge" class="text-[10px] font-mono text-slate-400 bg-noir-950 border border-slate-700 px-2.5 py-0.5 rounded-full">0 Orders</span>
           </div>
 
@@ -135,7 +154,7 @@
             <h3 class="text-base font-serif font-bold text-white tracking-tight flex items-center gap-2">
               <i data-lucide="map-pin" class="w-4 h-4 text-gold-400"></i> Saved Delivery Locations
             </h3>
-            <p class="text-xs text-slate-400">Saved locations for instant checkout on Zivara Maison.</p>
+            <p class="text-xs text-slate-400">Manage address book for instant single-click dispatch</p>
           </div>
           <button onclick="toggleNewAddressForm()" class="px-4 py-2 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 text-xs font-bold rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer">
             <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[3]"></i> Add Location
@@ -153,7 +172,7 @@
               </div>
               <div>
                 <label class="block text-slate-400 mb-1">Pincode</label>
-                <input type="text" id="addrPincode" required maxlength="6" placeholder="e.g. 110001" class="w-full bg-noir-900 border border-gold-500/20 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-gold-400" />
+                <input type="text" id="addrPincode" required maxlength="6" placeholder="e.g. 825104" class="w-full bg-noir-900 border border-gold-500/20 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-gold-400" />
               </div>
             </div>
 
@@ -173,7 +192,6 @@
           </form>
         </div>
 
-        <!-- Addresses List -->
         <div id="addressesListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
       </div>
 
@@ -182,7 +200,6 @@
     <!-- 2. LOGIN / OTP CARD -->
     <div id="authBoxContainer" class="w-full max-w-md bg-noir-900 rounded-3xl border border-gold-500/30 shadow-2xl overflow-hidden p-7 sm:p-9 space-y-6">
 
-      <!-- STEP 1: MOBILE INPUT -->
       <section id="stepPhone" class="space-y-6">
         <div class="text-center space-y-1.5">
           <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
@@ -218,7 +235,6 @@
         </form>
       </section>
 
-      <!-- STEP 2: OTP INPUT -->
       <section id="stepOtp" class="space-y-6 hidden">
         <div class="text-center space-y-1.5">
           <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
@@ -254,7 +270,6 @@
         </form>
       </section>
 
-      <!-- STEP 3: REGISTRATION -->
       <section id="stepRegister" class="space-y-6 hidden">
         <div class="text-center space-y-1.5">
           <span class="text-[10px] font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-2.5 py-0.5 rounded border border-gold-500/30">
@@ -288,39 +303,69 @@
 
   </main>
 
-  <!-- FLIPKART STYLE ORDER DETAILS MODAL -->
+  <!-- ADVANCED FLIPKART/AMAZON STYLE ORDER DETAILS MODAL -->
   <div id="userOrderDetailsModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm" onclick="closeUserOrderModal()"></div>
-  <div id="userOrderDetailsModal" class="fixed inset-x-4 top-[8%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4 max-h-[85vh] overflow-y-auto">
+  <div id="userOrderDetailsModal" class="fixed inset-x-4 top-[6%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-2xl bg-noir-900 border border-gold-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl z-[100] hidden space-y-5 max-h-[88vh] overflow-y-auto custom-scrollbar">
+    
+    <!-- Modal Header -->
     <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
       <div>
-        <h3 id="modalUserOrderTitle" class="text-sm font-serif font-bold text-white uppercase tracking-wider">Order Details</h3>
-        <p id="modalUserOrderSub" class="text-[10px] text-slate-400 font-mono"></p>
+        <div class="flex items-center gap-2">
+          <h3 id="modalUserOrderTitle" class="text-sm font-serif font-bold text-white uppercase tracking-wider">Order Details</h3>
+          <span id="modalPaymentBadge" class="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border"></span>
+        </div>
+        <p id="modalUserOrderSub" class="text-[10px] text-slate-400 font-mono mt-0.5"></p>
       </div>
-      <button onclick="closeUserOrderModal()" class="text-slate-400 hover:text-white p-1 cursor-pointer">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="window.print()" class="no-print px-3 py-1.5 rounded-xl bg-noir-950 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="Print Invoice">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Invoice</span>
+        </button>
+        <button onclick="closeUserOrderModal()" class="no-print text-slate-400 hover:text-white p-1 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
     </div>
 
-    <!-- FLIPKART STYLE ORDER TRACKING TIMELINE -->
+    <!-- FLIPKART STYLE TIMELINE & TRACKER -->
     <div id="modalOrderTimeline" class="p-4 bg-noir-950 rounded-2xl border border-gold-500/20 space-y-3"></div>
 
     <!-- ITEMS IN THIS ORDER -->
     <div class="space-y-2">
-      <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider">Purchased Items</h4>
+      <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider">Order Items & Custom Specifications</h4>
       <div id="modalUserOrderItemsList" class="space-y-3 divide-y divide-gold-500/10"></div>
     </div>
 
-    <!-- SHIPPING ADDRESS & INVOICE -->
-    <div class="pt-3 border-t border-gold-500/20 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-      <div class="space-y-1">
-        <span class="text-slate-400 font-semibold text-[10px] uppercase">Delivery Address:</span>
+    <!-- BILLING, PAYMENT & DELIVERY DETAILS -->
+    <div class="pt-4 border-t border-gold-500/20 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+      <div class="space-y-1.5 bg-noir-950 p-3.5 rounded-2xl border border-gold-500/15">
+        <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5">
+          <i data-lucide="map-pin" class="w-3 h-3 text-gold-400"></i> Shipping Address
+        </span>
         <p id="modalUserOrderAddress" class="text-slate-200 text-[11px] leading-relaxed"></p>
       </div>
-      <div class="space-y-1 sm:text-right">
-        <span class="text-slate-400 font-semibold text-[10px] uppercase">Total Paid:</span>
-        <h5 id="modalUserOrderTotal" class="text-base font-black text-gold-400 font-mono">₹0</h5>
+
+      <div class="space-y-2 bg-noir-950 p-3.5 rounded-2xl border border-gold-500/15">
+        <span class="text-slate-400 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5">
+          <i data-lucide="credit-card" class="w-3 h-3 text-gold-400"></i> Payment Breakdown
+        </span>
+        <div class="space-y-1 text-[11px]">
+          <div class="flex justify-between text-slate-300">
+            <span>Payment Mode:</span>
+            <span id="modalPaymentModeText" class="font-bold text-white"></span>
+          </div>
+          <div class="flex justify-between text-slate-300">
+            <span>Payment Status:</span>
+            <span id="modalPaymentStatusText" class="font-bold"></span>
+          </div>
+          <div class="flex justify-between text-slate-300 border-t border-gold-500/10 pt-1 text-xs font-bold">
+            <span class="text-white">Grand Total:</span>
+            <span id="modalUserOrderTotal" class="text-gold-400 font-mono text-sm">₹0</span>
+          </div>
+        </div>
       </div>
     </div>
+
   </div>
 
   <!-- LUXURY FOOTER -->
@@ -426,7 +471,7 @@
       refreshIcons();
     }
 
-    // 2. LOAD CUSTOMER ORDERS (FLIPKART STYLE ACTIVE VS DELIVERED)
+    // 2. LOAD CUSTOMER ORDERS (WITH ADVANCED COD VS PREPAID IDENTIFIER)
     async function loadCustomerOrders(phone) {
       if (!db || !phone) return;
       try {
@@ -469,18 +514,34 @@
         const displayImg = firstItem.thumbnail_url || firstItem.image || 'Cover.png';
         const isDispatched = order.status === 'dispatched' || order.shiprocket_order_id;
         const isDelivered = (order.status || '').toLowerCase() === 'delivered';
+        
+        // COD vs Online Logic
+        const isCod = (order.payment_method === 'COD') || (order.razorpay_payment_id && order.razorpay_payment_id.startsWith('COD'));
 
         return `
           <div class="bg-noir-950 border ${isDelivered ? 'border-emerald-500/30' : 'border-gold-500/25'} p-4 sm:p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-gold-400/50 transition">
             
             <div class="flex items-center gap-4">
-              <img src="${displayImg}" class="w-16 h-20 object-cover rounded-xl bg-noir-900 border border-gold-500/20 shrink-0" onerror="this.src='Cover.png'" />
+              <img src="${displayImg}" class="w-16 h-20 object-cover rounded-xl bg-noir-900 border border-gold-500/20 shrink-0 shadow" onerror="this.src='Cover.png'" />
               <div class="space-y-1">
-                <div class="flex items-center gap-2">
+                
+                <div class="flex flex-wrap items-center gap-2">
                   <span class="font-mono text-gold-400 font-bold text-xs">${order.order_id}</span>
-                  <span class="text-[9px] text-slate-500">• ${dateStr}</span>
+                  <span class="text-[10px] text-slate-500">• ${dateStr}</span>
+                  
+                  <!-- ADVANCED COD VS PREPAID BADGE -->
+                  ${isCod ? `
+                    <span class="px-2 py-0.5 bg-amber-950/80 border border-amber-500/40 text-amber-300 rounded-md text-[9px] font-bold uppercase tracking-wider font-mono flex items-center gap-1">
+                      <i data-lucide="hand-coins" class="w-3 h-3"></i> Cash on Delivery (Pay ₹${Number(order.amount).toLocaleString('en-IN')})
+                    </span>
+                  ` : `
+                    <span class="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 rounded-md text-[9px] font-bold uppercase tracking-wider font-mono flex items-center gap-1">
+                      <i data-lucide="check" class="w-3 h-3"></i> Prepaid (Online Verified)
+                    </span>
+                  `}
                 </div>
-                <h4 class="font-semibold text-white text-xs sm:text-sm line-clamp-1">${firstItem.title || 'Luxury Piece'} ${items.length > 1 ? `(+${items.length - 1} more)` : ''}</h4>
+
+                <h4 class="font-semibold text-white text-xs sm:text-sm line-clamp-1">${firstItem.title || 'Luxury Piece'} ${items.length > 1 ? `(+${items.length - 1} more items)` : ''}</h4>
                 
                 <div class="flex flex-wrap items-center gap-2 pt-0.5">
                   <span class="text-xs font-bold text-white font-mono">₹${Number(order.amount).toLocaleString('en-IN')}</span>
@@ -490,19 +551,19 @@
 
                 <div class="pt-1 flex items-center gap-1.5 text-[11px] font-semibold ${isDelivered ? 'text-emerald-400' : 'text-gold-400'}">
                   <i data-lucide="${isDelivered ? 'check-circle' : 'truck'}" class="w-3.5 h-3.5"></i>
-                  <span>${isDelivered ? 'Delivered to your address' : (isDispatched ? 'Out for Delivery / In Transit' : 'Order Confirmed & Atelier Packing')}</span>
+                  <span>${isDelivered ? 'Delivered & Completed' : (isDispatched ? 'Dispatched / In Courier Transit' : 'Order Placed & Atelier Quality Check')}</span>
                 </div>
               </div>
             </div>
 
-            <!-- ACTION BUTTONS -->
-            <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-gold-500/10">
-              <button onclick="viewUserOrderDetails('${order.order_id}')" class="px-4 py-2 rounded-xl bg-gold-500/10 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition text-xs font-bold flex items-center gap-1 cursor-pointer">
-                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Details
+            <!-- ACTION CONTROLS -->
+            <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-gold-500/10 shrink-0">
+              <button onclick="viewUserOrderDetails('${order.order_id}')" class="px-4 py-2 rounded-xl bg-gold-500/10 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i> View Details
               </button>
 
               ${order.awb_code ? `
-                <a href="https://shiprocket.co/tracking/${order.awb_code}" target="_blank" class="px-4 py-2 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-900 transition text-xs font-bold flex items-center gap-1">
+                <a href="https://shiprocket.co/tracking/${order.awb_code}" target="_blank" class="px-4 py-2 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-900 transition text-xs font-bold flex items-center gap-1.5">
                   <i data-lucide="map" class="w-3.5 h-3.5"></i> Live Map
                 </a>
               ` : ''}
@@ -513,52 +574,75 @@
       }).join('');
     }
 
-    // 3. FLIPKART STYLE ORDER DETAILS MODAL
+    // 3. FLIPKART STYLE ADVANCED ORDER VIEW MODAL
     window.viewUserOrderDetails = function(orderId) {
       const order = userOrdersList.find(o => o.order_id === orderId);
       if (!order) return;
 
       document.getElementById('modalUserOrderTitle').innerText = `Order: ${order.order_id}`;
       document.getElementById('modalUserOrderSub').innerText = `Placed on ${new Date(order.created_at).toLocaleString('en-IN')}`;
-      document.getElementById('modalUserOrderAddress').innerText = order.shipping_address || 'Registered Address';
+      document.getElementById('modalUserOrderAddress').innerText = order.shipping_address || 'Registered Delivery Location';
       document.getElementById('modalUserOrderTotal').innerText = `₹${Number(order.amount).toLocaleString('en-IN')}`;
 
-      // Progress Tracker
+      // Payment Type Detection
+      const isCod = (order.payment_method === 'COD') || (order.razorpay_payment_id && order.razorpay_payment_id.startsWith('COD'));
+      const paymentBadge = document.getElementById('modalPaymentBadge');
+      const modeText = document.getElementById('modalPaymentModeText');
+      const statusText = document.getElementById('modalPaymentStatusText');
+
+      if (isCod) {
+        paymentBadge.className = "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border bg-amber-950 border-amber-500/40 text-amber-300 font-mono";
+        paymentBadge.innerText = "Cash on Delivery (COD)";
+        modeText.innerText = "Cash on Delivery (Pay at Doorstep)";
+        statusText.className = "font-bold text-amber-400";
+        statusText.innerText = `Pending (Pay ₹${Number(order.amount).toLocaleString('en-IN')} on Delivery)`;
+      } else {
+        paymentBadge.className = "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border bg-emerald-950 border-emerald-500/40 text-emerald-400 font-mono";
+        paymentBadge.innerText = "Prepaid (Online Paid)";
+        modeText.innerText = "Razorpay 256-bit Encrypted";
+        statusText.className = "font-bold text-emerald-400";
+        statusText.innerText = `Paid (Txn: ${order.razorpay_payment_id || 'Online'})`;
+      }
+
+      // Progress Tracker & Visual Stepper
       const status = (order.status || 'paid').toLowerCase();
       const isDispatched = status === 'dispatched' || order.shiprocket_order_id;
       const isDelivered = status === 'delivered';
 
       document.getElementById('modalOrderTimeline').innerHTML = `
         <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-          <span class="text-gold-400">1. Placed</span>
-          <span class="${isDispatched ? 'text-gold-400' : 'text-slate-600'}">2. Dispatched</span>
-          <span class="${isDelivered ? 'text-emerald-400' : 'text-slate-600'}">3. Delivered</span>
+          <span class="text-gold-400 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> 1. Confirmed</span>
+          <span class="${isDispatched ? 'text-gold-400 flex items-center gap-1' : 'text-slate-600'}">2. Shiprocket Dispatched</span>
+          <span class="${isDelivered ? 'text-emerald-400 flex items-center gap-1' : 'text-slate-600'}">3. Delivered</span>
         </div>
         <div class="w-full bg-noir-900 h-2 rounded-full overflow-hidden flex border border-gold-500/20">
           <div class="bg-gold-500 h-full w-1/3"></div>
-          <div class="${isDispatched ? 'bg-gold-500' : 'bg-transparent'} h-full w-1/3 transition-all"></div>
-          <div class="${isDelivered ? 'bg-emerald-500' : 'bg-transparent'} h-full w-1/3 transition-all"></div>
+          <div class="${isDispatched ? 'bg-gold-500' : 'bg-transparent'} h-full w-1/3 transition-all duration-500"></div>
+          <div class="${isDelivered ? 'bg-emerald-500' : 'bg-transparent'} h-full w-1/3 transition-all duration-500"></div>
         </div>
-        <div class="text-[11px] text-slate-300 pt-1 flex items-center justify-between font-mono">
-          <span>AWB: <b>${order.awb_code || 'Pending'}</b></span>
-          <span>Consignment: <b>#${order.shiprocket_order_id || 'N/A'}</b></span>
+        <div class="text-[11px] text-slate-300 pt-1.5 flex flex-wrap items-center justify-between font-mono gap-2">
+          <span>AWB: <b class="text-gold-400">${order.awb_code || 'Assigned soon'}</b></span>
+          <span>Shiprocket Consignment: <b class="text-white">#${order.shiprocket_order_id || 'Pending Pickup'}</b></span>
         </div>
       `;
 
-      // Items breakdown
+      // Items list with individual specs
       const items = Array.isArray(order.items) ? order.items : [];
       document.getElementById('modalUserOrderItemsList').innerHTML = items.map(it => `
-        <div class="flex items-center gap-3.5 pt-2">
-          <img src="${it.thumbnail_url || it.image || 'Cover.png'}" class="w-12 h-14 object-cover rounded-xl bg-noir-900 border border-gold-500/20 shrink-0" onerror="this.src='Cover.png'" />
-          <div class="flex-1 space-y-0.5">
-            <h5 class="font-semibold text-white text-xs">${it.title}</h5>
-            <div class="flex items-center gap-2 text-[10px] font-mono">
-              <span class="text-slate-400">SKU: ${it.product_code || 'ZIV'}</span>
-              ${it.size ? `<span class="text-gold-300">Size: ${it.size}</span>` : ''}
-              ${it.color ? `<span class="text-gold-400 font-bold">Color: ${it.color}</span>` : ''}
+        <div class="flex items-center gap-4 pt-3">
+          <img src="${it.thumbnail_url || it.image || 'Cover.png'}" class="w-14 h-16 object-cover rounded-xl bg-noir-900 border border-gold-500/30 shrink-0 shadow-md" onerror="this.src='Cover.png'" />
+          <div class="flex-1 space-y-1">
+            <h5 class="font-semibold text-white text-xs leading-snug">${it.title}</h5>
+            
+            <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
+              <span class="text-slate-400">SKU: <b class="text-slate-200">${it.product_code || 'ZIV'}</b></span>
+              ${it.size ? `<span class="px-2 py-0.5 bg-noir-950 border border-gold-500/20 text-gold-300 rounded font-bold">Size: ${it.size}</span>` : ''}
+              ${it.color ? `<span class="px-2 py-0.5 bg-gold-500/10 border border-gold-500/40 text-gold-400 rounded font-bold">Color: ${it.color}</span>` : ''}
             </div>
+
             <div class="text-xs font-bold text-white pt-0.5">
-              ₹${Number(it.price).toLocaleString('en-IN')} × ${it.quantity || 1} units
+              <span class="text-gold-400">₹${Number(it.price).toLocaleString('en-IN')}</span> 
+              <span class="text-slate-400 font-normal">× ${it.quantity || 1} units</span>
             </div>
           </div>
         </div>
