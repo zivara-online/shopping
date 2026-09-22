@@ -771,7 +771,7 @@
             localStorage.removeItem('zivara_cart');
             closeCustomerDetailsModal();
 
-            alert(`🎉 Payment Successful!\nOrder ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}\n\nAapka order confirm ho chuka hai!`);
+            alert(`🎉 Payment Successful!\nOrder ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}\n\n`);
             window.location.href = "index.html";
 
           } catch (err) {
