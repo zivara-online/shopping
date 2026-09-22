@@ -44,8 +44,8 @@ export async function loadMenuSubmenu() {
 
     if (navContainer) {
       navContainer.innerHTML = `
-        <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
-          <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
+        <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 font-bold transition">
+          <i data-lucide="layout-grid" class="w-4 h-4 text-gold-600"></i> All Collections
         </button>
       `;
     }
@@ -86,21 +86,22 @@ export async function loadMenuSubmenu() {
       const menuWrapper = document.createElement('div');
       menuWrapper.className = "relative group py-1.5 shrink-0 cursor-pointer";
       
+      // Updated: High contrast, dark charcoal text with gold icons for perfect visibility
       menuWrapper.innerHTML = `
-        <button onclick="window.selectMenu('${menu.menuId}', null, '${menu.menuName}')" class="category-btn hover:text-gold-400 transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 text-slate-300">
-          <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-400"></i>
+        <button onclick="window.selectMenu('${menu.menuId}', null, '${menu.menuName}')" class="category-btn text-slate-800 hover:text-gold-600 font-semibold transition flex items-center gap-1.5 whitespace-nowrap pb-0.5">
+          <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-600"></i>
           <span>${menu.menuName}</span>
-          ${hasSubs ? `<i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 group-hover:text-gold-400 transition-transform duration-200 group-hover:rotate-180 pointer-events-none"></i>` : ''}
+          ${hasSubs ? `<i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 group-hover:text-gold-600 transition-transform duration-200 group-hover:rotate-180 pointer-events-none"></i>` : ''}
         </button>
 
         ${hasSubs ? `
-          <!-- DROPDOWN BOX (SUBMENU IDs REMOVED) -->
-          <div class="hidden group-hover:block absolute left-0 top-full pt-2 min-w-[200px] z-[999999]">
-            <div class="bg-noir-900 border border-gold-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95)] rounded-2xl py-2 divide-y divide-gold-500/10 backdrop-blur-2xl">
+          <!-- DROPDOWN BOX (LIGHT LUXURY THEME) -->
+          <div class="hidden group-hover:block absolute left-0 top-full pt-2 min-w-[210px] z-[999999]">
+            <div class="bg-white border border-ivory-300 shadow-xl rounded-2xl py-2 divide-y divide-ivory-200 backdrop-blur-xl">
               ${menu.submenus.map(sub => `
-                <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-200 hover:text-gold-400 hover:bg-noir-950 transition flex items-center justify-between group/item">
+                <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:text-gold-600 hover:bg-ivory-100 transition flex items-center justify-between group/item">
                   <span>${sub.subName}</span>
-                  <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all text-gold-400"></i>
+                  <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all text-gold-600"></i>
                 </button>
               `).join('')}
             </div>
@@ -109,10 +110,10 @@ export async function loadMenuSubmenu() {
       `;
       if (navContainer) navContainer.appendChild(menuWrapper);
 
-      // Desktop Checkbox
+      // Desktop Checkbox (Light Theme)
       if (filterContainer) {
         const catLabel = document.createElement('label');
-        catLabel.className = "flex items-center gap-2 cursor-pointer hover:text-white";
+        catLabel.className = "flex items-center gap-2 cursor-pointer text-slate-700 hover:text-slate-900 font-medium";
         catLabel.innerHTML = `
           <input type="checkbox" value="${menu.menuId}" class="cat-checkbox accent-gold-500 rounded" onchange="window.applyFiltersAndSort()" />
           <span>${menu.menuName}</span>
@@ -120,10 +121,10 @@ export async function loadMenuSubmenu() {
         filterContainer.appendChild(catLabel);
       }
 
-      // Mobile Checkbox
+      // Mobile Checkbox (Light Theme)
       if (mobileFilterContainer) {
         const mobLabel = document.createElement('label');
-        mobLabel.className = "flex items-center gap-2.5 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300 cursor-pointer";
+        mobLabel.className = "flex items-center gap-2.5 p-2 rounded-xl bg-ivory-50 border border-ivory-200 text-slate-700 cursor-pointer";
         mobLabel.innerHTML = `
           <input type="checkbox" value="${menu.menuId}" class="mob-cat-checkbox accent-gold-500 rounded" onchange="window.syncCategoryCheckboxes('${menu.menuId}', this.checked)" />
           <span>${menu.menuName}</span>
