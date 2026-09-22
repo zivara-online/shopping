@@ -19,41 +19,42 @@
         extend: {
           colors: {
             gold: { 300: '#F5D77F', 400: '#E5C06E', 500: '#D4AF37', 600: '#AA820A', 700: '#856404' },
-            noir: { 950: '#070708', 900: '#0B0B0C', 850: '#121214', 800: '#18181B', 700: '#27272A' }
+            ivory: { 50: '#FDFCF9', 100: '#FAF8F5', 200: '#F3EFEA', 300: '#EAE3D9', 400: '#D9CDBD' },
+            charcoal: { 800: '#262626', 900: '#1A1A1A', 950: '#111111' }
           }
         }
       }
     }
   </script>
 </head>
-<body class="bg-noir-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-gold-500 selection:text-noir-950 pb-16 lg:pb-0">
+<body class="bg-ivory-100 text-charcoal-800 font-sans min-h-screen flex flex-col selection:bg-gold-500 selection:text-white pb-16 lg:pb-0">
 
   <!-- HEADER COMPONENT -->
-  <div class="sticky top-0 z-50 w-full shadow-2xl bg-noir-950">
-    <div class="bg-noir-950 text-gold-400 text-xs py-1.5 px-4 text-center tracking-widest uppercase border-b border-gold-500/20 font-medium">
-      ✨ Zivara Privé | Compliments on Orders Above ₹1,499 | Use Code <span class="text-white font-bold bg-gold-600/30 px-2 py-0.5 rounded border border-gold-400/40">ZIVARA10</span>
+  <div class="sticky top-0 z-50 w-full shadow-sm bg-white">
+    <div class="bg-gradient-to-r from-gold-600 via-gold-500 to-gold-600 text-white text-xs py-1.5 px-4 text-center tracking-widest uppercase font-semibold shadow-inner">
+      ✨ Zivara Privé | Compliments on Orders Above ₹1,499 | Use Code <span class="text-charcoal-900 font-black bg-white/90 px-2 py-0.5 rounded border border-white/40">ZIVARA10</span>
     </div>
 
-    <header class="bg-noir-900/95 backdrop-blur-xl border-b border-gold-500/20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4 sm:gap-6">
+    <header class="bg-white/95 backdrop-blur-xl border-b border-ivory-300">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between gap-4 sm:gap-6">
         <a href="index.html" class="flex items-center gap-3 shrink-0">
-          <img src="Logo.png" alt="Zivara Logo" class="h-12 sm:h-16 w-auto object-contain drop-shadow-md transition transform hover:scale-105" onerror="this.src='Logo.png'" />
+          <img src="Logo.png" alt="Zivara Logo" class="h-16 sm:h-20 w-auto object-contain drop-shadow-sm transition transform hover:scale-105" onerror="this.src='Logo.png'" />
         </a>
 
         <div class="flex-1 max-w-2xl relative">
           <div class="relative flex items-center">
-            <i data-lucide="search" class="w-4 h-4 text-gold-400 absolute left-3.5 pointer-events-none"></i>
+            <i data-lucide="search" class="w-4 h-4 text-gold-600 absolute left-4 pointer-events-none"></i>
             <input 
               type="text" 
               id="searchInput" 
               oninput="window.handleSearchInput(event)"
               placeholder="Search Luxury Couture, Watches, Jewelry..." 
-              class="w-full pl-10 pr-16 sm:pr-20 py-2.5 sm:py-3 bg-noir-900 border border-gold-500/30 rounded-full text-xs text-white tracking-wide focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/50 transition placeholder:text-slate-400 shadow-inner"
+              class="w-full pl-11 pr-16 sm:pr-24 py-3 bg-ivory-50 border border-ivory-300 rounded-full text-xs text-charcoal-900 tracking-wide focus:outline-none focus:border-gold-500 focus:bg-white focus:ring-2 focus:ring-gold-500/20 transition placeholder:text-slate-400 shadow-sm"
             />
-            <button id="clearSearchBtn" onclick="window.resetSearch()" class="hidden absolute right-12 text-slate-400 hover:text-white p-1 transition" title="Clear Search">
+            <button id="clearSearchBtn" onclick="window.resetSearch()" class="hidden absolute right-14 text-slate-400 hover:text-charcoal-900 p-1 transition" title="Clear Search">
               <i data-lucide="x" class="w-4 h-4"></i>
             </button>
-            <button onclick="window.triggerSearch()" class="absolute right-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 text-xs font-bold rounded-full transition shadow">
+            <button onclick="window.triggerSearch()" class="absolute right-1.5 px-4 sm:px-5 py-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-600 hover:to-gold-500 text-white text-xs font-bold rounded-full transition shadow-md">
               <span class="hidden sm:inline">Search</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5 sm:hidden"></i>
             </button>
@@ -63,41 +64,41 @@
         <div class="flex items-center gap-4 sm:gap-6 shrink-0 text-xs font-semibold tracking-wider uppercase">
           
           <!-- DYNAMIC USER PROFILE / AVATAR BUTTON -->
-          <a href="login.html" id="userAuthBtn" class="flex items-center gap-2 text-slate-300 hover:text-gold-400 transition group">
-            <div id="userAvatarWrap" class="w-8 h-8 rounded-full bg-gold-500/15 border border-gold-500/40 text-gold-400 flex items-center justify-center font-bold text-xs shadow transition group-hover:scale-105 group-hover:border-gold-400">
-              <i data-lucide="user" id="defaultUserIcon" class="w-4 h-4 text-gold-400"></i>
+          <a href="login.html" id="userAuthBtn" class="flex items-center gap-2.5 text-charcoal-800 hover:text-gold-600 transition group">
+            <div id="userAvatarWrap" class="w-9 h-9 rounded-full bg-ivory-200 border border-gold-500/40 text-gold-600 flex items-center justify-center font-bold text-xs shadow-sm transition group-hover:scale-105 group-hover:border-gold-500 group-hover:bg-gold-500 group-hover:text-white">
+              <i data-lucide="user" id="defaultUserIcon" class="w-4 h-4 text-gold-600 group-hover:text-white"></i>
               <span id="userInitialText" class="hidden uppercase font-serif"></span>
             </div>
             <div class="hidden sm:flex flex-col items-start leading-tight">
-              <span class="text-[9px] text-slate-400 font-normal lowercase" id="userStatusTag">account</span>
-              <span id="userAuthText" class="text-[11px] font-bold text-white group-hover:text-gold-400">Sign In</span>
+              <span class="text-[9px] text-slate-500 font-normal lowercase" id="userStatusTag">account</span>
+              <span id="userAuthText" class="text-[11px] font-bold text-charcoal-900 group-hover:text-gold-600">Sign In</span>
             </div>
           </a>
 
-          <a href="cart.html" class="flex flex-col items-center gap-1 text-slate-300 hover:text-gold-400 transition relative">
+          <a href="cart.html" class="flex flex-col items-center gap-1 text-charcoal-800 hover:text-gold-600 transition relative">
             <div class="relative">
-              <i data-lucide="shopping-bag" class="w-5 h-5 text-gold-400"></i>
-              <span id="cartCount" class="absolute -top-2 -right-3 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow">0</span>
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-gold-600"></i>
+              <span id="cartCount" class="absolute -top-1.5 -right-2.5 bg-gradient-to-r from-gold-500 to-gold-400 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full shadow">0</span>
             </div>
-            <span class="text-[10px] sm:text-[11px] hidden sm:inline">Cart</span>
+            <span class="text-[10px] sm:text-[11px] hidden sm:inline font-bold">Cart</span>
           </a>
         </div>
       </div>
     </header>
 
-    <nav class="bg-noir-900/95 border-b border-gold-500/15 py-2.5 relative z-40">
+    <nav class="bg-ivory-50/95 border-b border-ivory-300 py-2.5 relative z-40">
       <div class="max-w-7xl mx-auto px-4 relative flex items-center">
-        <button onclick="window.scrollMenus(-180)" class="hidden md:flex absolute left-1 z-30 bg-noir-950/90 border border-gold-500/30 text-gold-400 p-1.5 rounded-full shadow hover:bg-noir-800 transition">
+        <button onclick="window.scrollMenus(-180)" class="hidden md:flex absolute left-1 z-30 bg-white border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-sm hover:bg-ivory-100 transition">
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
 
-        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-300 overflow-x-auto md:overflow-visible custom-scrollbar px-2 sm:px-6 py-1">
-          <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-400 border-b-2 border-gold-400 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
+        <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-600 overflow-x-auto md:overflow-visible custom-scrollbar px-2 sm:px-6 py-1">
+          <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
             <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
           </button>
         </div>
 
-        <button onclick="window.scrollMenus(180)" class="hidden md:flex absolute right-1 z-30 bg-noir-950/90 border border-gold-500/30 text-gold-400 p-1.5 rounded-full shadow hover:bg-noir-800 transition">
+        <button onclick="window.scrollMenus(180)" class="hidden md:flex absolute right-1 z-30 bg-white border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-sm hover:bg-ivory-100 transition">
           <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </button>
       </div>
@@ -109,8 +110,8 @@
 
     <!-- HERO SECTION -->
     <div id="heroBannerSection" class="transition-all duration-300">
-      <div class="bg-white/95 p-2 sm:p-4 rounded-3xl sm:rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(255,255,255,0.08)] border border-white/40">
-        <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner bg-noir-900 min-h-[300px] sm:min-h-[420px] flex items-center">
+      <div class="bg-white p-2.5 sm:p-4 rounded-3xl sm:rounded-[2.5rem] shadow-lg border border-ivory-200">
+        <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner bg-ivory-200 min-h-[320px] sm:min-h-[440px] flex items-center">
           
           <div id="bannerSlidesTrack" class="absolute inset-0 w-full h-full">
             <div class="banner-slide absolute inset-0 w-full h-full bg-cover bg-center opacity-100" style="background-image: url('Cover.png');"></div>
@@ -118,8 +119,8 @@
 
           <div class="relative z-20 max-w-2xl p-6 sm:p-14 space-y-2.5">
             <div class="pt-5 sm:pt-7">
-              <a id="bannerBtn" href="#products-section" class="inline-flex items-center gap-2.5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 px-7 sm:px-8 py-3 sm:py-3.5 rounded-full font-extrabold text-xs uppercase tracking-widest shadow-2xl transition transform hover:-translate-y-1 hover:shadow-gold-500/20 active:scale-95">
-                <span>Get The Shopping</span>
+              <a id="bannerBtn" href="#products-section" class="inline-flex items-center gap-2.5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-600 hover:to-gold-500 text-white px-7 sm:px-8 py-3.5 sm:py-4 rounded-full font-extrabold text-xs uppercase tracking-widest shadow-xl transition transform hover:-translate-y-1 active:scale-95">
+                <span>Explore The Collection</span>
                 <i data-lucide="arrow-right" class="w-4 h-4 stroke-[2.5]"></i>
               </a>
             </div>
@@ -130,96 +131,98 @@
       </div>
 
       <!-- VALUE STRIP -->
-      <div class="mt-4 sm:mt-6 bg-noir-900/90 border border-gold-500/20 rounded-2xl py-3.5 px-4 sm:px-6 shadow-md grid grid-cols-1 sm:grid-cols-3 gap-3 text-center divide-y sm:divide-y-0 sm:divide-x divide-gold-500/10 text-xs font-semibold">
-        <div class="flex items-center justify-center gap-2 text-slate-200 pt-1 sm:pt-0">
-          <i data-lucide="rotate-ccw" class="w-4 h-4 text-gold-400"></i>
+      <div class="mt-4 sm:mt-6 bg-white border border-ivory-200 rounded-2xl py-4 px-4 sm:px-6 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3 text-center divide-y sm:divide-y-0 sm:divide-x divide-ivory-200 text-xs font-semibold">
+        <div class="flex items-center justify-center gap-2 text-charcoal-800 pt-1 sm:pt-0">
+          <i data-lucide="rotate-ccw" class="w-4 h-4 text-gold-600"></i>
           <span>7 Days Seamless Replacement</span>
         </div>
-        <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 sm:pt-0">
-          <i data-lucide="shield-check" class="w-4 h-4 text-gold-400"></i>
+        <div class="flex items-center justify-center gap-2 text-charcoal-800 pt-2 sm:pt-0">
+          <i data-lucide="shield-check" class="w-4 h-4 text-gold-600"></i>
           <span>100% Genuine & Trusted Products</span>
         </div>
-        <div class="flex items-center justify-center gap-2 text-slate-200 pt-2 sm:pt-0">
-          <i data-lucide="truck" class="w-4 h-4 text-gold-400"></i>
-          <span>Pan India Shipment</span>
+        <div class="flex items-center justify-center gap-2 text-charcoal-800 pt-2 sm:pt-0">
+          <i data-lucide="truck" class="w-4 h-4 text-gold-600"></i>
+          <span>Pan India Insured Shipment</span>
         </div>
       </div>
     </div>
 
     <!-- CATALOGUE & FILTER SECTION -->
     <div id="products-section" class="space-y-4 pt-2">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gold-500/20 pb-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ivory-300 pb-4">
         <div>
+          <h2 id="searchHeading" class="text-xl sm:text-2xl font-serif text-charcoal-900 tracking-tight capitalize font-bold">The Heritage Edit</h2>
+          <p id="searchSubtext" class="text-xs text-slate-500">Curated bespoke luxury fashion synced with live inventory</p>
         </div>
 
         <div class="hidden sm:flex items-center gap-3 self-end sm:self-auto">
-          <div class="flex items-center bg-noir-900 border border-gold-500/30 rounded-xl px-3 py-2 text-xs">
-            <span class="text-slate-400 mr-2 shrink-0">Sort by:</span>
-            <select id="sortSelect" onchange="window.applyFiltersAndSort()" class="bg-transparent text-gold-400 font-bold focus:outline-none cursor-pointer">
-              <option value="relevance" class="bg-noir-900 text-white">Relevance</option>
-              <option value="price_low" class="bg-noir-900 text-white">Price: Low to High</option>
-              <option value="price_high" class="bg-noir-900 text-white">Price: High to Low</option>
-              <option value="rating" class="bg-noir-900 text-white">Customer Rating</option>
+          <div class="flex items-center bg-white border border-ivory-300 rounded-xl px-3 py-2 text-xs shadow-sm">
+            <span class="text-slate-500 mr-2 shrink-0">Sort by:</span>
+            <select id="sortSelect" onchange="window.applyFiltersAndSort()" class="bg-transparent text-gold-600 font-bold focus:outline-none cursor-pointer">
+              <option value="relevance" class="bg-white text-charcoal-900">Relevance</option>
+              <option value="price_low" class="bg-white text-charcoal-900">Price: Low to High</option>
+              <option value="price_high" class="bg-white text-charcoal-900">Price: High to Low</option>
+              <option value="rating" class="bg-white text-charcoal-900">Customer Rating</option>
             </select>
           </div>
-          <span id="productCounter" class="text-xs font-bold uppercase tracking-wider text-gold-400 bg-noir-900 px-3.5 py-2 rounded-xl border border-gold-500/30 shrink-0">
+          <span id="productCounter" class="text-xs font-bold uppercase tracking-wider text-gold-700 bg-gold-500/10 px-3.5 py-2 rounded-xl border border-gold-500/30 shrink-0">
             0 Items
           </span>
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <aside class="hidden lg:block lg:col-span-3 bg-noir-900/90 border border-gold-500/25 rounded-2xl p-5 space-y-6 shadow-xl sticky top-40">
-          <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
+        <aside class="hidden lg:block lg:col-span-3 bg-white border border-ivory-300 rounded-2xl p-5 space-y-6 shadow-sm sticky top-40">
+          <div class="flex items-center justify-between border-b border-ivory-200 pb-3">
             <div>
-              <h3 class="text-xs font-bold text-white uppercase tracking-wider">Filters</h3>
-              <span id="filterProductCount" class="text-[10px] text-slate-400">0 Products Available</span>
+              <h3 class="text-xs font-bold text-charcoal-900 uppercase tracking-wider">Filters</h3>
+              <span id="filterProductCount" class="text-[10px] text-slate-500">0 Products Available</span>
             </div>
-            <button onclick="window.resetAllFilters()" class="text-[11px] font-semibold text-gold-400 hover:underline">
+            <button onclick="window.resetAllFilters()" class="text-[11px] font-semibold text-gold-600 hover:underline">
               Reset All
             </button>
           </div>
 
           <div class="space-y-3">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-600 flex items-center justify-between">
               <span>Category</span>
               <i data-lucide="layers" class="w-3.5 h-3.5"></i>
             </h4>
-            <div id="categoryFilterContainer" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar text-xs text-slate-300 pr-1"></div>
+            <div id="categoryFilterContainer" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar text-xs text-charcoal-800 pr-1"></div>
           </div>
 
-          <div class="space-y-3 border-t border-gold-500/15 pt-4">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+          <div class="space-y-3 border-t border-ivory-200 pt-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-600 flex items-center justify-between">
               <span>Price Range</span>
               <i data-lucide="tag" class="w-3.5 h-3.5"></i>
             </h4>
             <div class="space-y-2 text-xs">
-              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-600 hover:text-charcoal-900">
                 <input type="radio" name="priceRange" value="all" checked onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
                 <span>All Prices</span>
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-600 hover:text-charcoal-900">
                 <input type="radio" name="priceRange" value="under2000" onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
                 <span>Under ₹2,000</span>
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-600 hover:text-charcoal-900">
                 <input type="radio" name="priceRange" value="2000to5000" onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
                 <span>₹2,000 - ₹5,000</span>
               </label>
-              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-600 hover:text-charcoal-900">
                 <input type="radio" name="priceRange" value="above5000" onchange="window.applyFiltersAndSort()" class="accent-gold-500" />
                 <span>Above ₹5,000</span>
               </label>
             </div>
           </div>
 
-          <div class="space-y-3 border-t border-gold-500/15 pt-4">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center justify-between">
+          <div class="space-y-3 border-t border-ivory-200 pt-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gold-600 flex items-center justify-between">
               <span>Customer Rating</span>
               <i data-lucide="star" class="w-3.5 h-3.5"></i>
             </h4>
             <div class="space-y-2 text-xs">
-              <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+              <label class="flex items-center gap-2 cursor-pointer text-slate-600 hover:text-charcoal-900">
                 <input type="checkbox" id="filterRating4" onchange="window.applyFiltersAndSort()" class="accent-gold-500 rounded" />
                 <span>4.0 ★ & Above</span>
               </label>
@@ -230,8 +233,8 @@
         <!-- PRODUCTS GRID -->
         <section class="col-span-1 lg:col-span-9 w-full">
           <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 min-h-[380px]">
-            <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
-            <div class="animate-pulse bg-noir-900 h-64 rounded-2xl border border-gold-500/10"></div>
+            <div class="animate-pulse bg-white h-64 rounded-2xl border border-ivory-200 shadow-sm"></div>
+            <div class="animate-pulse bg-white h-64 rounded-2xl border border-ivory-200 shadow-sm"></div>
           </div>
         </section>
       </div>
@@ -240,174 +243,173 @@
   </main>
 
   <!-- MOBILE FILTER BAR -->
-  <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-noir-900/98 backdrop-blur-md border-t border-gold-500/30 flex items-center h-14 divide-x divide-gold-500/20 shadow-2xl">
-    <button onclick="window.toggleMobileSortModal()" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-200 active:bg-noir-800 h-full">
-      <i data-lucide="arrow-up-down" class="w-4 h-4 text-gold-400"></i>
+  <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-md border-t border-ivory-300 flex items-center h-14 divide-x divide-ivory-200 shadow-xl">
+    <button onclick="window.toggleMobileSortModal()" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-charcoal-800 active:bg-ivory-100 h-full">
+      <i data-lucide="arrow-up-down" class="w-4 h-4 text-gold-600"></i>
       <span>Sort</span>
     </button>
-    <button onclick="window.openMobileFilterDrawer()" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-gold-400 active:bg-noir-800 h-full">
+    <button onclick="window.openMobileFilterDrawer()" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-gold-600 active:bg-ivory-100 h-full">
       <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
       <span>Filters</span>
-      <span id="mobileFilterDot" class="hidden w-2 h-2 rounded-full bg-gold-400"></span>
+      <span id="mobileFilterDot" class="hidden w-2 h-2 rounded-full bg-gold-500"></span>
     </button>
   </div>
 
   <!-- MOBILE FILTER DRAWER -->
-  <div id="mobileFilterDrawerBackdrop" onclick="window.closeMobileFilterDrawer()" class="fixed inset-0 bg-black/80 z-[100] hidden backdrop-blur-sm transition-opacity"></div>
-  <div id="mobileFilterDrawer" class="fixed inset-x-0 bottom-0 z-[101] bg-noir-900 border-t border-gold-500/40 rounded-t-3xl max-h-[85vh] flex flex-col translate-y-full lg:hidden shadow-2xl">
-    <div class="p-4 border-b border-gold-500/20 flex items-center justify-between bg-noir-950 rounded-t-3xl">
+  <div id="mobileFilterDrawerBackdrop" onclick="window.closeMobileFilterDrawer()" class="fixed inset-0 bg-black/50 z-[100] hidden backdrop-blur-sm transition-opacity"></div>
+  <div id="mobileFilterDrawer" class="fixed inset-x-0 bottom-0 z-[101] bg-white border-t border-ivory-300 rounded-t-3xl max-h-[85vh] flex flex-col translate-y-full lg:hidden shadow-2xl">
+    <div class="p-4 border-b border-ivory-200 flex items-center justify-between bg-ivory-50 rounded-t-3xl">
       <div class="flex items-center gap-2">
-        <i data-lucide="sliders-horizontal" class="w-4 h-4 text-gold-400"></i>
-        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Filters</h3>
+        <i data-lucide="sliders-horizontal" class="w-4 h-4 text-gold-600"></i>
+        <h3 class="text-sm font-bold text-charcoal-900 uppercase tracking-wider">Filters</h3>
       </div>
-      <button onclick="window.resetAllFilters()" class="text-xs text-gold-400 font-semibold uppercase">Reset All</button>
-      <button onclick="window.closeMobileFilterDrawer()" class="p-1 rounded-full text-slate-400 hover:text-white">
+      <button onclick="window.resetAllFilters()" class="text-xs text-gold-600 font-semibold uppercase">Reset All</button>
+      <button onclick="window.closeMobileFilterDrawer()" class="p-1 rounded-full text-slate-400 hover:text-charcoal-900">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
     <div class="p-5 overflow-y-auto custom-scrollbar space-y-6 flex-1 text-xs">
       <div class="space-y-3">
-        <h4 class="font-bold text-gold-400 uppercase tracking-wider">Category</h4>
+        <h4 class="font-bold text-gold-600 uppercase tracking-wider">Category</h4>
         <div id="mobileCategoryFilterContainer" class="space-y-2.5 max-h-48 overflow-y-auto custom-scrollbar"></div>
       </div>
 
-      <div class="space-y-3 border-t border-gold-500/15 pt-4">
-        <h4 class="font-bold text-gold-400 uppercase tracking-wider">Price Range</h4>
+      <div class="space-y-3 border-t border-ivory-200 pt-4">
+        <h4 class="font-bold text-gold-600 uppercase tracking-wider">Price Range</h4>
         <div class="grid grid-cols-2 gap-2">
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-ivory-50 border border-ivory-200 text-slate-700">
             <input type="radio" name="mobilePriceRange" value="all" checked onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
             <span>All</span>
           </label>
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-ivory-50 border border-ivory-200 text-slate-700">
             <input type="radio" name="mobilePriceRange" value="under2000" onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
             <span>&lt; ₹2,000</span>
           </label>
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-ivory-50 border border-ivory-200 text-slate-700">
             <input type="radio" name="mobilePriceRange" value="2000to5000" onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
             <span>₹2k - ₹5k</span>
           </label>
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+          <label class="flex items-center gap-2 p-2.5 rounded-xl bg-ivory-50 border border-ivory-200 text-slate-700">
             <input type="radio" name="mobilePriceRange" value="above5000" onchange="window.syncMobilePrice(this.value)" class="accent-gold-500" />
             <span>&gt; ₹5,000</span>
           </label>
         </div>
       </div>
 
-      <div class="space-y-3 border-t border-gold-500/15 pt-4">
-        <h4 class="font-bold text-gold-400 uppercase tracking-wider">Customer Rating</h4>
-        <label class="flex items-center gap-2 p-2 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-300">
+      <div class="space-y-3 border-t border-ivory-200 pt-4">
+        <h4 class="font-bold text-gold-600 uppercase tracking-wider">Customer Rating</h4>
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-ivory-50 border border-ivory-200 text-slate-700">
           <input type="checkbox" id="mobileFilterRating4" onchange="window.syncMobileRating(this.checked)" class="accent-gold-500 rounded" />
           <span>4.0 ★ & Above</span>
         </label>
       </div>
     </div>
 
-    <div class="p-3 bg-noir-950 border-t border-gold-500/20 flex gap-3">
-      <button onclick="window.closeMobileFilterDrawer()" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 font-bold uppercase tracking-widest py-3 rounded-xl shadow-lg">
+    <div class="p-3 bg-ivory-50 border-t border-ivory-200 flex gap-3">
+      <button onclick="window.closeMobileFilterDrawer()" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 text-white font-bold uppercase tracking-widest py-3 rounded-xl shadow-md">
         Apply Filters
       </button>
     </div>
   </div>
 
   <!-- MOBILE SORT MODAL -->
-  <div id="mobileSortModal" class="fixed inset-x-0 bottom-0 z-[101] bg-noir-900 border-t border-gold-500/40 rounded-t-3xl p-5 hidden lg:hidden space-y-4 shadow-2xl">
-    <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
-      <h3 class="text-sm font-bold text-white uppercase tracking-wider">Sort By</h3>
+  <div id="mobileSortModal" class="fixed inset-x-0 bottom-0 z-[101] bg-white border-t border-ivory-300 rounded-t-3xl p-5 hidden lg:hidden space-y-4 shadow-2xl">
+    <div class="flex items-center justify-between border-b border-ivory-200 pb-3">
+      <h3 class="text-sm font-bold text-charcoal-900 uppercase tracking-wider">Sort By</h3>
       <button onclick="window.toggleMobileSortModal()"><i data-lucide="x" class="w-4 h-4 text-slate-400"></i></button>
     </div>
     <div class="space-y-2 text-xs">
-      <button onclick="window.selectMobileSort('relevance')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+      <button onclick="window.selectMobileSort('relevance')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-ivory-100 text-charcoal-800 flex items-center justify-between">
         <span>Relevance</span>
-        <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-relevance"></i>
+        <i data-lucide="check" class="w-4 h-4 text-gold-600 hidden" id="sortCheck-relevance"></i>
       </button>
-      <button onclick="window.selectMobileSort('price_low')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+      <button onclick="window.selectMobileSort('price_low')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-ivory-100 text-charcoal-800 flex items-center justify-between">
         <span>Price: Low to High</span>
-        <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-price_low"></i>
+        <i data-lucide="check" class="w-4 h-4 text-gold-600 hidden" id="sortCheck-price_low"></i>
       </button>
-      <button onclick="window.selectMobileSort('price_high')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+      <button onclick="window.selectMobileSort('price_high')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-ivory-100 text-charcoal-800 flex items-center justify-between">
         <span>Price: High to Low</span>
-        <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-price_high"></i>
+        <i data-lucide="check" class="w-4 h-4 text-gold-600 hidden" id="sortCheck-price_high"></i>
       </button>
-      <button onclick="window.selectMobileSort('rating')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-noir-950 text-slate-200 flex items-center justify-between">
+      <button onclick="window.selectMobileSort('rating')" class="w-full text-left py-2.5 px-3 rounded-xl hover:bg-ivory-100 text-charcoal-800 flex items-center justify-between">
         <span>Customer Rating</span>
-        <i data-lucide="check" class="w-4 h-4 text-gold-400 hidden" id="sortCheck-rating"></i>
+        <i data-lucide="check" class="w-4 h-4 text-gold-600 hidden" id="sortCheck-rating"></i>
       </button>
     </div>
   </div>
 
-<!-- LUXURY FOOTER COMPONENT -->
-  <footer class="bg-noir-950 text-slate-400 text-xs mt-20 border-t border-gold-500/20">
+  <!-- LUXURY FOOTER COMPONENT (ELEGANT LIGHT FINISH) -->
+  <footer class="bg-white text-slate-600 text-xs mt-20 border-t border-ivory-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
       <div class="space-y-3">
-        <img src="Logo.png" alt="Zivara Logo" class="h-14 w-auto object-contain -ml-1 brightness-110" onerror="this.src='Logo.png'" />
+        <img src="Logo.png" alt="Zivara Logo" class="h-20 w-auto object-contain -ml-1 drop-shadow-sm" onerror="this.src='Logo.png'" />
         <div class="space-y-1.5 pt-1">
-          <!-- Updated Luxury Font for Email -->
-          <a href="mailto:info@zivarafashion.online" class="text-[13px] font-serif tracking-wider text-slate-200 hover:text-gold-400 transition-all duration-300 block font-light italic">
+          <a href="mailto:info@zivarafashion.online" class="text-[13px] font-serif tracking-wider text-charcoal-900 hover:text-gold-600 transition-all duration-300 block font-normal italic">
             info@zivarafashion.online
           </a>
-          <p class="text-[10px] uppercase font-bold tracking-[0.25em] text-gold-400 flex items-center gap-2">
+          <p class="text-[10px] uppercase font-bold tracking-[0.25em] text-gold-600 flex items-center gap-2">
             <span>Fashion</span>
-            <span class="text-gold-500/50 text-[8px]">•</span>
+            <span class="text-gold-400 text-[8px]">•</span>
             <span>Luxury</span>
-            <span class="text-gold-500/50 text-[8px]">•</span>
+            <span class="text-gold-400 text-[8px]">•</span>
             <span>Lifestyle</span>
           </p>
         </div>
       </div>
       <div>
-        <h5 class="text-gold-400 uppercase font-bold tracking-widest text-[11px] mb-3">Concierge</h5>
+        <h5 class="text-gold-600 uppercase font-bold tracking-widest text-[11px] mb-3">Concierge</h5>
         <ul class="space-y-2">
           <li>
-            <button onclick="window.openTrackModal()" class="hover:text-white transition text-left cursor-pointer">
+            <button onclick="window.openTrackModal()" class="hover:text-charcoal-900 transition text-left cursor-pointer">
               Track Shipment
             </button>
           </li>
         </ul>
       </div>
       <div>
-        <h5 class="text-gold-400 uppercase font-bold tracking-widest text-[11px] mb-3">About Zivara Fashion</h5>
+        <h5 class="text-gold-600 uppercase font-bold tracking-widest text-[11px] mb-3">About Zivara Fashion</h5>
         <ul class="space-y-2">
-          <li><a href="#" class="hover:text-white transition">About Zivara</a></li>
+          <li><a href="#" class="hover:text-charcoal-900 transition">About Zivara</a></li>
         </ul>
       </div>
       <div>
-        <h5 class="text-gold-400 uppercase font-bold tracking-widest text-[11px] mb-3">Governance</h5>
+        <h5 class="text-gold-600 uppercase font-bold tracking-widest text-[11px] mb-3">Governance</h5>
         <ul class="space-y-2">
-          <li><a href="T&C.html" class="hover:text-white transition">Conditions of Use</a></li>
+          <li><a href="T&C.html" class="hover:text-charcoal-900 transition">Conditions of Use</a></li>
         </ul>
       </div>
     </div>
-    <div class="border-t border-gold-500/10 py-4 text-center text-[11px] text-slate-500">
+    <div class="border-t border-ivory-200 py-4 text-center text-[11px] text-slate-400">
       &copy; 2026 AutoTech Solutions. All rights reserved.
     </div>
   </footer>
 
   <!-- LIVE SHIPMENT TRACKING MODAL -->
-  <div id="trackModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm" onclick="window.closeTrackModal()"></div>
-  <div id="trackModal" class="fixed inset-x-4 top-[15%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4">
-    <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
+  <div id="trackModalBackdrop" class="fixed inset-0 bg-black/50 z-[90] hidden backdrop-blur-sm" onclick="window.closeTrackModal()"></div>
+  <div id="trackModal" class="fixed inset-x-4 top-[15%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bg-white border border-ivory-300 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4">
+    <div class="flex items-center justify-between border-b border-ivory-200 pb-3">
       <div>
-        <h3 class="text-sm font-serif font-bold text-white uppercase tracking-wider">Track Your Shipment</h3>
-        <p class="text-[10px] text-slate-400">Enter Order ID or Mobile Number to get live dispatch status</p>
+        <h3 class="text-sm font-serif font-bold text-charcoal-900 uppercase tracking-wider">Track Your Shipment</h3>
+        <p class="text-[10px] text-slate-500">Enter Order ID or Mobile Number to get live dispatch status</p>
       </div>
-      <button onclick="window.closeTrackModal()" class="text-slate-400 hover:text-white p-1">
+      <button onclick="window.closeTrackModal()" class="text-slate-400 hover:text-charcoal-900 p-1">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
     <div class="space-y-3 text-xs">
       <div>
-        <label class="block text-slate-300 font-semibold mb-1">Order ID (ZIV-ORD-...) or 10-Digit Mobile</label>
+        <label class="block text-slate-700 font-semibold mb-1">Order ID (ZIV-ORD-...) or 10-Digit Mobile</label>
         <div class="flex gap-2">
-          <input type="text" id="trackInputQuery" placeholder="e.g. ZIV-ORD-1789976... or 9876543210" class="flex-1 bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-gold-400 uppercase font-mono text-xs" />
-          <button onclick="window.executeTrackQuery()" class="bg-gold-500 hover:bg-gold-400 text-noir-950 font-bold px-4 py-2.5 rounded-xl transition shadow cursor-pointer">
+          <input type="text" id="trackInputQuery" placeholder="e.g. ZIV-ORD-1789976... or 9876543210" class="flex-1 bg-ivory-50 border border-ivory-300 rounded-xl px-3.5 py-2.5 text-charcoal-900 focus:outline-none focus:border-gold-500 uppercase font-mono text-xs" />
+          <button onclick="window.executeTrackQuery()" class="bg-gold-500 hover:bg-gold-600 text-white font-bold px-4 py-2.5 rounded-xl transition shadow cursor-pointer">
             Track
           </button>
         </div>
       </div>
 
-      <div id="trackResultContainer" class="hidden p-4 bg-noir-950 border border-gold-500/20 rounded-2xl space-y-2.5"></div>
+      <div id="trackResultContainer" class="hidden p-4 bg-ivory-50 border border-ivory-200 rounded-2xl space-y-2.5"></div>
     </div>
   </div>
 
@@ -492,7 +494,7 @@
       }
 
       resContainer.classList.remove('hidden');
-      resContainer.innerHTML = `<p class="text-center text-slate-400 text-xs py-2">Searching live courier tracking...</p>`;
+      resContainer.innerHTML = `<p class="text-center text-slate-500 text-xs py-2">Searching live courier tracking...</p>`;
 
       try {
         const { data: orders, error } = await db
@@ -502,7 +504,7 @@
           .order('created_at', { ascending: false });
 
         if (error || !orders || orders.length === 0) {
-          resContainer.innerHTML = `<p class="text-center text-rose-400 text-xs py-2">Koi order nahi mila! Kripya sahi Order ID ya Phone number dalein.</p>`;
+          resContainer.innerHTML = `<p class="text-center text-rose-500 text-xs py-2">Koi order nahi mila! Kripya sahi Order ID ya Phone number dalein.</p>`;
           return;
         }
 
@@ -511,24 +513,24 @@
         const isDelivered = o.status === 'delivered';
 
         resContainer.innerHTML = `
-          <div class="flex items-center justify-between border-b border-gold-500/10 pb-2">
-            <span class="font-mono text-gold-400 font-bold text-[11px]">${o.order_id}</span>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isDelivered ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' : 'bg-gold-500/20 text-gold-400 border border-gold-500/30'}">
+          <div class="flex items-center justify-between border-b border-ivory-300 pb-2">
+            <span class="font-mono text-gold-700 font-bold text-[11px]">${o.order_id}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isDelivered ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-gold-50 text-gold-700 border border-gold-300'}">
               ${(o.status || 'Processing').toUpperCase()}
             </span>
           </div>
 
-          <div class="space-y-1.5 text-slate-300 text-[11px] pt-1">
-            <div>Customer: <b class="text-white">${o.customer_name}</b></div>
-            <div>Delivery Address: <span class="text-slate-400 line-clamp-1">${o.shipping_address}</span></div>
-            ${o.awb_code ? `<div>AWB Tracking Code: <b class="text-emerald-400 font-mono">${o.awb_code}</b></div>` : ''}
-            ${o.shiprocket_order_id ? `<div>Shiprocket Consignment: <b class="text-slate-200">#${o.shiprocket_order_id}</b></div>` : ''}
+          <div class="space-y-1.5 text-charcoal-800 text-[11px] pt-1">
+            <div>Customer: <b class="text-charcoal-900">${o.customer_name}</b></div>
+            <div>Delivery Address: <span class="text-slate-600 line-clamp-1">${o.shipping_address}</span></div>
+            ${o.awb_code ? `<div>AWB Tracking Code: <b class="text-emerald-700 font-mono">${o.awb_code}</b></div>` : ''}
+            ${o.shiprocket_order_id ? `<div>Shiprocket Consignment: <b class="text-charcoal-900">#${o.shiprocket_order_id}</b></div>` : ''}
           </div>
 
-          <div class="pt-2.5 border-t border-gold-500/10 flex items-center justify-between">
-            <span class="text-[10px] text-slate-400">${isDispatched ? 'Courier Picked Up / In Transit' : 'Packing in Atelier'}</span>
+          <div class="pt-2.5 border-t border-ivory-200 flex items-center justify-between">
+            <span class="text-[10px] text-slate-500">${isDispatched ? 'Courier Picked Up / In Transit' : 'Packing in Atelier'}</span>
             ${o.awb_code ? `
-              <a href="https://shiprocket.co/tracking/${o.awb_code}" target="_blank" class="text-[10px] text-gold-400 hover:underline font-bold flex items-center gap-1">
+              <a href="https://shiprocket.co/tracking/${o.awb_code}" target="_blank" class="text-[10px] text-gold-600 hover:underline font-bold flex items-center gap-1">
                 <span>Live Courier Map</span>
                 <i data-lucide="external-link" class="w-3 h-3"></i>
               </a>
@@ -537,7 +539,7 @@
         `;
         refreshIcons();
       } catch (err) {
-        resContainer.innerHTML = `<p class="text-rose-400 text-xs text-center py-2">Error checking status: ${err.message}</p>`;
+        resContainer.innerHTML = `<p class="text-rose-500 text-xs text-center py-2">Error checking status: ${err.message}</p>`;
       }
     };
 
