@@ -44,7 +44,7 @@ export async function loadMenuSubmenu() {
 
     if (navContainer) {
       navContainer.innerHTML = `
-        <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 font-bold transition">
+        <button onclick="window.selectMenu(null, null, '')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 font-bold transition">
           <i data-lucide="layout-grid" class="w-4 h-4 text-gold-600"></i> All Collections
         </button>
       `;
@@ -84,22 +84,22 @@ export async function loadMenuSubmenu() {
       const hasSubs = menu.submenus.length > 0;
       
       const menuWrapper = document.createElement('div');
-      menuWrapper.className = "relative group py-1.5 shrink-0 cursor-pointer";
+      menuWrapper.className = "relative group py-1.5 shrink-0";
       
-      // Updated: High contrast, dark charcoal text with gold icons for perfect visibility
+      // Updated Menu Wrapper with absolute dropdown fix & high contrast
       menuWrapper.innerHTML = `
-        <button onclick="window.selectMenu('${menu.menuId}', null, '${menu.menuName}')" class="category-btn text-slate-800 hover:text-gold-600 font-semibold transition flex items-center gap-1.5 whitespace-nowrap pb-0.5">
+        <button onclick="window.selectMenu('${menu.menuId}', null, '${menu.menuName}')" class="category-btn text-slate-800 hover:text-gold-600 font-semibold transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 cursor-pointer">
           <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-600"></i>
           <span>${menu.menuName}</span>
           ${hasSubs ? `<i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 group-hover:text-gold-600 transition-transform duration-200 group-hover:rotate-180 pointer-events-none"></i>` : ''}
         </button>
 
         ${hasSubs ? `
-          <!-- DROPDOWN BOX (LIGHT LUXURY THEME) -->
-          <div class="hidden group-hover:block absolute left-0 top-full pt-2 min-w-[210px] z-[999999]">
-            <div class="bg-white border border-ivory-300 shadow-xl rounded-2xl py-2 divide-y divide-ivory-200 backdrop-blur-xl">
+          <!-- DROPDOWN BOX (LIGHT LUXURY THEME & INSTANT HOVER VISIBILITY) -->
+          <div class="hidden group-hover:block absolute left-0 top-full pt-2 min-w-[210px] z-[99999]">
+            <div class="bg-white border border-ivory-300 shadow-2xl rounded-2xl py-2 divide-y divide-ivory-200 backdrop-blur-xl">
               ${menu.submenus.map(sub => `
-                <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:text-gold-600 hover:bg-ivory-100 transition flex items-center justify-between group/item">
+                <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:text-gold-600 hover:bg-ivory-100 transition flex items-center justify-between group/item cursor-pointer">
                   <span>${sub.subName}</span>
                   <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all text-gold-600"></i>
                 </button>
