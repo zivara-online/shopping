@@ -93,7 +93,7 @@
           </div>
           <div class="pt-2">
             <a href="index.html" class="inline-flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 text-xs font-bold uppercase tracking-widest px-8 py-3.5 rounded-full shadow-lg transition transform hover:-translate-y-0.5">
-              Explore The Maison <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              Explore The Fashion <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
           </div>
         </div>
@@ -292,7 +292,7 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo";
     const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-    const RAZORPAY_TEST_KEY = "rzp_test_TdT5cFWtR6hAXj";
+    const RAZORPAY_LIVE_KEY = "rzp_live_TfltcPpsnERMcA";
 
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
     let couponDiscountRate = 0;
@@ -715,10 +715,10 @@
       const payBtn = document.getElementById('payNowBtn');
 
       const options = {
-        key: RAZORPAY_TEST_KEY,
+        key: RAZORPAY_LIVE_KEY,
         amount: amountInPaise,
         currency: "INR",
-        name: "Zivara Maison",
+        name: "Zivara Fashion",
         description: "Bespoke Order Payment",
         image: "Logo.png",
         handler: async function (response) {
