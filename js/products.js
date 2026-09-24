@@ -40,17 +40,26 @@ export async function loadProducts(isAppend = false) {
   }
 }
 
-// 2. RENDER GRID (LIGHT LUXURY AESTHETIC WITH CRISP CONTRAST)
+// 2. RENDER GRID (LIGHT LUXURY AESTHETIC WITH DOUBLE-RENDER & DUPLICATION FIX)
 export function renderProductGrid(items, isAppend = false) {
   const grid = document.getElementById('productGrid');
   const counter = document.getElementById('productCounter');
   const filterCount = document.getElementById('filterProductCount');
 
-  if (counter) counter.innerText = `${items.length} Items`;
-  if (filterCount) filterCount.innerText = `${items.length} Products Available`;
+  // Safety: Deduplicate products by product_id
+  const uniqueItems = Array.from(new Map((items || []).map(p => [p.product_id, p])).values());
+
+  if (counter) counter.innerText = `${uniqueItems.length} Items`;
+  if (filterCount) filterCount.innerText = `${uniqueItems.length} Products Available`;
 
   if (!grid) return;
-  if (items.length === 0 && !isAppend) {
+
+  // Double render fix: Agar naya filter/tab ya fresh load ho raha ho toh pehle grid ko clean karein
+  if (!isAppend) {
+    grid.innerHTML = '';
+  }
+
+  if (uniqueItems.length === 0 && !isAppend) {
     grid.innerHTML = `
       <div class="col-span-full py-16 text-center text-slate-600 bg-white border border-ivory-300 rounded-3xl space-y-3 shadow-sm">
         <i data-lucide="package-search" class="w-10 h-10 mx-auto text-gold-600"></i>
@@ -61,7 +70,7 @@ export function renderProductGrid(items, isAppend = false) {
     return;
   }
 
-  const cardsMarkup = items.map(product => {
+  const cardsMarkup = uniqueItems.map(product => {
     const hasDiscount = product.original_price && product.original_price > product.price;
     const discount = hasDiscount ? Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0;
     const displayImg = product.thumbnail_url || product.image_url || 'Cover.png';
@@ -146,8 +155,8 @@ export function handleSearchInput(e) {
   } else {
     clearBtn?.classList.add('hidden');
     hero?.classList.remove('hidden');
-    if (heading) heading.innerText = "The Heritage Edit";
-    if (subtext) subtext.innerText = "Live catalogue directly synced with database inventory";
+    if (heading) heading.innerText = "";
+    if (subtext) subtext.innerText = "";
   }
 
   applyFiltersAndSort();
@@ -161,8 +170,8 @@ export function resetSearch() {
   
   const heading = document.getElementById('searchHeading');
   const subtext = document.getElementById('searchSubtext');
-  if (heading) heading.innerText = "The Heritage Edit";
-  if (subtext) subtext.innerText = "Live catalogue directly synced with database inventory";
+  if (heading) heading.innerText = "";
+  if (subtext) subtext.innerText = "";
   
   applyFiltersAndSort();
 }
@@ -183,7 +192,7 @@ export function selectMenu(menuId, submenuId, title) {
   const clearBtn = document.getElementById('clearSearchBtn');
   const hero = document.getElementById('heroBannerSection');
 
-  if (heading) heading.innerText = title || 'The Heritage Edit';
+  if (heading) heading.innerText = title || '';
   if (searchInput) searchInput.value = '';
   clearBtn?.classList.add('hidden');
 
@@ -192,7 +201,7 @@ export function selectMenu(menuId, submenuId, title) {
     if (subtext) subtext.innerText = `Showing filtered collection for ${title}`;
   } else {
     hero?.classList.remove('hidden');
-    if (subtext) subtext.innerText = "Live catalogue directly synced with database inventory";
+    if (subtext) subtext.innerText = "";
   }
 
   document.querySelectorAll('.cat-checkbox, .mob-cat-checkbox').forEach(cb => {
@@ -274,8 +283,8 @@ export function resetAllFilters() {
 
   const heading = document.getElementById('searchHeading');
   const subtext = document.getElementById('searchSubtext');
-  if (heading) heading.innerText = "The Heritage Edit";
-  if (subtext) subtext.innerText = "Live catalogue directly synced with database inventory";
+  if (heading) heading.innerText = "";
+  if (subtext) subtext.innerText = "";
 
   document.querySelectorAll('.cat-checkbox, .mob-cat-checkbox').forEach(cb => cb.checked = false);
 
