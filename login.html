@@ -547,7 +547,7 @@
 
                 <div class="pt-1 flex items-center gap-1.5 text-[11px] font-semibold ${isDelivered ? 'text-emerald-400' : 'text-gold-400'}">
                   <i data-lucide="${isDelivered ? 'check-circle' : 'truck'}" class="w-3.5 h-3.5"></i>
-                  <span>${isDelivered ? 'Delivered & Completed' : (isDispatched ? 'Dispatched / In Courier Transit' : 'Order Placed & Atelier Quality Check')}</span>
+                  <span>${isDelivered ? 'Delivered' : (isDispatched ? 'In Transit' : 'Order Placed')}</span>
                 </div>
               </div>
             </div>
