@@ -419,21 +419,21 @@
     </div>
   </div>
 
-  <!-- MODULE ENTRY POINT -->
+  <!-- MODULE ENTRY POINT WITH CACHE-BUSTER -->
   <script type="module">
-    import { refreshIcons, db } from './js/config.js';
-    import { loadHeroBanners, goToSlide } from './js/slider.js';
+    import { refreshIcons, db } from './js/config.js?v=2.1';
+    import { loadHeroBanners, goToSlide } from './js/slider.js?v=2.1';
     import { 
       loadMenuSubmenu, scrollMenus, syncCategoryCheckboxes, 
       openMobileFilterDrawer, closeMobileFilterDrawer, 
       toggleMobileSortModal, selectMobileSort, 
       syncMobilePrice, syncMobileRating 
-    } from './js/navbar.js';
+    } from './js/navbar.js?v=2.1';
     import { 
       loadProducts, selectMenu, applyFiltersAndSort, 
       handleSearchInput, resetSearch, triggerSearch, resetAllFilters 
-    } from './js/products.js';
-    import { addToCart, updateCartBadge } from './js/cart.js';
+    } from './js/products.js?v=2.1';
+    import { addToCart, updateCartBadge } from './js/cart.js?v=2.1';
 
     window.goToSlide = goToSlide;
     window.scrollMenus = scrollMenus;
