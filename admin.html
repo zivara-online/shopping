@@ -125,7 +125,7 @@
       <button onclick="switchAdminTab('inventory')" id="tabBtn-inventory" class="tab-btn px-4 py-2.5 rounded-xl bg-noir-900 hover:bg-noir-850 text-slate-300 hover:text-white transition flex items-center gap-2 shrink-0 border border-gold-500/15">
         <i data-lucide="package" class="w-4 h-4"></i> Live Inventory
       </button>
-      <button onclick="switchAdminTab('productForm')" id="tabBtn-productForm" class="tab-btn px-4 py-2.5 rounded-xl bg-noir-900 hover:bg-noir-850 text-slate-300 hover:text-white transition flex items-center gap-2 shrink-0 border border-gold-500/15">
+      <button onclick="switchAdminTab('productForm'); resetProductFormToCreate();" id="tabBtn-productForm" class="tab-btn px-4 py-2.5 rounded-xl bg-noir-900 hover:bg-noir-850 text-slate-300 hover:text-white transition flex items-center gap-2 shrink-0 border border-gold-500/15">
         <i data-lucide="package-plus" class="w-4 h-4"></i> Add / Edit Product
       </button>
       <button onclick="switchAdminTab('banners')" id="tabBtn-banners" class="tab-btn px-4 py-2.5 rounded-xl bg-noir-900 hover:bg-noir-850 text-slate-300 hover:text-white transition flex items-center gap-2 shrink-0 border border-gold-500/15">
@@ -215,7 +215,7 @@
             <p class="text-xs text-slate-400">Direct visibility toggle, edit and deletion controls synced with Supabase.</p>
           </div>
           <div class="flex items-center gap-3">
-            <button onclick="switchAdminTab('productForm')" class="text-xs font-bold bg-gold-500 text-noir-950 px-3.5 py-1.5 rounded-xl flex items-center gap-1">
+            <button onclick="switchAdminTab('productForm'); resetProductFormToCreate();" class="text-xs font-bold bg-gold-500 text-noir-950 px-3.5 py-1.5 rounded-xl flex items-center gap-1">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add New
             </button>
             <button onclick="fetchAllData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1">
@@ -266,7 +266,7 @@
               <input type="text" id="prodRandomId" readonly class="w-full bg-noir-950 border border-slate-700 rounded-xl px-3 py-2.5 text-gold-400 font-mono text-[11px]" />
             </div>
             <div>
-              <label class="block text-slate-400 mb-1 font-semibold">Product Code </label>
+              <label class="block text-slate-400 mb-1 font-semibold">Product Code (SKU)</label>
               <input type="text" id="prodCode" required placeholder="e.g. ZIV-WCH-01" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2.5 text-white uppercase font-mono focus:border-gold-400" />
             </div>
           </div>
@@ -599,7 +599,7 @@
 
   </div>
 
-  <!-- ORDER DETAILS MODAL (VIEW ORDERED ITEMS WITH PHOTO, SIZE & COLOR) -->
+  <!-- ORDER DETAILS MODAL -->
   <div id="orderDetailsModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm" onclick="closeOrderModal()"></div>
   <div id="orderDetailsModal" class="fixed inset-x-4 top-[10%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-lg bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4 max-h-[85vh] overflow-y-auto">
     <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
@@ -647,6 +647,7 @@
 
       if (tabId === 'orders') fetchOrdersData();
       if (tabId === 'users') fetchUsersData();
+      if (tabId === 'inventory') fetchAllData();
 
       if (window.lucide) window.lucide.createIcons();
     };
@@ -693,10 +694,10 @@
       }
     }
 
-    async function handleAdminLogout() {
+    window.handleAdminLogout = async function() {
       if (db) await db.auth.signOut();
       checkAdminSession();
-    }
+    };
 
     function calculateDiscountPreview() {
       const p = parseFloat(document.getElementById('prodPrice').value) || 0;
@@ -713,7 +714,7 @@
     }
 
     // ==========================================================
-    // ORDERS CONTROLLER (WITH DYNAMIC FULFILLMENT & COD BADGES)
+    // ORDERS CONTROLLER
     // ==========================================================
     async function fetchOrdersData() {
       if (!db) return;
@@ -724,8 +725,6 @@
       }
 
       cachedOrders = orders || [];
-      
-      // Update Metrics
       const totalRev = cachedOrders.reduce((sum, ord) => sum + Number(ord.amount || 0), 0);
       document.getElementById('statTotalSales').innerText = `₹${totalRev.toLocaleString('en-IN')}`;
       document.getElementById('statTotalOrders').innerText = cachedOrders.length;
@@ -817,7 +816,6 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // MANUAL RETRY TRIGGER TO SHIPROCKET (SUPER-FUNCTION)
     window.retryShiprocketOrder = async function(orderId) {
       const order = cachedOrders.find(o => o.order_id === orderId);
       if (!order) return;
@@ -837,8 +835,6 @@
         });
 
         const data = await res.json();
-        console.log("Shiprocket Response:", data);
-
         if (data.order_id) {
           await db.from('orders').update({
             shiprocket_order_id: String(data.order_id),
@@ -856,7 +852,6 @@
       }
     };
 
-    // FULFILLMENT STATUS DIRECT UPDATE
     window.updateOrderStatus = async function(orderId, newStatus) {
       if (!confirm(`Kya aap is order (${orderId}) ka status '${newStatus.toUpperCase()}' me update karna chahte hain?`)) {
         fetchOrdersData();
@@ -870,19 +865,15 @@
           .eq('order_id', orderId);
 
         if (error) throw error;
-
         alert(`✅ Order ${orderId} ka status successfully '${newStatus.toUpperCase()}' update ho gaya!`);
         fetchOrdersData();
       } catch (err) {
         console.error("Status update error:", err);
-        alert("❌ Status update fail hua: " + err.message + "\n(Supabase orders table ki UPDATE RLS policy check karein)");
+        alert("❌ Status update fail hua: " + err.message);
         fetchOrdersData();
       }
     };
 
-    // ==========================================================
-    // ORDER ITEMS MODAL (ENHANCED WITH COLOR, SIZE & VARIANT IMAGE)
-    // ==========================================================
     window.viewOrderItems = function(orderId) {
       const order = cachedOrders.find(o => o.order_id === orderId);
       if (!order) return;
@@ -939,9 +930,6 @@
       document.getElementById('orderDetailsModal').classList.add('hidden');
     };
 
-    // ==========================================================
-    // USERS DIRECTORY CONTROLLER
-    // ==========================================================
     async function fetchUsersData() {
       if (!db) return;
       const { data: users, error } = await db.from('users').select('*').order('created_at', { ascending: false });
@@ -1094,14 +1082,15 @@
       }
     }
 
-    async function deleteBanner(id) {
+    window.deleteBanner = async function(id) {
       if (!confirm("Remove this slide from homepage rotation?")) return;
-      await db.from('hero_banners').delete().eq('id', id);
+      const { error } = await db.from('hero_banners').delete().eq('id', id);
+      if (error) alert("Banner delete error: " + error.message);
       fetchBanners();
-    }
+    };
 
     // ==========================================================
-    // MULTI-IMAGE HANDLERS (UNLIMITED & REORDERABLE)
+    // MULTI-IMAGE HANDLERS
     // ==========================================================
     function handleImageSelection(event) {
       const files = Array.from(event.target.files);
@@ -1257,12 +1246,13 @@
     window.deleteMenuRow = async function(id) {
       if (!confirm("Are you sure you want to remove this Menu?")) return;
       const { error } = await db.from('MenuSubmenu').delete().eq('id', id);
-      if (error) alert(error.message);
+      if (error) alert("Menu delete error: " + error.message);
       else fetchAllData();
     };
 
     window.toggleMenuStatus = async function(id, currentStatus) {
-      await db.from('MenuSubmenu').update({ "Active": !currentStatus }).eq('id', id);
+      const { error } = await db.from('MenuSubmenu').update({ "Active": !currentStatus }).eq('id', id);
+      if (error) alert("Menu status error: " + error.message);
       fetchAllData();
     };
 
@@ -1336,8 +1326,11 @@
     // PRODUCT ACTIONS & FORM MANAGEMENT
     // ==========================================================
     window.startEditProduct = function(productId) {
-      const product = cachedProducts.find(p => p.product_id === productId);
-      if (!product) return;
+      const product = cachedProducts.find(p => p.product_id === productId || String(p.id) === String(productId));
+      if (!product) {
+        alert("Product record nahi mila!");
+        return;
+      }
 
       switchAdminTab('productForm');
 
@@ -1421,6 +1414,7 @@
       const btn = document.getElementById('prodSubmitBtn');
       const submitText = document.getElementById('prodSubmitBtnText');
 
+      if (btn.disabled) return;
       btn.disabled = true;
       if (submitText) submitText.innerText = "Uploading Photos & Saving...";
 
@@ -1488,7 +1482,7 @@
         }
 
         resetProductFormToCreate();
-        fetchAllData();
+        await fetchAllData();
         switchAdminTab('inventory');
       } catch (err) {
         alert("Error saving: " + err.message);
@@ -1501,16 +1495,39 @@
       }
     }
 
-    async function toggleProductStatus(id, currentStatus) {
-      await db.from('products').update({ is_active: !currentStatus }).eq('product_id', id);
-      fetchAllData();
-    }
+    // FUNCTIONAL PRODUCT TOGGLE STATUS WITH ALERT
+    window.toggleProductStatus = async function(id, currentStatus) {
+      try {
+        const { error } = await db
+          .from('products')
+          .update({ is_active: !currentStatus })
+          .or(`product_id.eq.${id},id.eq.${id}`);
 
-    async function deleteProduct(id) {
-      if (!confirm("Are you sure you want to permanently delete this product?")) return;
-      await db.from('products').delete().eq('product_id', id);
-      fetchAllData();
-    }
+        if (error) throw error;
+        fetchAllData();
+      } catch (err) {
+        alert("Status update fail: " + err.message + "\n(Supabase products UPDATE policy check karein)");
+      }
+    };
+
+    // FUNCTIONAL PRODUCT DELETE WITH COMPLETE ERROR LOGGING
+    window.deleteProduct = async function(id) {
+      if (!confirm(`Kya aap is product (${id}) ko permanent delete karna chahte hain?`)) return;
+      
+      try {
+        const { error } = await db
+          .from('products')
+          .delete()
+          .or(`product_id.eq.${id},id.eq.${id}`);
+
+        if (error) throw error;
+        alert("✅ Product successfully delete ho gaya!");
+        fetchAllData();
+      } catch (err) {
+        console.error("Delete product error:", err);
+        alert("❌ Delete fail hua: " + err.message + "\n(Supabase dashboard me jakar products table ki DELETE RLS policy check karein)");
+      }
+    };
 
     function loadSubmenuDropdownForProduct() {
       const selectedMenu = document.getElementById('prodMenuSelect').value;
@@ -1563,6 +1580,7 @@
       } else {
         tbody.innerHTML = prods.map(p => {
           const displayImg = p.thumbnail_url || p.image_url || 'Cover.png';
+          const pKey = p.product_id || p.id;
           return `
             <tr class="hover:bg-noir-950/40 transition">
               <td class="p-3">
@@ -1576,16 +1594,16 @@
               <td class="p-3 font-bold">₹${Number(p.price).toLocaleString('en-IN')}</td>
               <td class="p-3">${p.stock_quantity} units</td>
               <td class="p-3">
-                <button onclick="toggleProductStatus('${p.product_id}', ${p.is_active})" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${p.is_active ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' : 'bg-rose-950 text-rose-400 border border-rose-500/30'}">
+                <button onclick="toggleProductStatus('${pKey}', ${p.is_active})" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${p.is_active ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' : 'bg-rose-950 text-rose-400 border border-rose-500/30'}">
                   ${p.is_active ? 'Live' : 'Hidden'}
                 </button>
               </td>
               <td class="p-3 text-right">
                 <div class="flex items-center justify-end gap-2">
-                  <button onclick="window.startEditProduct('${p.product_id}')" class="text-gold-400 hover:text-gold-300 p-1.5 rounded-lg hover:bg-gold-500/10 transition" title="Edit Product">
+                  <button onclick="window.startEditProduct('${pKey}')" class="text-gold-400 hover:text-gold-300 p-1.5 rounded-lg hover:bg-gold-500/10 transition" title="Edit Product">
                     <i data-lucide="edit" class="w-4 h-4"></i>
                   </button>
-                  <button onclick="deleteProduct('${p.product_id}')" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg hover:bg-rose-950/40 transition" title="Delete Product">
+                  <button onclick="window.deleteProduct('${pKey}')" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg hover:bg-rose-950/40 transition cursor-pointer" title="Delete Product">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                   </button>
                 </div>
