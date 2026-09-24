@@ -435,7 +435,7 @@
         finalPayable -= couponCut;
       }
 
-      const delivery = finalPayable >= 1499 || finalPayable === 0 ? 0 : 150;
+      const delivery = finalPayable >= 1499 || finalPayable === 0 ? 0 : 1;
       calculatedFinalPayable = finalPayable + delivery;
 
       document.getElementById('bagTotal').innerText = `₹${Math.round(rawTotal).toLocaleString('en-IN')}`;
