@@ -47,7 +47,7 @@ export function renderProductGrid(items, isAppend = false) {
   const filterCount = document.getElementById('filterProductCount');
 
   // Safety: Deduplicate products by product_id
-  const uniqueItems = Array.from(new Map((items || []).map(p => [p.product_id, p])).values());
+const uniqueItems = Array.from(new Map((items || []).map(p => [p.product_code || p.title, p])).values());
 
   if (counter) counter.innerText = `${uniqueItems.length} Items`;
   if (filterCount) filterCount.innerText = `${uniqueItems.length} Products Available`;
