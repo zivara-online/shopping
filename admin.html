@@ -844,15 +844,30 @@
       }
     };
 
-    window.updateOrderStatus = async function(orderId, newStatus) {
-      if (!db) return;
-      const { error } = await db.from('orders').update({ status: newStatus }).eq('order_id', orderId);
-      if (error) {
-        alert("Status update failed: " + error.message);
-      } else {
-        fetchOrdersData();
-      }
-    };
+// Fulfillment Status Direct Update
+window.updateOrderStatus = async function(orderId, newStatus) {
+  if (!confirm(`Kya aap is order (${orderId}) ka status '${newStatus}' me change karna chahte hain?`)) {
+    // Agar cancel kare to reload karke purana status wapas layein
+    loadAdminOrders();
+    return;
+  }
+
+  try {
+    const { data, error } = await db
+      .from('orders')
+      .update({ status: newStatus })
+      .eq('order_id', orderId);
+
+    if (error) throw error;
+
+    alert(`✅ Order ${orderId} ka status successfully '${newStatus}' update ho gaya!`);
+    loadAdminOrders(); // Table refresh
+  } catch (err) {
+    console.error("Status update error:", err);
+    alert("❌ Status update fail hua: " + err.message + "\n(Supabase orders table ki UPDATE RLS policy check karein)");
+    loadAdminOrders();
+  }
+};
 
     // ==========================================================
     // ORDER ITEMS MODAL (ENHANCED WITH COLOR, SIZE & VARIANT IMAGE)
