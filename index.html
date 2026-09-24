@@ -339,9 +339,11 @@
     </div>
   </div>
 
-  <!-- LUXURY FOOTER COMPONENT (ELEGANT LIGHT FINISH) -->
+  <!-- LUXURY FOOTER COMPONENT (3-COLUMN LAYOUT WITHOUT CONCIERGE) -->
   <footer class="bg-white text-slate-600 text-xs mt-20 border-t border-ivory-300">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
+      
+      <!-- Brand & Mail Column -->
       <div class="space-y-3">
         <img src="Logo.png" alt="Zivara Logo" class="h-20 w-auto object-contain -ml-1 drop-shadow-sm" onerror="this.src='Logo.png'" />
         <div class="space-y-1.5 pt-1">
@@ -357,9 +359,12 @@
           </p>
         </div>
       </div>
+
+      <!-- About & Direct Tracking Column -->
       <div>
-        <h5 class="text-gold-600 uppercase font-bold tracking-widest text-[11px] mb-3">Concierge</h5>
+        <h5 class="text-gold-600 uppercase font-bold tracking-widest text-[11px] mb-3">About Zivara Fashion</h5>
         <ul class="space-y-2">
+          <li><a href="#" class="hover:text-charcoal-900 transition">About Zivara</a></li>
           <li>
             <button onclick="window.openTrackModal()" class="hover:text-charcoal-900 transition text-left cursor-pointer">
               Track Shipment
@@ -367,19 +372,17 @@
           </li>
         </ul>
       </div>
-      <div>
-        <h5 class="text-gold-600 uppercase font-bold tracking-widest text-[11px] mb-3">About Zivara Fashion</h5>
-        <ul class="space-y-2">
-          <li><a href="#" class="hover:text-charcoal-900 transition">About Zivara</a></li>
-        </ul>
-      </div>
+
+      <!-- Legal / Governance Column -->
       <div>
         <h5 class="text-gold-600 uppercase font-bold tracking-widest text-[11px] mb-3">Governance</h5>
         <ul class="space-y-2">
           <li><a href="T&C.html" class="hover:text-charcoal-900 transition">Conditions of Use</a></li>
         </ul>
       </div>
+
     </div>
+    
     <div class="border-t border-ivory-200 py-4 text-center text-[11px] text-slate-400">
       &copy; 2026 AutoTech Solutions. All rights reserved.
     </div>
