@@ -5,7 +5,7 @@ const PAGE_LIMIT = 50;
 let isLoadingMore = false;
 let hasMoreProducts = true;
 
-// 1. INITIAL & INFINITE PRODUCT FETCH (STRICT FRESH FETCH LOGIC)
+// 1. INITIAL & INFINITE PRODUCT FETCH
 export async function loadProducts(isAppend = false) {
   if (!db || isLoadingMore || (!hasMoreProducts && isAppend)) return;
   isLoadingMore = true;
@@ -33,9 +33,13 @@ export async function loadProducts(isAppend = false) {
     }
 
     if (isAppend) {
-      // Duplicate entry protection while appending
-      const existingIds = new Set(state.allProducts.map(p => p.product_id));
-      const freshOnly = fetchedList.filter(p => !existingIds.has(p.product_id));
+      // Merge with deduplication check on state array
+      const existingKeys = new Set(
+        state.allProducts.map(p => String(p.product_code || p.title || p.product_id).trim().toLowerCase())
+      );
+      const freshOnly = fetchedList.filter(
+        p => !existingKeys.has(String(p.product_code || p.title || p.product_id).trim().toLowerCase())
+      );
       state.allProducts = [...state.allProducts, ...freshOnly];
     } else {
       state.allProducts = fetchedList;
@@ -50,7 +54,7 @@ export async function loadProducts(isAppend = false) {
   }
 }
 
-// 2. RENDER GRID (ZERO-DUPLICATION & CLEAN SKELETON REMOVAL)
+// 2. RENDER GRID (STRICT ZERO-DUPLICATION FIX)
 export function renderProductGrid(items, isAppend = false) {
   const grid = document.getElementById('productGrid');
   const counter = document.getElementById('productCounter');
@@ -58,19 +62,19 @@ export function renderProductGrid(items, isAppend = false) {
 
   if (!grid) return;
 
-  // Har fresh render par grid ko bilkul saaf karein (removes placeholder pulse cards)
+  // Fresh load par grid ko clean karein
   if (!isAppend) {
     grid.innerHTML = '';
   }
 
-  // Strict Deduplication: Kisi bhi haal me same title ya code doosri baar nahi aayega
-  const seenIdentifiers = new Set();
+  // Strict Set Deduplication based on SKU / Title / Product ID
+  const seenMap = new Set();
   const uniqueItems = [];
 
   (items || []).forEach(p => {
-    const identifier = String(p.product_code || p.title || p.product_id).trim().toLowerCase();
-    if (!seenIdentifiers.has(identifier)) {
-      seenIdentifiers.add(identifier);
+    const key = String(p.product_code || p.title || p.product_id).trim().toLowerCase();
+    if (key && !seenMap.has(key)) {
+      seenMap.add(key);
       uniqueItems.push(p);
     }
   });
@@ -89,6 +93,7 @@ export function renderProductGrid(items, isAppend = false) {
     return;
   }
 
+  // Rendering only uniqueItems (Not raw items)
   const cardsMarkup = uniqueItems.map(product => {
     const hasDiscount = product.original_price && product.original_price > product.price;
     const discount = hasDiscount ? Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0;
