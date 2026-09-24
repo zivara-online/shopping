@@ -84,9 +84,10 @@ export async function loadMenuSubmenu() {
       const hasSubs = menu.submenus.length > 0;
       
       const menuWrapper = document.createElement('div');
-      menuWrapper.className = "relative group py-1.5 shrink-0";
+      // shrink-0 inline-flex ensure karta hai ki mobile par menu shrink na ho aur smooth scroll bane
+      menuWrapper.className = "relative group py-1.5 shrink-0 inline-flex items-center";
       
-      // Updated Menu Wrapper with absolute dropdown fix & high contrast
+      // Updated Menu item with click & hover dropdown support
       menuWrapper.innerHTML = `
         <button onclick="window.selectMenu('${menu.menuId}', null, '${menu.menuName}')" class="category-btn text-slate-800 hover:text-gold-600 font-semibold transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 cursor-pointer">
           <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-600"></i>
@@ -95,7 +96,7 @@ export async function loadMenuSubmenu() {
         </button>
 
         ${hasSubs ? `
-          <!-- DROPDOWN BOX (LIGHT LUXURY THEME & INSTANT HOVER VISIBILITY) -->
+          <!-- DROPDOWN BOX (LIGHT LUXURY THEME) -->
           <div class="hidden group-hover:block absolute left-0 top-full pt-2 min-w-[210px] z-[99999]">
             <div class="bg-white border border-ivory-300 shadow-2xl rounded-2xl py-2 divide-y divide-ivory-200 backdrop-blur-xl">
               ${menu.submenus.map(sub => `
@@ -139,8 +140,12 @@ export async function loadMenuSubmenu() {
   }
 }
 
+// FORCE SMOOTH SCROLL HANDLER
 export function scrollMenus(offset) {
-  document.getElementById('categoryNavContainer')?.scrollBy({ left: offset, behavior: 'smooth' });
+  const container = document.getElementById('categoryNavContainer');
+  if (container) {
+    container.scrollBy({ left: offset, behavior: 'smooth' });
+  }
 }
 
 export function syncCategoryCheckboxes(id, isChecked) {
