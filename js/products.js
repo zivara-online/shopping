@@ -40,7 +40,7 @@ export async function loadProducts(isAppend = false) {
   }
 }
 
-// 2. RENDER GRID (WITH FLIPKART STYLE PRODUCT CLICK REDIRECT)
+// 2. RENDER GRID (LIGHT LUXURY AESTHETIC WITH CRISP CONTRAST)
 export function renderProductGrid(items, isAppend = false) {
   const grid = document.getElementById('productGrid');
   const counter = document.getElementById('productCounter');
@@ -52,9 +52,9 @@ export function renderProductGrid(items, isAppend = false) {
   if (!grid) return;
   if (items.length === 0 && !isAppend) {
     grid.innerHTML = `
-      <div class="col-span-full py-16 text-center text-slate-400 bg-noir-900/60 border border-gold-500/10 rounded-3xl space-y-3">
-        <i data-lucide="package-search" class="w-10 h-10 mx-auto text-gold-400/40"></i>
-        <p class="text-sm font-bold text-slate-200">No matching products found.</p>
+      <div class="col-span-full py-16 text-center text-slate-600 bg-white border border-ivory-300 rounded-3xl space-y-3 shadow-sm">
+        <i data-lucide="package-search" class="w-10 h-10 mx-auto text-gold-600"></i>
+        <p class="text-sm font-bold text-slate-800">No matching products found.</p>
         <p class="text-xs text-slate-500">Try adjusting your filters or search keywords.</p>
       </div>`;
     refreshIcons();
@@ -67,39 +67,44 @@ export function renderProductGrid(items, isAppend = false) {
     const displayImg = product.thumbnail_url || product.image_url || 'Cover.png';
 
     return `
-      <div onclick="window.openProductDetail('${product.product_id}')" class="group bg-noir-900 border border-gold-500/20 rounded-2xl overflow-hidden hover:border-gold-400/60 transition duration-300 flex flex-col shadow-lg cursor-pointer transform hover:-translate-y-1">
+      <div onclick="window.openProductDetail('${product.product_id}')" class="group bg-white border border-ivory-300 rounded-2xl overflow-hidden hover:border-gold-500 hover:shadow-xl transition duration-300 flex flex-col shadow-sm cursor-pointer transform hover:-translate-y-1">
         
-        <div class="relative w-full h-44 sm:h-56 bg-noir-950 overflow-hidden">
+        <div class="relative w-full h-48 sm:h-60 bg-ivory-100 overflow-hidden">
           <img src="${displayImg}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 ease-out" loading="lazy" onerror="this.src='Cover.png'" />
-          ${hasDiscount ? `<span class="absolute top-2 left-2 bg-noir-950/90 text-gold-400 border border-gold-500/40 text-[9px] font-bold px-2 py-0.5 rounded shadow">${discount}% OFF</span>` : ''}
-          <button onclick="event.stopPropagation(); window.toggleWishlist('${product.product_id}')" class="absolute top-2 right-2 bg-noir-900/80 p-1.5 rounded-full text-slate-300 hover:text-rose-500 transition shadow">
+          
+          ${hasDiscount ? `<span class="absolute top-2 left-2 bg-gold-500 text-white font-bold text-[9px] px-2 py-0.5 rounded shadow-md tracking-wider uppercase font-mono">${discount}% OFF</span>` : ''}
+          
+          <button onclick="event.stopPropagation(); window.toggleWishlist('${product.product_id}')" class="absolute top-2 right-2 bg-white/90 hover:bg-white p-1.5 rounded-full text-slate-600 hover:text-rose-500 transition shadow-sm border border-ivory-200" title="Wishlist">
             <i data-lucide="heart" class="w-3.5 h-3.5"></i>
           </button>
         </div>
 
-        <div class="p-3 sm:p-3.5 flex-1 flex flex-col justify-between space-y-2">
+        <div class="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-3 bg-white">
           <div>
-            <div class="flex items-center justify-between text-[10px] text-slate-400 uppercase font-mono tracking-wider">
-              <span>${product.product_code || 'ZIV'}</span>
-              ${product.submenu_code ? `<span class="text-gold-400 border border-gold-500/30 px-1 rounded">${product.submenu_code}</span>` : ''}
+            <div class="flex items-center justify-between text-[10px] text-slate-500 uppercase font-mono font-bold tracking-wider">
+              <span>SKU: ${product.product_code || 'ZIV'}</span>
+              ${product.submenu_code ? `<span class="text-gold-700 bg-gold-50 border border-gold-300 px-1.5 py-0.2 rounded font-bold">${product.submenu_code}</span>` : ''}
             </div>
-            <h3 class="text-xs font-semibold text-slate-100 line-clamp-1 mt-1 group-hover:text-gold-400 transition" title="${product.title}">${product.title}</h3>
+            <h3 class="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1 mt-1.5 group-hover:text-gold-600 transition" title="${product.title}">
+              ${product.title}
+            </h3>
           </div>
 
           <div>
-            <div class="flex items-baseline gap-1.5">
-              <span class="text-sm sm:text-base font-black text-white">₹${Number(product.price).toLocaleString('en-IN')}</span>
-              ${hasDiscount ? `<span class="text-[11px] text-slate-500 line-through">₹${Number(product.original_price).toLocaleString('en-IN')}</span>` : ''}
+            <div class="flex items-baseline gap-2">
+              <span class="text-base sm:text-lg font-black text-slate-900 font-mono">₹${Number(product.price).toLocaleString('en-IN')}</span>
+              ${hasDiscount ? `<span class="text-xs text-slate-400 line-through font-mono">₹${Number(product.original_price).toLocaleString('en-IN')}</span>` : ''}
             </div>
-            <div class="flex items-center gap-1.5 mt-1">
-              <span class="inline-flex items-center text-[10px] font-bold bg-emerald-950 border border-emerald-500/40 text-emerald-400 px-1.5 py-0.2 rounded">
-                ${product.rating || '4.2'} <i data-lucide="star" class="w-2.5 h-2.5 fill-current ml-0.5"></i>
+            
+            <div class="flex items-center gap-1.5 mt-1.5">
+              <span class="inline-flex items-center text-[10px] font-bold bg-emerald-600 text-white px-1.5 py-0.5 rounded shadow-sm">
+                ${product.rating || '4.5'} <i data-lucide="star" class="w-2.5 h-2.5 fill-current ml-0.5"></i>
               </span>
-              <span class="text-[10px] text-slate-500">(${product.reviews_count || 45})</span>
+              <span class="text-[10px] text-slate-500 font-medium">(${product.reviews_count || 45})</span>
             </div>
           </div>
 
-          <button onclick="event.stopPropagation(); window.addToCart('${product.product_id}')" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1.5 shadow active:scale-95">
+          <button onclick="event.stopPropagation(); window.addToCart('${product.product_id}')" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-600 hover:to-gold-500 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md active:scale-95">
             <i data-lucide="shopping-bag" class="w-3.5 h-3.5 stroke-[2.5]"></i>
             <span>Add to Bag</span>
           </button>
@@ -125,7 +130,7 @@ window.toggleWishlist = function(productId) {
   alert("Item added to your luxury wishlist!");
 };
 
-// 3. SEARCH CONTROLLER (WITH EXPORT)
+// 3. SEARCH CONTROLLER
 export function handleSearchInput(e) {
   const term = e.target.value.trim();
   const clearBtn = document.getElementById('clearSearchBtn');
@@ -167,7 +172,7 @@ export function triggerSearch() {
   applyFiltersAndSort();
 }
 
-// 4. TAXONOMY SELECTION (WITH EXPORT)
+// 4. TAXONOMY SELECTION
 export function selectMenu(menuId, submenuId, title) {
   state.activeMenuId = menuId ? String(menuId).trim() : null;
   state.activeSubmenuId = submenuId ? String(submenuId).trim() : null;
@@ -197,7 +202,7 @@ export function selectMenu(menuId, submenuId, title) {
   applyFiltersAndSort();
 }
 
-// 5. MULTI-VARIABLE DATABASE FILTER & SORT (WITH EXPORT)
+// 5. MULTI-VARIABLE DATABASE FILTER & SORT
 export function applyFiltersAndSort(isAppend = false) {
   let filtered = [...state.allProducts];
 
@@ -257,7 +262,7 @@ export function applyFiltersAndSort(isAppend = false) {
   renderProductGrid(filtered, isAppend);
 }
 
-// 6. RESET ALL FILTERS (WITH EXPORT)
+// 6. RESET ALL FILTERS
 export function resetAllFilters() {
   state.activeMenuId = null;
   state.activeSubmenuId = null;
@@ -290,7 +295,7 @@ export function resetAllFilters() {
   applyFiltersAndSort();
 }
 
-// 7. AUTO-SCROLL TRIGGER (NEXT 50 ITEMS WHEN REACHING BOTTOM)
+// 7. AUTO-SCROLL TRIGGER
 window.addEventListener('scroll', () => {
   if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 600) {
     if (!isLoadingMore && hasMoreProducts) {
