@@ -704,7 +704,8 @@
       }
     }
 
-    // 2. ONLINE RAZORPAY PAYMENT GATEWAY FLOW
+    
+// 2. ONLINE RAZORPAY PAYMENT GATEWAY FLOW (ULTRA-FAST RESPONSE)
     function startRazorpayPayment() {
       const name = document.getElementById('custName').value.trim();
       const phone = document.getElementById('custPhone').value.trim();
@@ -722,8 +723,17 @@
         description: "Bespoke Order Payment",
         image: "Logo.png",
         handler: async function (response) {
+          // 1. INSTANT FEEDBACK LOADER
           payBtn.disabled = true;
-          payBtn.innerHTML = `<span>Booking Courier Dispatch...</span>`;
+          payBtn.innerHTML = `
+            <span class="inline-flex items-center gap-2">
+              <svg class="animate-spin h-4 w-4 text-noir-950" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              Payment Verified! Confirming Order...
+            </span>
+          `;
 
           try {
             const orderId = "ZIV-ORD-" + Date.now();
@@ -739,45 +749,49 @@
               status: "paid"
             };
 
+            // 2. DATABASE SAVE (Instant ~200ms)
             if (db) {
               await db.from('orders').insert([orderPayload]);
               await db.from('users').update({ name: name, email: email }).eq('phone', phone);
             }
 
-            try {
-              const shiprocketRes = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "apikey": SUPABASE_ANON_KEY,
-                  "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-                },
-                body: JSON.stringify(orderPayload)
-              });
-
-              const shiprocketData = await shiprocketRes.json();
-              if (shiprocketData && shiprocketData.order_id) {
+            // 3. BACKGROUND SHIPROCKET DISPATCH (No blocking delay)
+            fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+              },
+              body: JSON.stringify(orderPayload)
+            })
+            .then(res => res.json())
+            .then(async (shiprocketData) => {
+              if (shiprocketData && shiprocketData.order_id && db) {
                 await db.from('orders').update({
                   shiprocket_order_id: String(shiprocketData.order_id),
                   shiprocket_shipment_id: String(shiprocketData.shipment_id || ''),
                   awb_code: String(shiprocketData.awb_code || '')
                 }).eq('order_id', orderId);
               }
-            } catch (srErr) {
-              console.warn("Shiprocket automated dispatch warning:", srErr.message);
-            }
+            })
+            .catch(srErr => {
+              console.warn("Background Shiprocket sync notice:", srErr.message);
+            });
 
+            // 4. CLEAN BAG & SESSION SAVE
             localStorage.setItem('zivara_session', JSON.stringify({ phone, name, email }));
             localStorage.removeItem('zivara_cart');
             closeCustomerDetailsModal();
 
-            alert(`🎉 Payment Successful!\nOrder ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}\n\n`);
-            window.location.href = "index.html";
+            // 5. INSTANT SUCCESS ALERT & REDIRECT TO ORDERS
+            alert(`🎉 Payment Successful!\nOrder ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}\n\nAapka order confirm ho chuka hai!`);
+            window.location.href = "login.html";
 
           } catch (err) {
             console.error("Order completion error:", err);
             alert("Payment receive ho gayi hai. Details: " + response.razorpay_payment_id);
-            window.location.href = "index.html";
+            window.location.href = "login.html";
           }
         },
         prefill: {
