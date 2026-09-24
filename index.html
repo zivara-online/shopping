@@ -86,22 +86,22 @@
       </div>
     </header>
 
- <nav class="bg-ivory-50/95 border-b border-ivory-300 py-2.5 relative z-40">
+    <nav class="bg-ivory-50/95 border-b border-ivory-300 py-2.5 relative z-40">
       <div class="max-w-7xl mx-auto px-2 sm:px-4 relative flex items-center">
-        <!-- Left Arrow (Mobile + Desktop dono par click karke scroll kar sakte hain) -->
-        <button onclick="window.scrollMenus(-200)" class="flex absolute left-1 z-30 bg-white/95 border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-md hover:bg-ivory-100 transition active:scale-95" aria-label="Scroll left">
+        <!-- Left Arrow -->
+        <button onclick="window.scrollMenus(-200)" class="flex md:hidden absolute left-1 z-30 bg-white/95 border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-md hover:bg-ivory-100 transition active:scale-95" aria-label="Scroll left">
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
 
-        <!-- Category Nav Container (Smooth swipe & touch enabled) -->
-        <div id="categoryNavContainer" class="w-full flex flex-nowrap items-center gap-6 sm:gap-7 text-xs font-bold uppercase tracking-wider text-slate-600 overflow-x-auto select-none no-scrollbar px-9 py-1" style="-webkit-overflow-scrolling: touch; scroll-behavior: smooth;">
+        <!-- Category Nav Container (md:overflow-visible dropdown popup ko unblock karta hai) -->
+        <div id="categoryNavContainer" class="w-full flex items-center gap-6 sm:gap-7 text-xs font-bold uppercase tracking-wider text-slate-600 overflow-x-auto md:overflow-visible select-none no-scrollbar px-9 md:px-2 py-1" style="-webkit-overflow-scrolling: touch; scroll-behavior: smooth;">
           <button onclick="window.selectMenu(null, null, '')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
             <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
           </button>
         </div>
 
-        <!-- Right Arrow (Mobile + Desktop dono par active) -->
-        <button onclick="window.scrollMenus(200)" class="flex absolute right-1 z-30 bg-white/95 border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-md hover:bg-ivory-100 transition active:scale-95" aria-label="Scroll right">
+        <!-- Right Arrow -->
+        <button onclick="window.scrollMenus(200)" class="flex md:hidden absolute right-1 z-30 bg-white/95 border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-md hover:bg-ivory-100 transition active:scale-95" aria-label="Scroll right">
           <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </button>
       </div>
