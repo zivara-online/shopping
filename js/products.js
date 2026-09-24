@@ -5,10 +5,16 @@ const PAGE_LIMIT = 50;
 let isLoadingMore = false;
 let hasMoreProducts = true;
 
-// 1. INITIAL & INFINITE PRODUCT FETCH
+// 1. INITIAL & INFINITE PRODUCT FETCH (STRICT FRESH FETCH LOGIC)
 export async function loadProducts(isAppend = false) {
   if (!db || isLoadingMore || (!hasMoreProducts && isAppend)) return;
   isLoadingMore = true;
+
+  if (!isAppend) {
+    currentOffset = 0;
+    hasMoreProducts = true;
+    state.allProducts = [];
+  }
 
   try {
     const { data, error } = await db
@@ -21,17 +27,21 @@ export async function loadProducts(isAppend = false) {
 
     if (error) throw error;
 
-    if (data.length < PAGE_LIMIT) {
+    const fetchedList = data || [];
+    if (fetchedList.length < PAGE_LIMIT) {
       hasMoreProducts = false;
     }
 
     if (isAppend) {
-      state.allProducts = [...state.allProducts, ...data];
+      // Duplicate entry protection while appending
+      const existingIds = new Set(state.allProducts.map(p => p.product_id));
+      const freshOnly = fetchedList.filter(p => !existingIds.has(p.product_id));
+      state.allProducts = [...state.allProducts, ...freshOnly];
     } else {
-      state.allProducts = data || [];
+      state.allProducts = fetchedList;
     }
 
-    currentOffset += data.length;
+    currentOffset += fetchedList.length;
     applyFiltersAndSort(isAppend);
   } catch (err) {
     console.error("Products fetch error:", err.message);
@@ -40,24 +50,33 @@ export async function loadProducts(isAppend = false) {
   }
 }
 
-// 2. RENDER GRID (LIGHT LUXURY AESTHETIC WITH DOUBLE-RENDER & DUPLICATION FIX)
+// 2. RENDER GRID (ZERO-DUPLICATION & CLEAN SKELETON REMOVAL)
 export function renderProductGrid(items, isAppend = false) {
   const grid = document.getElementById('productGrid');
   const counter = document.getElementById('productCounter');
   const filterCount = document.getElementById('filterProductCount');
 
-  // Safety: Deduplicate products by product_id
-const uniqueItems = Array.from(new Map((items || []).map(p => [p.product_code || p.title, p])).values());
-
-  if (counter) counter.innerText = `${uniqueItems.length} Items`;
-  if (filterCount) filterCount.innerText = `${uniqueItems.length} Products Available`;
-
   if (!grid) return;
 
-  // Double render fix: Agar naya filter/tab ya fresh load ho raha ho toh pehle grid ko clean karein
+  // Har fresh render par grid ko bilkul saaf karein (removes placeholder pulse cards)
   if (!isAppend) {
     grid.innerHTML = '';
   }
+
+  // Strict Deduplication: Kisi bhi haal me same title ya code doosri baar nahi aayega
+  const seenIdentifiers = new Set();
+  const uniqueItems = [];
+
+  (items || []).forEach(p => {
+    const identifier = String(p.product_code || p.title || p.product_id).trim().toLowerCase();
+    if (!seenIdentifiers.has(identifier)) {
+      seenIdentifiers.add(identifier);
+      uniqueItems.push(p);
+    }
+  });
+
+  if (counter) counter.innerText = `${uniqueItems.length} Items`;
+  if (filterCount) filterCount.innerText = `${uniqueItems.length} Products Available`;
 
   if (uniqueItems.length === 0 && !isAppend) {
     grid.innerHTML = `
