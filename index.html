@@ -93,7 +93,7 @@
         </button>
 
         <div id="categoryNavContainer" class="w-full flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-600 overflow-x-auto md:overflow-visible custom-scrollbar px-2 sm:px-6 py-1">
-          <button onclick="window.selectMenu(null, null, 'The Heritage Edit')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
+          <button onclick="window.selectMenu(null, null, '')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
             <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
           </button>
         </div>
@@ -149,13 +149,13 @@
 
     <!-- CATALOGUE & FILTER SECTION -->
     <div id="products-section" class="space-y-4 pt-2">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ivory-300 pb-4">
-        <div>
-          <h2 id="searchHeading" class="text-xl sm:text-2xl font-serif text-charcoal-900 tracking-tight capitalize font-bold">The Heritage Edit</h2>
-          <p id="searchSubtext" class="text-xs text-slate-500">Curated bespoke luxury fashion synced with live inventory</p>
-        </div>
+      <!-- UPDATED CLEAN BAR (THE HERITAGE EDIT & SUBTEXT REMOVED) -->
+      <div class="flex items-center justify-end gap-3 border-b border-ivory-300 pb-4">
+        <!-- Hidden elements retained for JS script search queries compatibility -->
+        <span id="searchHeading" class="hidden"></span>
+        <span id="searchSubtext" class="hidden"></span>
 
-        <div class="hidden sm:flex items-center gap-3 self-end sm:self-auto">
+        <div class="hidden sm:flex items-center gap-3">
           <div class="flex items-center bg-white border border-ivory-300 rounded-xl px-3 py-2 text-xs shadow-sm">
             <span class="text-slate-500 mr-2 shrink-0">Sort by:</span>
             <select id="sortSelect" onchange="window.applyFiltersAndSort()" class="bg-transparent text-gold-600 font-bold focus:outline-none cursor-pointer">
