@@ -1495,37 +1495,37 @@
       }
     }
 
-    // FUNCTIONAL PRODUCT TOGGLE STATUS WITH ALERT
-    window.toggleProductStatus = async function(id, currentStatus) {
+// FUNCTIONAL PRODUCT TOGGLE STATUS (ONLY USES product_id)
+    window.toggleProductStatus = async function(productId, currentStatus) {
       try {
         const { error } = await db
           .from('products')
           .update({ is_active: !currentStatus })
-          .or(`product_id.eq.${id},id.eq.${id}`);
+          .eq('product_id', String(productId).trim());
 
         if (error) throw error;
         fetchAllData();
       } catch (err) {
-        alert("Status update fail: " + err.message + "\n(Supabase products UPDATE policy check karein)");
+        alert("Status update fail: " + err.message);
       }
     };
 
-    // FUNCTIONAL PRODUCT DELETE WITH COMPLETE ERROR LOGGING
-    window.deleteProduct = async function(id) {
-      if (!confirm(`Kya aap is product (${id}) ko permanent delete karna chahte hain?`)) return;
+    // FUNCTIONAL PRODUCT DELETE (ONLY USES product_id)
+    window.deleteProduct = async function(productId) {
+      if (!confirm(`Kya aap is product (${productId}) ko permanent delete karna chahte hain?`)) return;
       
       try {
         const { error } = await db
           .from('products')
           .delete()
-          .or(`product_id.eq.${id},id.eq.${id}`);
+          .eq('product_id', String(productId).trim());
 
         if (error) throw error;
         alert("✅ Product successfully delete ho gaya!");
         fetchAllData();
       } catch (err) {
         console.error("Delete product error:", err);
-        alert("❌ Delete fail hua: " + err.message + "\n(Supabase dashboard me jakar products table ki DELETE RLS policy check karein)");
+        alert("❌ Delete fail hua: " + err.message);
       }
     };
 
