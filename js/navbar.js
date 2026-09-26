@@ -1,6 +1,8 @@
 import { db, state, refreshIcons } from './config.js';
 import { applyFiltersAndSort } from './products.js';
 
+let dropdownTimer = null;
+
 // Safe Lucide Icon Resolver
 function mapSafeIcon(rawIcon) {
   if (!rawIcon) return 'sparkles';
@@ -44,7 +46,7 @@ export async function loadMenuSubmenu() {
 
     if (navContainer) {
       navContainer.innerHTML = `
-        <button onclick="window.selectMenu(null, null, '')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 font-bold transition">
+        <button onclick="window.selectMenu(null, null, ''); window.hideSubmenu();" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 font-bold transition">
           <i data-lucide="layout-grid" class="w-4 h-4 text-gold-600"></i> All Collections
         </button>
       `;
@@ -71,7 +73,6 @@ export async function loadMenuSubmenu() {
       const subId = item.SubmenuID ? String(item.SubmenuID).trim() : '';
       const subName = item.SubName ? String(item.SubName).trim() : '';
       
-      // Check if valid submenu
       if (subId && subId !== 'NULL' && subName && subName !== 'NULL') {
         const exists = menuMap.get(mId).submenus.some(s => s.subId === subId);
         if (!exists) {
@@ -84,34 +85,44 @@ export async function loadMenuSubmenu() {
       const hasSubs = menu.submenus.length > 0;
       
       const menuWrapper = document.createElement('div');
-      // shrink-0 inline-flex ensure karta hai ki mobile par menu shrink na ho aur smooth scroll bane
-      menuWrapper.className = "relative group py-1.5 shrink-0 inline-flex items-center";
+      menuWrapper.className = "relative shrink-0 inline-flex items-center";
       
-      // Updated Menu item with click & hover dropdown support
-      menuWrapper.innerHTML = `
-        <button onclick="window.selectMenu('${menu.menuId}', null, '${menu.menuName}')" class="category-btn text-slate-800 hover:text-gold-600 font-semibold transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 cursor-pointer">
-          <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-600"></i>
-          <span>${menu.menuName}</span>
-          ${hasSubs ? `<i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 group-hover:text-gold-600 transition-transform duration-200 group-hover:rotate-180 pointer-events-none"></i>` : ''}
-        </button>
-
-        ${hasSubs ? `
-          <!-- DROPDOWN BOX (LIGHT LUXURY THEME) -->
-          <div class="hidden group-hover:block absolute left-0 top-full pt-2 min-w-[210px] z-[99999]">
-            <div class="bg-white border border-ivory-300 shadow-2xl rounded-2xl py-2 divide-y divide-ivory-200 backdrop-blur-xl">
-              ${menu.submenus.map(sub => `
-                <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}')" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:text-gold-600 hover:bg-ivory-100 transition flex items-center justify-between group/item cursor-pointer">
-                  <span>${sub.subName}</span>
-                  <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all text-gold-600"></i>
-                </button>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
+      const btn = document.createElement('button');
+      btn.className = "category-btn text-slate-800 hover:text-gold-600 font-semibold transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 cursor-pointer";
+      btn.innerHTML = `
+        <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-600"></i>
+        <span>${menu.menuName}</span>
+        ${hasSubs ? `<i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 pointer-events-none"></i>` : ''}
       `;
+
+      // Click: Menu select
+      btn.onclick = (e) => {
+        if (!hasSubs) {
+          window.selectMenu(menu.menuId, null, menu.menuName);
+          window.hideSubmenu();
+        } else {
+          // On mobile tap or click toggle
+          window.toggleSubmenu(btn, menu);
+        }
+      };
+
+      // Hover: Desktop par cursor aane par dropdown open
+      if (hasSubs) {
+        menuWrapper.onmouseenter = () => {
+          clearTimeout(dropdownTimer);
+          window.showSubmenu(btn, menu);
+        };
+        menuWrapper.onmouseleave = () => {
+          dropdownTimer = setTimeout(() => {
+            window.hideSubmenu();
+          }, 200);
+        };
+      }
+
+      menuWrapper.appendChild(btn);
       if (navContainer) navContainer.appendChild(menuWrapper);
 
-      // Desktop Checkbox (Light Theme)
+      // Desktop Filters
       if (filterContainer) {
         const catLabel = document.createElement('label');
         catLabel.className = "flex items-center gap-2 cursor-pointer text-slate-700 hover:text-slate-900 font-medium";
@@ -122,7 +133,7 @@ export async function loadMenuSubmenu() {
         filterContainer.appendChild(catLabel);
       }
 
-      // Mobile Checkbox (Light Theme)
+      // Mobile Filters
       if (mobileFilterContainer) {
         const mobLabel = document.createElement('label');
         mobLabel.className = "flex items-center gap-2.5 p-2 rounded-xl bg-ivory-50 border border-ivory-200 text-slate-700 cursor-pointer";
@@ -134,14 +145,70 @@ export async function loadMenuSubmenu() {
       }
     });
 
+    // Floating Dropdown par cursor rehne par band na ho
+    const globalDropdown = document.getElementById('globalSubmenuDropdown');
+    if (globalDropdown) {
+      globalDropdown.onmouseenter = () => clearTimeout(dropdownTimer);
+      globalDropdown.onmouseleave = () => {
+        dropdownTimer = setTimeout(() => window.hideSubmenu(), 200);
+      };
+    }
+
     refreshIcons();
   } catch (err) {
     console.error("MenuSubmenu error:", err.message);
   }
 }
 
-// FORCE SMOOTH SCROLL HANDLER
+// GLOBAL FLOATING SUBMENU CONTROLLERS
+window.showSubmenu = function(btnElement, menu) {
+  const dropdown = document.getElementById('globalSubmenuDropdown');
+  const content = document.getElementById('globalSubmenuContent');
+  if (!dropdown || !content || !menu.submenus.length) return;
+
+  const rect = btnElement.getBoundingClientRect();
+  dropdown.style.left = `${Math.max(10, rect.left)}px`;
+  dropdown.style.top = `${rect.bottom + 8}px`;
+
+  content.innerHTML = `
+    <div class="px-4 py-1.5 text-[10px] uppercase font-bold text-gold-700 bg-gold-50/70 border-b border-ivory-200">
+      ${menu.menuName} Categories
+    </div>
+    ${menu.submenus.map(sub => `
+      <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}'); window.hideSubmenu();" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:text-gold-600 hover:bg-ivory-100 transition flex items-center justify-between group/item cursor-pointer">
+        <span>${sub.subName}</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all text-gold-600"></i>
+      </button>
+    `).join('')}
+  `;
+
+  dropdown.classList.remove('hidden');
+  refreshIcons();
+};
+
+window.hideSubmenu = function() {
+  const dropdown = document.getElementById('globalSubmenuDropdown');
+  if (dropdown) dropdown.classList.add('hidden');
+};
+
+window.toggleSubmenu = function(btnElement, menu) {
+  const dropdown = document.getElementById('globalSubmenuDropdown');
+  if (dropdown && !dropdown.classList.contains('hidden')) {
+    window.hideSubmenu();
+  } else {
+    window.showSubmenu(btnElement, menu);
+  }
+};
+
+// Bahar click karne par dropdown band ho jaye
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#globalSubmenuDropdown') && !e.target.closest('.category-btn')) {
+    window.hideSubmenu();
+  }
+});
+
 export function scrollMenus(offset) {
+  window.hideSubmenu();
   const container = document.getElementById('categoryNavContainer');
   if (container) {
     container.scrollBy({ left: offset, behavior: 'smooth' });
@@ -152,8 +219,8 @@ export function syncCategoryCheckboxes(id, isChecked) {
   document.querySelectorAll(`.cat-checkbox[value="${id}"]`).forEach(c => c.checked = isChecked);
 }
 
-// Mobile Filter Drawer & Sort Controls
 export function openMobileFilterDrawer() {
+  window.hideSubmenu();
   document.getElementById('mobileFilterDrawerBackdrop')?.classList.remove('hidden');
   const drawer = document.getElementById('mobileFilterDrawer');
   if (drawer) drawer.style.transform = 'translateY(0%)';
@@ -167,6 +234,7 @@ export function closeMobileFilterDrawer() {
 }
 
 export function toggleMobileSortModal() {
+  window.hideSubmenu();
   const modal = document.getElementById('mobileSortModal');
   modal?.classList.toggle('hidden');
   updateSortCheckmarks();
