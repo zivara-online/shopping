@@ -841,7 +841,7 @@ const APITXT_AUTH_KEY = "LPMrbgj8eeTbv7a7tjIMTE1q_Z0tif-1BxwdAV_fn3I";
           .single();
 
         if (verifyErr || !record) {
-          throw new Error("Invalid ya Expired OTP! Kripya dobara try karein.");
+          throw new Error("Invalid or Expired OTP! Please Try Again Later.");
         }
 
         // Delete used OTP
