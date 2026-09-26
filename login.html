@@ -400,6 +400,38 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
+    // 1. Send OTP Button Click
+async function requestOtp(phoneNumber) {
+  const res = await fetch("https://ybybvetysdqpfbvfznoq.supabase.co/functions/v1/send-otp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone: phoneNumber })
+  });
+  const data = await res.json();
+  if (data.success) {
+    alert("OTP bhej diya gaya hai!");
+  } else {
+    alert("Error: " + data.error);
+  }
+}
+
+// 2. Verify OTP Button Click
+async function submitOtp(phoneNumber, enteredOtp) {
+  const res = await fetch("https://ybybvetysdqpfbvfznoq.supabase.co/functions/v1/verify-otp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone: phoneNumber, otp: enteredOtp })
+  });
+  const data = await res.json();
+  if (data.success) {
+    alert("Login Successful!");
+    localStorage.setItem('zivara_session', JSON.stringify({ phone: phoneNumber, name: 'Customer' }));
+    window.location.href = "index.html";
+  } else {
+    alert("Galat OTP!");
+  }
+}
+
     // 1. SESSION INITIALIZER
     async function checkUserSession() {
       const localSession = JSON.parse(localStorage.getItem('zivara_session'));
