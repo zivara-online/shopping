@@ -167,15 +167,17 @@ window.showSubmenu = function(btnElement, menu) {
   if (!dropdown || !content || !menu.submenus.length) return;
 
   const rect = btnElement.getBoundingClientRect();
+  
+  // Exact button ke theek niche 4px gap par position set karein
   dropdown.style.left = `${Math.max(10, rect.left)}px`;
-  dropdown.style.top = `${rect.bottom + 8}px`;
+  dropdown.style.top = `${rect.bottom + 4}px`;
 
   content.innerHTML = `
-    <div class="px-4 py-1.5 text-[10px] uppercase font-bold text-gold-700 bg-gold-50/70 border-b border-ivory-200">
-      ${menu.menuName} Categories
+    <div class="px-3.5 py-1 text-[10px] uppercase font-bold text-gold-700 bg-gold-50/70 border-b border-ivory-200 tracking-wider">
+      ${menu.menuName}
     </div>
     ${menu.submenus.map(sub => `
-      <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}'); window.hideSubmenu();" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:text-gold-600 hover:bg-ivory-100 transition flex items-center justify-between group/item cursor-pointer">
+      <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}'); window.hideSubmenu();" class="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-800 hover:text-gold-600 hover:bg-ivory-100 transition flex items-center justify-between group/item cursor-pointer">
         <span>${sub.subName}</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all text-gold-600"></i>
       </button>
