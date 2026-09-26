@@ -751,7 +751,22 @@
 
 
 const APITXT_AUTH_KEY = "LPMrbgj8eeTbv7a7tjIMTE1q_Z0tif-1BxwdAV_fn3I";
-async function handleSendOtp(e) {
+
+    // 5. MOBILE OTP FLOW (EXACT APITXT sendOTP SPECIFICATION)
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      });
+    });
+
+    async function handleSendOtp(e) {
       e.preventDefault();
       currentPhone = phoneInput.value.trim();
       if (currentPhone.length !== 10) {
@@ -764,18 +779,17 @@ async function handleSendOtp(e) {
       sendBtn.innerHTML = `<span>Sending SMS...</span>`;
 
       try {
-        // 1. Generate 4-digit OTP
+        // 1. 4-Digit Random OTP Generate karein
         const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
-        // 2. Apitxt API call
-        const message = `Aapka Zivara login OTP hai: ${generatedOtp}. Yeh OTP agle 5 minute ke liye valid hai.`;
-        const smsUrl = `https://apitxt.com/api/send_sms?auth_key=${encodeURIComponent(APITXT_AUTH_KEY)}&phone=${encodeURIComponent(currentPhone)}&message=${encodeURIComponent(message)}`;
+        // 2. Apitxt Exact Endpoint & Parameters
+        const smsUrl = `https://apitxt.com/api/sendOTP?authkey=${encodeURIComponent(APITXT_AUTH_KEY)}&mobile=${encodeURIComponent(currentPhone)}&otp=${encodeURIComponent(generatedOtp)}`;
 
-        // Send SMS via Apitxt
-        fetch(smsUrl, { mode: 'no-cors' }).catch(err => console.log(err));
+        // SMS dispatch trigger
+        fetch(smsUrl, { mode: 'no-cors' }).catch(err => console.log("Apitxt log:", err));
 
-        // 3. Store OTP in Supabase table
+        // 3. Supabase me OTP save karein verification ke liye
         if (db) {
           await db.from('otp_verifications').delete().eq('phone', currentPhone);
           const { error: dbErr } = await db.from('otp_verifications').insert([
@@ -787,10 +801,11 @@ async function handleSendOtp(e) {
         displayPhone.innerText = `+91 ${currentPhone}`;
         stepPhone.classList.add('hidden');
         stepOtp.classList.remove('hidden');
+        otpInputs.forEach(i => i.value = '');
         otpInputs[0].focus();
         refreshIcons();
       } catch (err) {
-        alert("OTP Error: " + err.message);
+        alert("OTP Dispatch Error: " + err.message);
       } finally {
         sendBtn.disabled = false;
         sendBtn.innerHTML = `<span>Proceed with OTP</span><i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>`;
@@ -812,9 +827,9 @@ async function handleSendOtp(e) {
       verifyBtn.innerHTML = `<span>Verifying...</span>`;
 
       try {
-        if (!db) throw new Error("Database connection missing");
+        if (!db) throw new Error("Database client unavailable");
 
-        // Verify OTP from table
+        // Verify from Supabase
         const { data: record, error: verifyErr } = await db
           .from('otp_verifications')
           .select('*')
@@ -826,13 +841,13 @@ async function handleSendOtp(e) {
           .single();
 
         if (verifyErr || !record) {
-          throw new Error("Invalid or Expired OTP! Dobara koshish karein.");
+          throw new Error("Invalid ya Expired OTP! Kripya dobara try karein.");
         }
 
         // Delete used OTP
         await db.from('otp_verifications').delete().eq('phone', currentPhone);
 
-        // Check if user already exists
+        // Check if existing user
         const { data: userRec } = await db.from('users').select('*').eq('phone', currentPhone).single();
         if (userRec) {
           currentUserData = userRec;
@@ -846,11 +861,12 @@ async function handleSendOtp(e) {
           return;
         }
 
+        // Agar new user hai toh Registration step khole
         stepOtp.classList.add('hidden');
         stepRegister.classList.remove('hidden');
         refreshIcons();
       } catch (err) {
-        alert("Authentication Error: " + err.message);
+        alert("Verification Error: " + err.message);
       } finally {
         verifyBtn.disabled = false;
         verifyBtn.innerHTML = `<span>Verify & Enter</span><i data-lucide="shield-check" class="w-4 h-4 text-noir-950"></i>`;
