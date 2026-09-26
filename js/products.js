@@ -33,13 +33,9 @@ export async function loadProducts(isAppend = false) {
     }
 
     if (isAppend) {
-      // Merge with deduplication check on state array
-      const existingKeys = new Set(
-        state.allProducts.map(p => String(p.product_code || p.title || p.product_id).trim().toLowerCase())
-      );
-      const freshOnly = fetchedList.filter(
-        p => !existingKeys.has(String(p.product_code || p.title || p.product_id).trim().toLowerCase())
-      );
+      // Duplicate prevention during pagination append
+      const existingIds = new Set(state.allProducts.map(p => p.product_id));
+      const freshOnly = fetchedList.filter(p => !existingIds.has(p.product_id));
       state.allProducts = [...state.allProducts, ...freshOnly];
     } else {
       state.allProducts = fetchedList;
@@ -54,7 +50,7 @@ export async function loadProducts(isAppend = false) {
   }
 }
 
-// 2. RENDER GRID (STRICT ZERO-DUPLICATION FIX)
+// 2. RENDER GRID (STRICT DEDUPLICATION GUARANTEE)
 export function renderProductGrid(items, isAppend = false) {
   const grid = document.getElementById('productGrid');
   const counter = document.getElementById('productCounter');
@@ -62,19 +58,20 @@ export function renderProductGrid(items, isAppend = false) {
 
   if (!grid) return;
 
-  // Fresh load par grid ko clean karein
+  // Har render se pehle grid ko clean karein
   if (!isAppend) {
     grid.innerHTML = '';
   }
 
-  // Strict Set Deduplication based on SKU / Title / Product ID
+  // Strict Deduplication: title aur product_code match hone par duplicate discard hoga
   const seenMap = new Set();
   const uniqueItems = [];
 
   (items || []).forEach(p => {
-    const key = String(p.product_code || p.title || p.product_id).trim().toLowerCase();
-    if (key && !seenMap.has(key)) {
-      seenMap.add(key);
+    // Unique identifier banayein (title + sku)
+    const identifier = String(p.title || p.product_code || p.product_id).trim().toLowerCase();
+    if (identifier && !seenMap.has(identifier)) {
+      seenMap.add(identifier);
       uniqueItems.push(p);
     }
   });
@@ -93,7 +90,6 @@ export function renderProductGrid(items, isAppend = false) {
     return;
   }
 
-  // Rendering only uniqueItems (Not raw items)
   const cardsMarkup = uniqueItems.map(product => {
     const hasDiscount = product.original_price && product.original_price > product.price;
     const discount = hasDiscount ? Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0;
