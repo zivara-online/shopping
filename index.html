@@ -86,6 +86,7 @@
       </div>
     </header>
 
+<!-- NAVIGATION BAR -->
     <nav class="bg-ivory-50/95 border-b border-ivory-300 py-2.5 relative z-40">
       <div class="max-w-7xl mx-auto px-2 sm:px-4 relative flex items-center">
         <!-- Left Arrow -->
@@ -93,10 +94,10 @@
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
 
-        <!-- Category Nav Container -->
+        <!-- Category Nav Container (Smooth Scroll Enabled) -->
         <div id="categoryNavContainer" 
              class="w-full flex items-center gap-6 sm:gap-7 text-xs font-bold uppercase tracking-wider text-slate-600 select-none px-9 md:px-4 py-1" 
-             style="overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-x !important; white-space: nowrap !important; scroll-behavior: smooth;">
+             style="overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; scroll-behavior: smooth;">
           <button onclick="window.selectMenu(null, null, '')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
             <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
           </button>
@@ -106,6 +107,11 @@
         <button type="button" onclick="window.scrollMenus(200)" class="flex absolute right-1 z-30 bg-white/95 border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-md hover:bg-ivory-100 transition active:scale-90" aria-label="Scroll right">
           <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </button>
+      </div>
+
+      <!-- UNIVERSAL FLOATING SUBMENU DROPDOWN (NEVER GETS CLIPPED BY OVERFLOW) -->
+      <div id="globalSubmenuDropdown" class="hidden absolute z-[999999] transition-all duration-150">
+        <div id="globalSubmenuContent" class="bg-white border border-ivory-300 shadow-2xl rounded-2xl py-2 min-w-[220px] divide-y divide-ivory-200"></div>
       </div>
     </nav>
   </div>
