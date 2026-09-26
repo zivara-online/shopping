@@ -7,7 +7,9 @@ let hasMoreProducts = true;
 
 // 1. INITIAL & INFINITE PRODUCT FETCH
 export async function loadProducts(isAppend = false) {
-  if (!db || isLoadingMore || (!hasMoreProducts && isAppend)) return;
+  if (!db || isLoadingMore) return;
+  if (isAppend && !hasMoreProducts) return;
+
   isLoadingMore = true;
 
   if (!isAppend) {
@@ -33,16 +35,20 @@ export async function loadProducts(isAppend = false) {
     }
 
     if (isAppend) {
-      // Duplicate prevention during pagination append
-      const existingIds = new Set(state.allProducts.map(p => p.product_id));
-      const freshOnly = fetchedList.filter(p => !existingIds.has(p.product_id));
+      // Duplicate protection: match by product_id or title
+      const existingKeys = new Set(
+        state.allProducts.map(p => String(p.product_id || p.product_code || p.title).trim().toLowerCase())
+      );
+      const freshOnly = fetchedList.filter(
+        p => !existingKeys.has(String(p.product_id || p.product_code || p.title).trim().toLowerCase())
+      );
       state.allProducts = [...state.allProducts, ...freshOnly];
     } else {
       state.allProducts = fetchedList;
     }
 
     currentOffset += fetchedList.length;
-    applyFiltersAndSort(isAppend);
+    applyFiltersAndSort(false); // Forced false to prevent duplicate concatenation
   } catch (err) {
     console.error("Products fetch error:", err.message);
   } finally {
@@ -50,7 +56,7 @@ export async function loadProducts(isAppend = false) {
   }
 }
 
-// 2. RENDER GRID (STRICT DEDUPLICATION GUARANTEE)
+// 2. RENDER GRID (STRICT SINGLE RENDER)
 export function renderProductGrid(items, isAppend = false) {
   const grid = document.getElementById('productGrid');
   const counter = document.getElementById('productCounter');
@@ -58,20 +64,19 @@ export function renderProductGrid(items, isAppend = false) {
 
   if (!grid) return;
 
-  // Har render se pehle grid ko clean karein
+  // Har render par grid clean hoga jab tak specific append call na ho
   if (!isAppend) {
     grid.innerHTML = '';
   }
 
-  // Strict Deduplication: title aur product_code match hone par duplicate discard hoga
+  // Strict Set Deduplication based on SKU / Title / Product ID
   const seenMap = new Set();
   const uniqueItems = [];
 
   (items || []).forEach(p => {
-    // Unique identifier banayein (title + sku)
-    const identifier = String(p.title || p.product_code || p.product_id).trim().toLowerCase();
-    if (identifier && !seenMap.has(identifier)) {
-      seenMap.add(identifier);
+    const key = String(p.product_code || p.title || p.product_id).trim().toLowerCase();
+    if (key && !seenMap.has(key)) {
+      seenMap.add(key);
       uniqueItems.push(p);
     }
   });
@@ -324,9 +329,12 @@ export function resetAllFilters() {
   applyFiltersAndSort();
 }
 
-// 7. AUTO-SCROLL TRIGGER
+// 7. SAFE AUTO-SCROLL TRIGGER (Requires actual user scroll distance)
 window.addEventListener('scroll', () => {
-  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 600) {
+  // Only trigger if user scrolled down at least 150px (prevents instant-trigger on short page)
+  if (window.scrollY < 150) return;
+
+  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
     if (!isLoadingMore && hasMoreProducts) {
       loadProducts(true);
     }
