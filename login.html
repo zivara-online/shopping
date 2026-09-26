@@ -224,6 +224,7 @@
 
           <button 
             type="submit" 
+            id="sendOtpBtn"
             class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
             <span>Proceed with OTP</span>
             <i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>
@@ -245,20 +246,19 @@
 
         <form onsubmit="handleVerifyOtp(event)" class="space-y-5">
           <div>
-            <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-3 text-center">Enter 6-Digit OTP</label>
-            <div class="flex justify-between gap-1.5 sm:gap-2">
-              <input type="text" maxlength="1" class="otp-digit w-10 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
-              <input type="text" maxlength="1" class="otp-digit w-10 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
-              <input type="text" maxlength="1" class="otp-digit w-10 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
-              <input type="text" maxlength="1" class="otp-digit w-10 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
-              <input type="text" maxlength="1" class="otp-digit w-10 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
-              <input type="text" maxlength="1" class="otp-digit w-10 sm:w-12 h-12 text-center text-lg font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+            <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-3 text-center">Enter 4-Digit OTP</label>
+            <div class="flex justify-center gap-2.5 sm:gap-3">
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-xl font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-xl font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-xl font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
+              <input type="text" maxlength="1" class="otp-digit w-12 h-12 text-center text-xl font-black bg-noir-950 border border-gold-500/20 text-white rounded-xl focus:outline-none focus:border-gold-400 transition" />
             </div>
-            <p class="text-[11px] text-center text-slate-400 mt-3">Demo verification OTP: <b class="text-gold-400">123456</b></p>
+            <p class="text-[11px] text-center text-slate-400 mt-3">OTP SMS through Apitxt Gateway</p>
           </div>
 
           <button 
             type="submit" 
+            id="verifyOtpBtn"
             class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
             <span>Verify & Enter</span>
             <i data-lucide="shield-check" class="w-4 h-4 text-noir-950"></i>
@@ -399,38 +399,6 @@
     function refreshIcons() {
       if (window.lucide) window.lucide.createIcons();
     }
-
-    // 1. Send OTP Button Click
-async function requestOtp(phoneNumber) {
-  const res = await fetch("https://ybybvetysdqpfbvfznoq.supabase.co/functions/v1/send-otp", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone: phoneNumber })
-  });
-  const data = await res.json();
-  if (data.success) {
-    alert("OTP bhej diya gaya hai!");
-  } else {
-    alert("Error: " + data.error);
-  }
-}
-
-// 2. Verify OTP Button Click
-async function submitOtp(phoneNumber, enteredOtp) {
-  const res = await fetch("https://ybybvetysdqpfbvfznoq.supabase.co/functions/v1/verify-otp", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone: phoneNumber, otp: enteredOtp })
-  });
-  const data = await res.json();
-  if (data.success) {
-    alert("Login Successful!");
-    localStorage.setItem('zivara_session', JSON.stringify({ phone: phoneNumber, name: 'Customer' }));
-    window.location.href = "index.html";
-  } else {
-    alert("Galat OTP!");
-  }
-}
 
     // 1. SESSION INITIALIZER
     async function checkUserSession() {
@@ -767,7 +735,7 @@ async function submitOtp(phoneNumber, enteredOtp) {
       window.location.href = 'index.html';
     }
 
-    // 5. MOBILE OTP FLOW
+    // 5. MOBILE OTP FLOW (INTEGRATED APITXT REAL SMS GATEWAY)
     otpInputs.forEach((input, index) => {
       input.addEventListener('input', (e) => {
         if (e.target.value.length === 1 && index < otpInputs.length - 1) {
@@ -789,23 +757,69 @@ async function submitOtp(phoneNumber, enteredOtp) {
         return;
       }
 
-      displayPhone.innerText = `+91 ${currentPhone}`;
-      stepPhone.classList.add('hidden');
-      stepOtp.classList.remove('hidden');
-      otpInputs[0].focus();
-      refreshIcons();
+      const sendBtn = document.getElementById('sendOtpBtn');
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = `<span>Sending SMS...</span>`;
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/send-otp`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ phone: currentPhone })
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || "SMS send failed");
+        }
+
+        displayPhone.innerText = `+91 ${currentPhone}`;
+        stepPhone.classList.add('hidden');
+        stepOtp.classList.remove('hidden');
+        otpInputs[0].focus();
+        refreshIcons();
+      } catch (err) {
+        alert("OTP Error: " + err.message);
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = `<span>Proceed with OTP</span><i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>`;
+        refreshIcons();
+      }
     }
 
     async function handleVerifyOtp(e) {
       e.preventDefault();
       const enteredOtp = Array.from(otpInputs).map(i => i.value).join('');
 
-      if (enteredOtp.length !== 6) {
-        alert('Please enter complete 6-digit OTP.');
+      if (enteredOtp.length !== 4) {
+        alert('Please enter complete 4-digit OTP.');
         return;
       }
 
-      if (enteredOtp === "123456") {
+      const verifyBtn = document.getElementById('verifyOtpBtn');
+      verifyBtn.disabled = true;
+      verifyBtn.innerHTML = `<span>Verifying...</span>`;
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/verify-otp`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ phone: currentPhone, otp: enteredOtp })
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Invalid or Expired OTP");
+        }
+
         if (db) {
           try {
             const { data: userRec } = await db.from('users').select('*').eq('phone', currentPhone).single();
@@ -828,8 +842,12 @@ async function submitOtp(phoneNumber, enteredOtp) {
         stepOtp.classList.add('hidden');
         stepRegister.classList.remove('hidden');
         refreshIcons();
-      } else {
-        alert('Invalid OTP. Demo verification code: 123456');
+      } catch (err) {
+        alert("Authentication Error: " + err.message);
+      } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = `<span>Verify & Enter</span><i data-lucide="shield-check" class="w-4 h-4 text-noir-950"></i>`;
+        refreshIcons();
       }
     }
 
