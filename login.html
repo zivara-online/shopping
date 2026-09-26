@@ -749,7 +749,9 @@
       });
     });
 
-    async function handleSendOtp(e) {
+
+const APITXT_AUTH_KEY = "LPMrbgj8eeTbv7a7tjIMTE1q_Z0tif-1BxwdAV_fn3I";
+async function handleSendOtp(e) {
       e.preventDefault();
       currentPhone = phoneInput.value.trim();
       if (currentPhone.length !== 10) {
@@ -762,19 +764,24 @@
       sendBtn.innerHTML = `<span>Sending SMS...</span>`;
 
       try {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/send-otp`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({ phone: currentPhone })
-        });
+        // 1. Generate 4-digit OTP
+        const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
-        const data = await res.json();
-        if (!res.ok || data.error) {
-          throw new Error(data.error || "SMS send failed");
+        // 2. Apitxt API call
+        const message = `Aapka Zivara login OTP hai: ${generatedOtp}. Yeh OTP agle 5 minute ke liye valid hai.`;
+        const smsUrl = `https://apitxt.com/api/send_sms?auth_key=${encodeURIComponent(APITXT_AUTH_KEY)}&phone=${encodeURIComponent(currentPhone)}&message=${encodeURIComponent(message)}`;
+
+        // Send SMS via Apitxt
+        fetch(smsUrl, { mode: 'no-cors' }).catch(err => console.log(err));
+
+        // 3. Store OTP in Supabase table
+        if (db) {
+          await db.from('otp_verifications').delete().eq('phone', currentPhone);
+          const { error: dbErr } = await db.from('otp_verifications').insert([
+            { phone: currentPhone, otp: generatedOtp, expires_at: expiresAt }
+          ]);
+          if (dbErr) throw dbErr;
         }
 
         displayPhone.innerText = `+91 ${currentPhone}`;
@@ -805,38 +812,38 @@
       verifyBtn.innerHTML = `<span>Verifying...</span>`;
 
       try {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/verify-otp`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({ phone: currentPhone, otp: enteredOtp })
-        });
+        if (!db) throw new Error("Database connection missing");
 
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || "Invalid or Expired OTP");
+        // Verify OTP from table
+        const { data: record, error: verifyErr } = await db
+          .from('otp_verifications')
+          .select('*')
+          .eq('phone', currentPhone)
+          .eq('otp', enteredOtp)
+          .gt('expires_at', new Date().toISOString())
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (verifyErr || !record) {
+          throw new Error("Invalid or Expired OTP! Dobara koshish karein.");
         }
 
-        if (db) {
-          try {
-            const { data: userRec } = await db.from('users').select('*').eq('phone', currentPhone).single();
-            if (userRec) {
-              currentUserData = userRec;
-              localStorage.setItem('zivara_session', JSON.stringify({
-                phone: userRec.phone,
-                name: userRec.name,
-                email: userRec.email
-              }));
-              renderDashboard(currentUserData);
-              loadCustomerOrders(userRec.phone);
-              return;
-            }
-          } catch (err) {
-            console.warn(err);
-          }
+        // Delete used OTP
+        await db.from('otp_verifications').delete().eq('phone', currentPhone);
+
+        // Check if user already exists
+        const { data: userRec } = await db.from('users').select('*').eq('phone', currentPhone).single();
+        if (userRec) {
+          currentUserData = userRec;
+          localStorage.setItem('zivara_session', JSON.stringify({
+            phone: userRec.phone,
+            name: userRec.name,
+            email: userRec.email
+          }));
+          renderDashboard(currentUserData);
+          loadCustomerOrders(userRec.phone);
+          return;
         }
 
         stepOtp.classList.add('hidden');
