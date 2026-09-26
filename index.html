@@ -89,21 +89,19 @@
     <nav class="bg-ivory-50/95 border-b border-ivory-300 py-2.5 relative z-40">
       <div class="max-w-7xl mx-auto px-2 sm:px-4 relative flex items-center">
         <!-- Left Arrow -->
-        <button type="button" onclick="window.scrollMenus(-200)" class="flex absolute left-1 z-30 bg-white/95 border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-md hover:bg-ivory-100 transition active:scale-90" aria-label="Scroll left">
+        <button onclick="window.scrollMenus(-200)" class="flex md:hidden absolute left-1 z-30 bg-white/95 border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-md hover:bg-ivory-100 transition active:scale-95" aria-label="Scroll left">
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
 
-        <!-- Category Nav Container -->
-        <div id="categoryNavContainer" 
-             class="w-full flex items-center gap-6 sm:gap-7 text-xs font-bold uppercase tracking-wider text-slate-600 select-none px-9 md:px-4 py-1" 
-             style="overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; touch-action: pan-x !important; white-space: nowrap !important; scroll-behavior: smooth;">
+        <!-- Category Nav Container (md:overflow-visible dropdown popup ko unblock karta hai) -->
+        <div id="categoryNavContainer" class="w-full flex items-center gap-6 sm:gap-7 text-xs font-bold uppercase tracking-wider text-slate-600 overflow-x-auto md:overflow-visible select-none no-scrollbar px-9 md:px-2 py-1" style="-webkit-overflow-scrolling: touch; scroll-behavior: smooth;">
           <button onclick="window.selectMenu(null, null, '')" class="category-btn text-gold-600 border-b-2 border-gold-500 pb-0.5 flex items-center gap-1.5 shrink-0 transition">
             <i data-lucide="layout-grid" class="w-4 h-4"></i> All Collections
           </button>
         </div>
 
         <!-- Right Arrow -->
-        <button type="button" onclick="window.scrollMenus(200)" class="flex absolute right-1 z-30 bg-white/95 border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-md hover:bg-ivory-100 transition active:scale-90" aria-label="Scroll right">
+        <button onclick="window.scrollMenus(200)" class="flex md:hidden absolute right-1 z-30 bg-white/95 border border-ivory-300 text-gold-600 p-1.5 rounded-full shadow-md hover:bg-ivory-100 transition active:scale-95" aria-label="Scroll right">
           <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </button>
       </div>
@@ -154,7 +152,9 @@
 
     <!-- CATALOGUE & FILTER SECTION -->
     <div id="products-section" class="space-y-4 pt-2">
+      <!-- UPDATED CLEAN BAR (THE HERITAGE EDIT & SUBTEXT REMOVED) -->
       <div class="flex items-center justify-end gap-3 border-b border-ivory-300 pb-4">
+        <!-- Hidden elements retained for JS script search queries compatibility -->
         <span id="searchHeading" class="hidden"></span>
         <span id="searchSubtext" class="hidden"></span>
 
@@ -233,9 +233,12 @@
           </div>
         </aside>
 
-        <!-- PRODUCTS GRID (EMPTY CONTAINER FOR DYNAMIC INJECTION) -->
+        <!-- PRODUCTS GRID -->
         <section class="col-span-1 lg:col-span-9 w-full">
-          <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 min-h-[380px]"></div>
+          <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 min-h-[380px]">
+            <div class="animate-pulse bg-white h-64 rounded-2xl border border-ivory-200 shadow-sm"></div>
+            <div class="animate-pulse bg-white h-64 rounded-2xl border border-ivory-200 shadow-sm"></div>
+          </div>
         </section>
       </div>
     </div>
@@ -339,9 +342,11 @@
     </div>
   </div>
 
-  <!-- LUXURY FOOTER COMPONENT -->
+  <!-- LUXURY FOOTER COMPONENT (3-COLUMN LAYOUT WITHOUT CONCIERGE) -->
   <footer class="bg-white text-slate-600 text-xs mt-20 border-t border-ivory-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8">
+      
+      <!-- Brand & Mail Column -->
       <div class="space-y-3">
         <img src="Logo.png" alt="Zivara Logo" class="h-20 w-auto object-contain -ml-1 drop-shadow-sm" onerror="this.src='Logo.png'" />
         <div class="space-y-1.5 pt-1">
@@ -358,6 +363,7 @@
         </div>
       </div>
 
+      <!-- About & Direct Tracking Column -->
       <div>
         <h5 class="text-gold-600 uppercase font-bold tracking-widest text-[11px] mb-3">About Zivara Fashion</h5>
         <ul class="space-y-2">
@@ -370,12 +376,14 @@
         </ul>
       </div>
 
+      <!-- Legal / Governance Column -->
       <div>
         <h5 class="text-gold-600 uppercase font-bold tracking-widest text-[11px] mb-3">Governance</h5>
         <ul class="space-y-2">
           <li><a href="T&C.html" class="hover:text-charcoal-900 transition">Conditions of Use</a></li>
         </ul>
       </div>
+
     </div>
     
     <div class="border-t border-ivory-200 py-4 text-center text-[11px] text-slate-400">
@@ -411,21 +419,21 @@
     </div>
   </div>
 
-  <!-- MODULE ENTRY POINT (FORCED CACHE-BUSTER VERSION 3.0) -->
+  <!-- MODULE ENTRY POINT WITH CACHE-BUSTER -->
   <script type="module">
-    import { refreshIcons, db } from './js/config.js?v=3.0';
-    import { loadHeroBanners, goToSlide } from './js/slider.js?v=3.0';
+    import { refreshIcons, db } from './js/config.js?v=2.1';
+    import { loadHeroBanners, goToSlide } from './js/slider.js?v=2.1';
     import { 
       loadMenuSubmenu, scrollMenus, syncCategoryCheckboxes, 
       openMobileFilterDrawer, closeMobileFilterDrawer, 
       toggleMobileSortModal, selectMobileSort, 
       syncMobilePrice, syncMobileRating 
-    } from './js/navbar.js?v=3.0';
+    } from './js/navbar.js?v=2.1';
     import { 
       loadProducts, selectMenu, applyFiltersAndSort, 
       handleSearchInput, resetSearch, triggerSearch, resetAllFilters 
-    } from './js/products.js?v=3.0';
-    import { addToCart, updateCartBadge } from './js/cart.js?v=3.0';
+    } from './js/products.js?v=2.1';
+    import { addToCart, updateCartBadge } from './js/cart.js?v=2.1';
 
     window.goToSlide = goToSlide;
     window.scrollMenus = scrollMenus;
