@@ -104,12 +104,11 @@ window.clearSearch = function(inputId, filterFunc) {
 };
 
 // ==========================================================
-// ORDERS CONTROLLER (WITH 3-DAY RETURN WINDOW & ARCHIVE TABS)
+// ORDERS CONTROLLER (WITH 3-DAY RETURN WINDOW & SHIPROCKET DISPATCH)
 // ==========================================================
 let currentOrderSubTab = 'active'; // Default active sub-tab
-const RETURN_PERIOD_DAYS = 3; // 3 Days policy
+const RETURN_PERIOD_DAYS = 3; // 3 Days return policy
 
-// Sub-Tab Switcher
 window.switchOrderSubTab = function(subTabKey) {
   currentOrderSubTab = subTabKey;
   
@@ -125,14 +124,12 @@ window.switchOrderSubTab = function(subTabKey) {
   filterOrdersTable();
 };
 
-// Check if return window is expired (> 3 days)
 function checkReturnStatus(order) {
   const status = (order.status || '').toLowerCase();
   if (status !== 'delivered') {
     return { isDelivered: false, isExpired: false, daysLeft: null, hoursLeft: null };
   }
 
-  // delivered_at agar DB mein nahi hai toh created_at ya fallback use karega
   const deliveredDate = order.delivered_at ? new Date(order.delivered_at) : new Date(order.created_at);
   const now = new Date();
   
@@ -159,7 +156,6 @@ async function fetchOrdersData() {
   document.getElementById('statTotalSales').innerText = `₹${totalRev.toLocaleString('en-IN')}`;
   document.getElementById('statTotalOrders').innerText = cachedOrders.length;
 
-  // Calculate Sub-tab Badges
   updateOrderBadges();
   filterOrdersTable();
 }
@@ -203,7 +199,7 @@ function updateOrderBadges() {
 window.filterOrdersTable = function() {
   const q = (document.getElementById('searchOrdersInput')?.value || '').toLowerCase().trim();
 
-  // 1. First Filter by Sub-tab
+  // 1. Filter by Sub-tab
   let subFiltered = cachedOrders.filter(o => {
     const status = (o.status || 'placed').toLowerCase();
     const returnInfo = checkReturnStatus(o);
@@ -220,7 +216,7 @@ window.filterOrdersTable = function() {
     return true; // 'all'
   });
 
-  // 2. Second Filter by Search Query
+  // 2. Filter by Search Query
   if (q) {
     subFiltered = subFiltered.filter(o => {
       return [o.order_id, o.customer_name, o.customer_phone, o.customer_email, o.shipping_address, o.shiprocket_order_id, o.awb_code]
@@ -250,7 +246,7 @@ function renderOrdersTable(ordersList) {
         <td class="p-3">
           <div class="font-mono font-bold text-gold-400">${o.order_id || 'ZIV-ORD'}</div>
           <div class="text-[10px] text-slate-500">${dateStr}</div>
-          <button onclick="viewOrderItems('${o.order_id}')" class="mt-1 text-[10px] text-gold-400 hover:underline flex items-center gap-1 font-semibold">
+          <button onclick="viewOrderItems('${o.order_id}')" class="mt-1 text-[10px] text-gold-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer">
             <i data-lucide="eye" class="w-3 h-3"></i> ${itemsList.length} Item(s)
           </button>
         </td>
@@ -270,16 +266,28 @@ function renderOrdersTable(ordersList) {
             ${isCod ? 'COD' : 'Prepaid'}
           </span>
         </td>
+        
+        <!-- SHIPROCKET & TRACKING COLUMN (WITH ACTIVE PUSH BUTTON) -->
         <td class="p-3 font-mono text-[11px]">
           ${o.shiprocket_order_id ? `
             <div class="space-y-0.5">
-              <span class="inline-block px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-500/30 rounded font-bold text-[9px]">SR: ${o.shiprocket_order_id}</span>
-              <div class="text-[10px] text-slate-400 truncate max-w-[120px]">AWB: ${o.awb_code || 'Pending'}</div>
+              <span class="inline-block px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-500/30 rounded font-bold text-[9px]">
+                SR ID: ${o.shiprocket_order_id}
+              </span>
+              <div class="text-[10px] text-slate-400 truncate max-w-[120px]">
+                AWB: <span class="text-white font-semibold">${o.awb_code || 'Assigned'}</span>
+              </div>
+              ${o.shiprocket_shipment_id ? `<div class="text-[9px] text-slate-500 font-sans">Shipment: #${o.shiprocket_shipment_id}</div>` : ''}
             </div>
           ` : `
-            <button onclick="retryShiprocketOrder('${o.order_id}')" class="text-[10px] text-gold-400 hover:text-gold-300 underline font-bold transition">
-              ⚡ Shiprocket
-            </button>
+            <div class="space-y-1">
+              <span class="inline-block px-2 py-0.5 bg-amber-950/80 text-amber-400 border border-amber-500/30 rounded text-[10px] font-semibold">
+                Pending Dispatch
+              </span>
+              <button onclick="retryShiprocketOrder('${o.order_id}')" class="block text-[10px] text-gold-400 hover:text-gold-300 underline font-bold transition cursor-pointer">
+                ⚡ Push to Shiprocket
+              </button>
+            </div>
           `}
         </td>
         
@@ -319,13 +327,50 @@ function renderOrdersTable(ordersList) {
   if (window.lucide) window.lucide.createIcons();
 }
 
-// Order Status Updater (With delivered_at timestamp recording)
+// SHIPROCKET DISPATCH TRIGGER
+window.retryShiprocketOrder = async function(orderId) {
+  const order = cachedOrders.find(o => o.order_id === orderId);
+  if (!order) return;
+
+  if (!confirm(`Kya aap Order [${orderId}] ko Shiprocket par dispatch ke liye bhejna chahte hain?`)) return;
+
+  try {
+    const isCod = (order.payment_method === 'COD') || (order.razorpay_payment_id && order.razorpay_payment_id.startsWith('COD'));
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ ...order, payment_method: isCod ? "COD" : "Prepaid" })
+    });
+
+    const data = await res.json();
+    if (data.order_id) {
+      await db.from('orders').update({
+        shiprocket_order_id: String(data.order_id),
+        shiprocket_shipment_id: String(data.shipment_id || ''),
+        awb_code: String(data.awb_code || '')
+      }).eq('order_id', orderId);
+
+      alert(`✅ Success! Shiprocket Order ID: ${data.order_id} generate ho gaya!`);
+      fetchOrdersData();
+    } else {
+      alert("❌ Shiprocket Response: " + (data.message || JSON.stringify(data)));
+    }
+  } catch (err) {
+    alert("Function request error: " + err.message);
+  }
+};
+
+// ORDER STATUS UPDATER (WITH delivered_at TIMESTAMP RECORDING)
 window.updateOrderStatus = async function(orderId, newStatus) {
   if (!confirm(`Status '${newStatus.toUpperCase()}' update karein?`)) return fetchOrdersData();
   try {
     const payload = { status: newStatus };
     if (newStatus === 'delivered') {
-      payload.delivered_at = new Date().toISOString(); // Timestamp when delivered
+      payload.delivered_at = new Date().toISOString();
     }
 
     const { error } = await db.from('orders').update(payload).eq('order_id', orderId);
@@ -338,34 +383,28 @@ window.updateOrderStatus = async function(orderId, newStatus) {
   }
 };
 
-window.updateOrderStatus = async function(orderId, newStatus) {
-  if (!confirm(`Status '${newStatus.toUpperCase()}' update karein?`)) return fetchOrdersData();
-  try {
-    const { error } = await db.from('orders').update({ status: newStatus }).eq('order_id', orderId);
-    if (error) throw error;
-    alert(`✅ Order ${orderId} updated!`);
-    fetchOrdersData();
-  } catch (err) {
-    alert("❌ Error: " + err.message);
-    fetchOrdersData();
-  }
-};
-
 window.viewOrderItems = function(orderId) {
   const order = cachedOrders.find(o => o.order_id === orderId);
   if (!order) return;
 
   document.getElementById('modalOrderTitle').innerText = `Order: ${order.order_id}`;
-  document.getElementById('modalOrderSub').innerText = `Customer: ${order.customer_name} | ₹${Number(order.amount).toLocaleString('en-IN')}`;
+  document.getElementById('modalOrderSub').innerText = `Customer: ${order.customer_name} | Total: ₹${Number(order.amount).toLocaleString('en-IN')}`;
 
   const items = Array.isArray(order.items) ? order.items : [];
   document.getElementById('modalOrderItemsList').innerHTML = items.map(it => `
     <div class="flex items-center gap-3.5 pt-3 pb-2">
-      <img src="${it.thumbnail_url || it.image || 'Cover.png'}" class="w-14 h-16 object-cover rounded-xl bg-noir-950 border border-gold-500/30 shrink-0" onerror="this.src='Cover.png'" />
+      <img src="${it.thumbnail_url || it.image || 'Cover.png'}" class="w-14 h-16 object-cover rounded-xl bg-noir-950 border border-gold-500/30 shrink-0 shadow-md" onerror="this.src='Cover.png'" />
       <div class="flex-1 space-y-1">
         <h5 class="font-semibold text-white text-xs">${it.title}</h5>
-        <div class="text-[10px] text-slate-400 font-mono">SKU: ${it.product_code || 'ZIV'} ${it.size ? `| Size: ${it.size}` : ''} ${it.color ? `| Color: ${it.color}` : ''}</div>
-        <div class="text-xs font-bold text-gold-400">₹${Number(it.price).toLocaleString('en-IN')} <span class="text-slate-400 font-normal">× ${it.quantity || 1}</span></div>
+        <div class="text-[10px] text-slate-400 font-mono">
+          SKU: <b class="text-slate-200">${it.product_code || 'ZIV'}</b> 
+          ${it.size ? `| Size: ${it.size}` : ''} 
+          ${it.color ? `| Color: ${it.color}` : ''}
+        </div>
+        <div class="text-xs font-bold text-white pt-0.5">
+          <span class="text-gold-400">₹${Number(it.price).toLocaleString('en-IN')}</span> 
+          <span class="text-slate-400 font-normal">× ${it.quantity || 1} units</span>
+        </div>
       </div>
     </div>`).join('');
 
@@ -379,7 +418,9 @@ window.closeOrderModal = function() {
   document.getElementById('orderDetailsModal').classList.add('hidden');
 };
 
-// ================= USERS CONTROLLER =================
+// ==========================================================
+// USERS CONTROLLER
+// ==========================================================
 async function fetchUsersData() {
   if (!db) return;
   const { data: users, error } = await db.from('users').select('*').order('created_at', { ascending: false });
@@ -419,7 +460,10 @@ function renderUsersTable(usersList) {
             <div class="w-8 h-8 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center font-bold text-gold-400 text-xs">
               ${(u.name || 'U').charAt(0).toUpperCase()}
             </div>
-            <div class="font-semibold text-white">${u.name || 'VIP Member'}</div>
+            <div>
+              <div class="font-semibold text-white">${u.name || 'VIP Member'}</div>
+              <span class="text-[9px] font-mono text-gold-400 uppercase bg-gold-500/10 px-1.5 py-0.2 rounded border border-gold-500/20">Privé Member</span>
+            </div>
           </div>
         </td>
         <td class="p-3 font-mono text-slate-300 font-bold">+91 ${u.phone || 'N/A'}</td>
@@ -435,7 +479,9 @@ function renderUsersTable(usersList) {
   if (window.lucide) window.lucide.createIcons();
 }
 
-// ================= HERO BANNERS CONTROLLER =================
+// ==========================================================
+// HERO BANNERS CONTROLLER
+// ==========================================================
 function handleBannerPreview(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -462,7 +508,7 @@ async function fetchBanners() {
       <span class="text-[10px] font-bold text-gold-400 uppercase tracking-widest block truncate">${b.subtitle || 'Active Slide'}</span>
       <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-gold-500/10">
         <span>Order: #${b.sort_order}</span>
-        <button onclick="deleteBanner(${b.id})" class="text-rose-400 hover:text-rose-300 font-semibold">Delete</button>
+        <button onclick="deleteBanner(${b.id})" class="text-rose-400 hover:text-rose-300 font-semibold cursor-pointer">Delete</button>
       </div>
     </div>`).join('');
 }
@@ -515,7 +561,9 @@ window.deleteBanner = async function(id) {
   fetchBanners();
 };
 
-// ================= MULTI-IMAGE HANDLERS =================
+// ==========================================================
+// MULTI-IMAGE HANDLERS
+// ==========================================================
 function handleImageSelection(event) {
   const files = Array.from(event.target.files);
   files.forEach(file => {
@@ -584,7 +632,9 @@ async function uploadAllImagesInSequence() {
   return finalUrls;
 }
 
-// ================= MENUS CONTROLLER =================
+// ==========================================================
+// MENUS CONTROLLER
+// ==========================================================
 async function handleCreateOrUpdateMenu(e) {
   e.preventDefault();
   const editDbId = document.getElementById('editMenuDbId').value;
@@ -644,7 +694,9 @@ window.toggleMenuStatus = async function(id, currentStatus) {
   fetchAllData();
 };
 
-// ================= SUB-MENUS CONTROLLER =================
+// ==========================================================
+// SUB-MENUS CONTROLLER
+// ==========================================================
 async function handleCreateOrUpdateSubmenu(e) {
   e.preventDefault();
   const editDbId = document.getElementById('editSubMenuDbId').value;
@@ -696,7 +748,9 @@ window.resetSubMenuForm = function() {
   if (window.lucide) window.lucide.createIcons();
 };
 
-// ================= INVENTORY & PRODUCTS CONTROLLER =================
+// ==========================================================
+// INVENTORY & PRODUCTS CONTROLLER
+// ==========================================================
 window.startEditProduct = function(productId) {
   const product = cachedProducts.find(p => p.product_id === productId || String(p.id) === String(productId));
   if (!product) return alert("Product record nahi mila!");
@@ -886,8 +940,8 @@ async function fetchAllData() {
         <button onclick="toggleMenuStatus(${m.id}, ${m.Active})" class="px-2 py-0.5 rounded-full text-[9px] font-bold ${m.Active ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'}">${m.Active ? 'Active' : 'Hidden'}</button>
       </td>
       <td class="p-3 text-right">
-        <button onclick="startEditMenu(${m.id})" class="text-gold-400 p-1 mr-2"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
-        <button onclick="deleteMenuRow(${m.id})" class="text-rose-400 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+        <button onclick="startEditMenu(${m.id})" class="text-gold-400 p-1 mr-2 cursor-pointer"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
+        <button onclick="deleteMenuRow(${m.id})" class="text-rose-400 p-1 cursor-pointer"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
       </td>
     </tr>`).join('');
 
@@ -902,8 +956,8 @@ async function fetchAllData() {
         <button onclick="toggleMenuStatus(${s.id}, ${s.Active})" class="px-2 py-0.5 rounded-full text-[9px] font-bold ${s.Active ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'}">${s.Active ? 'Active' : 'Hidden'}</button>
       </td>
       <td class="p-3 text-right">
-        <button onclick="startEditSubMenu(${s.id})" class="text-gold-400 p-1 mr-2"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
-        <button onclick="deleteMenuRow(${s.id})" class="text-rose-400 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+        <button onclick="startEditSubMenu(${s.id})" class="text-gold-400 p-1 mr-2 cursor-pointer"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
+        <button onclick="deleteMenuRow(${s.id})" class="text-rose-400 p-1 cursor-pointer"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
       </td>
     </tr>`).join('');
 
@@ -942,8 +996,8 @@ function renderInventoryTable(productsList) {
             <button onclick="toggleProductStatus('${pKey}', ${p.is_active})" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${p.is_active ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'}">${p.is_active ? 'Live' : 'Hidden'}</button>
           </td>
           <td class="p-3 text-right">
-            <button onclick="window.startEditProduct('${pKey}')" class="text-gold-400 p-1.5 mr-1"><i data-lucide="edit" class="w-4 h-4"></i></button>
-            <button onclick="window.deleteProduct('${pKey}')" class="text-rose-400 p-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            <button onclick="window.startEditProduct('${pKey}')" class="text-gold-400 p-1.5 mr-1 cursor-pointer"><i data-lucide="edit" class="w-4 h-4"></i></button>
+            <button onclick="window.deleteProduct('${pKey}')" class="text-rose-400 p-1.5 cursor-pointer"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </td>
         </tr>`;
     }).join('');
