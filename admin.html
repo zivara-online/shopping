@@ -139,17 +139,35 @@
       </button>
     </div>
 
-    <!-- ================= TAB 1: ORDERS SUMMARY WITH SHIPROCKET TRACKING ================= -->
+    <!-- ================= TAB 1: ORDERS SUMMARY WITH SEARCH & SHIPROCKET TRACKING ================= -->
     <section id="tab-orders" class="tab-content space-y-4">
       <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gold-500/15 pb-4 gap-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gold-500/15 pb-4 gap-4">
           <div>
             <h3 class="text-sm font-bold text-white uppercase tracking-wider">Live Customer Orders & Shiprocket Dispatches</h3>
             <p class="text-xs text-slate-400">Razorpay verified transactions and automated courier tracking synced with Shiprocket.</p>
           </div>
-          <button onclick="fetchOrdersData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Orders
-          </button>
+          
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Orders Search Box -->
+            <div class="relative w-full sm:w-64">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-gold-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input 
+                type="text" 
+                id="searchOrdersInput" 
+                oninput="filterOrdersTable()" 
+                placeholder="Search Order ID, Phone, Customer..." 
+                class="w-full bg-noir-950 border border-gold-500/30 rounded-xl pl-9 pr-8 py-2 text-xs text-white focus:outline-none focus:border-gold-400 transition placeholder:text-slate-500"
+              />
+              <button onclick="clearSearch('searchOrdersInput', filterOrdersTable)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs">
+                ✕
+              </button>
+            </div>
+
+            <button onclick="fetchOrdersData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1 shrink-0">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+            </button>
+          </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -174,17 +192,35 @@
       </div>
     </section>
 
-    <!-- ================= TAB 2: USERS DIRECTORY ================= -->
+    <!-- ================= TAB 2: USERS DIRECTORY WITH SEARCH ================= -->
     <section id="tab-users" class="tab-content hidden space-y-4">
       <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gold-500/15 pb-4 gap-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gold-500/15 pb-4 gap-4">
           <div>
             <h3 class="text-sm font-bold text-white uppercase tracking-wider">Registered Member Accounts</h3>
             <p class="text-xs text-slate-400">Mobile OTP verified accounts and saved address history from Supabase.</p>
           </div>
-          <button onclick="fetchUsersData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Users
-          </button>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Users Search Box -->
+            <div class="relative w-full sm:w-64">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-gold-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input 
+                type="text" 
+                id="searchUsersInput" 
+                oninput="filterUsersTable()" 
+                placeholder="Search Name, Phone, Email, Address..." 
+                class="w-full bg-noir-950 border border-gold-500/30 rounded-xl pl-9 pr-8 py-2 text-xs text-white focus:outline-none focus:border-gold-400 transition placeholder:text-slate-500"
+              />
+              <button onclick="clearSearch('searchUsersInput', filterUsersTable)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs">
+                ✕
+              </button>
+            </div>
+
+            <button onclick="fetchUsersData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1 shrink-0">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+            </button>
+          </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -206,20 +242,36 @@
       </div>
     </section>
 
-    <!-- ================= TAB 3: LIVE INVENTORY ================= -->
+    <!-- ================= TAB 3: LIVE INVENTORY WITH SEARCH ================= -->
     <section id="tab-inventory" class="tab-content hidden space-y-4">
       <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
-        <div class="flex items-center justify-between border-b border-gold-500/15 pb-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gold-500/15 pb-4 gap-4">
           <div>
             <h3 class="text-sm font-bold text-white uppercase tracking-wider">Live Inventory Master View</h3>
             <p class="text-xs text-slate-400">Direct visibility toggle, edit and deletion controls synced with Supabase.</p>
           </div>
-          <div class="flex items-center gap-3">
-            <button onclick="switchAdminTab('productForm'); resetProductFormToCreate();" class="text-xs font-bold bg-gold-500 text-noir-950 px-3.5 py-1.5 rounded-xl flex items-center gap-1">
+
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Inventory Search Box -->
+            <div class="relative w-full sm:w-64">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-gold-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input 
+                type="text" 
+                id="searchInventoryInput" 
+                oninput="filterInventoryTable()" 
+                placeholder="Search Title, SKU, Menu..." 
+                class="w-full bg-noir-950 border border-gold-500/30 rounded-xl pl-9 pr-8 py-2 text-xs text-white focus:outline-none focus:border-gold-400 transition placeholder:text-slate-500"
+              />
+              <button onclick="clearSearch('searchInventoryInput', filterInventoryTable)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs">
+                ✕
+              </button>
+            </div>
+
+            <button onclick="switchAdminTab('productForm'); resetProductFormToCreate();" class="text-xs font-bold bg-gold-500 text-noir-950 px-3.5 py-2 rounded-xl flex items-center gap-1 shrink-0">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add New
             </button>
-            <button onclick="fetchAllData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1">
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Grid
+            <button onclick="fetchAllData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1 shrink-0">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
             </button>
           </div>
         </div>
@@ -713,8 +765,17 @@
       }
     }
 
+    // Helper: Clear input and re-filter
+    window.clearSearch = function(inputId, filterFunc) {
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.value = '';
+        filterFunc();
+      }
+    };
+
     // ==========================================================
-    // ORDERS CONTROLLER
+    // ORDERS CONTROLLER & SEARCH FILTER
     // ==========================================================
     async function fetchOrdersData() {
       if (!db) return;
@@ -729,13 +790,34 @@
       document.getElementById('statTotalSales').innerText = `₹${totalRev.toLocaleString('en-IN')}`;
       document.getElementById('statTotalOrders').innerText = cachedOrders.length;
 
+      filterOrdersTable();
+    }
+
+    window.filterOrdersTable = function() {
+      const q = (document.getElementById('searchOrdersInput')?.value || '').toLowerCase().trim();
+      const filtered = cachedOrders.filter(o => {
+        if (!q) return true;
+        const id = String(o.order_id || '').toLowerCase();
+        const name = String(o.customer_name || '').toLowerCase();
+        const phone = String(o.customer_phone || '').toLowerCase();
+        const email = String(o.customer_email || '').toLowerCase();
+        const addr = String(o.shipping_address || '').toLowerCase();
+        const srId = String(o.shiprocket_order_id || '').toLowerCase();
+        const awb = String(o.awb_code || '').toLowerCase();
+        return id.includes(q) || name.includes(q) || phone.includes(q) || email.includes(q) || addr.includes(q) || srId.includes(q) || awb.includes(q);
+      });
+
+      renderOrdersTable(filtered);
+    };
+
+    function renderOrdersTable(ordersList) {
       const tbody = document.getElementById('ordersTableBody');
-      if (!cachedOrders.length) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500">No customer orders placed yet.</td></tr>`;
+      if (!ordersList.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500">No matching orders found.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = cachedOrders.map(o => {
+      tbody.innerHTML = ordersList.map(o => {
         const dateStr = new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         const itemsList = Array.isArray(o.items) ? o.items : [];
         const status = (o.status || 'placed').toLowerCase();
@@ -930,6 +1012,9 @@
       document.getElementById('orderDetailsModal').classList.add('hidden');
     };
 
+    // ==========================================================
+    // USERS DIRECTORY CONTROLLER & SEARCH FILTER
+    // ==========================================================
     async function fetchUsersData() {
       if (!db) return;
       const { data: users, error } = await db.from('users').select('*').order('created_at', { ascending: false });
@@ -941,13 +1026,31 @@
       cachedUsers = users || [];
       document.getElementById('statTotalUsers').innerText = cachedUsers.length;
 
+      filterUsersTable();
+    }
+
+    window.filterUsersTable = function() {
+      const q = (document.getElementById('searchUsersInput')?.value || '').toLowerCase().trim();
+      const filtered = cachedUsers.filter(u => {
+        if (!q) return true;
+        const name = String(u.name || '').toLowerCase();
+        const phone = String(u.phone || '').toLowerCase();
+        const email = String(u.email || '').toLowerCase();
+        const addresses = Array.isArray(u.addresses) ? u.addresses.map(a => String(a.address || '').toLowerCase()).join(' ') : '';
+        return name.includes(q) || phone.includes(q) || email.includes(q) || addresses.includes(q);
+      });
+
+      renderUsersTable(filtered);
+    };
+
+    function renderUsersTable(usersList) {
       const tbody = document.getElementById('usersTableBody');
-      if (!cachedUsers.length) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">No registered members yet.</td></tr>`;
+      if (!usersList.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">No matching members found.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = cachedUsers.map(u => {
+      tbody.innerHTML = usersList.map(u => {
         const dateJoined = new Date(u.created_at || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
         const addresses = Array.isArray(u.addresses) ? u.addresses : [];
 
@@ -1323,7 +1426,7 @@
     };
 
     // ==========================================================
-    // PRODUCT ACTIONS & FORM MANAGEMENT
+    // PRODUCT ACTIONS & LIVE INVENTORY FILTER
     // ==========================================================
     window.startEditProduct = function(productId) {
       const product = cachedProducts.find(p => p.product_id === productId || String(p.id) === String(productId));
@@ -1495,7 +1598,7 @@
       }
     }
 
-// FUNCTIONAL PRODUCT TOGGLE STATUS (ONLY USES product_id)
+    // FUNCTIONAL PRODUCT TOGGLE STATUS (ONLY USES product_id)
     window.toggleProductStatus = async function(productId, currentStatus) {
       try {
         const { error } = await db
@@ -1573,45 +1676,7 @@
       loadSubmenuDropdownForProduct();
       autoSuggestSubmenuCode();
 
-      // Render Inventory Table
-      const tbody = document.getElementById('inventoryTableBody');
-      if (!prods || prods.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">No products uploaded yet.</td></tr>`;
-      } else {
-        tbody.innerHTML = prods.map(p => {
-          const displayImg = p.thumbnail_url || p.image_url || 'Cover.png';
-          const pKey = p.product_id || p.id;
-          return `
-            <tr class="hover:bg-noir-950/40 transition">
-              <td class="p-3">
-                <img src="${displayImg}" class="w-12 h-14 object-cover rounded-lg bg-noir-950 border border-gold-500/20" onerror="this.src='Cover.png'" />
-              </td>
-              <td class="p-3 font-mono font-bold text-gold-400">${p.product_code || 'ZIV'}</td>
-              <td class="p-3">
-                <div class="font-semibold text-white">${p.title}</div>
-                <div class="text-[10px] text-slate-500">Menu: ${p.menu_code} | Sub: ${p.submenu_code || 'None'}</div>
-              </td>
-              <td class="p-3 font-bold">₹${Number(p.price).toLocaleString('en-IN')}</td>
-              <td class="p-3">${p.stock_quantity} units</td>
-              <td class="p-3">
-                <button onclick="toggleProductStatus('${pKey}', ${p.is_active})" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${p.is_active ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' : 'bg-rose-950 text-rose-400 border border-rose-500/30'}">
-                  ${p.is_active ? 'Live' : 'Hidden'}
-                </button>
-              </td>
-              <td class="p-3 text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <button onclick="window.startEditProduct('${pKey}')" class="text-gold-400 hover:text-gold-300 p-1.5 rounded-lg hover:bg-gold-500/10 transition" title="Edit Product">
-                    <i data-lucide="edit" class="w-4 h-4"></i>
-                  </button>
-                  <button onclick="window.deleteProduct('${pKey}')" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg hover:bg-rose-950/40 transition cursor-pointer" title="Delete Product">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
+      filterInventoryTable();
 
       // Render Main Menus Action Table
       const menuTableBody = document.getElementById('mainMenusTableBody');
@@ -1671,6 +1736,63 @@
             </td>
           </tr>
         `).join('');
+      }
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    window.filterInventoryTable = function() {
+      const q = (document.getElementById('searchInventoryInput')?.value || '').toLowerCase().trim();
+      const filtered = cachedProducts.filter(p => {
+        if (!q) return true;
+        const title = String(p.title || '').toLowerCase();
+        const code = String(p.product_code || '').toLowerCase();
+        const mCode = String(p.menu_code || '').toLowerCase();
+        const sCode = String(p.submenu_code || '').toLowerCase();
+        return title.includes(q) || code.includes(q) || mCode.includes(q) || sCode.includes(q);
+      });
+
+      renderInventoryTable(filtered);
+    };
+
+    function renderInventoryTable(productsList) {
+      const tbody = document.getElementById('inventoryTableBody');
+      if (!productsList || productsList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">No matching products found in inventory.</td></tr>`;
+      } else {
+        tbody.innerHTML = productsList.map(p => {
+          const displayImg = p.thumbnail_url || p.image_url || 'Cover.png';
+          const pKey = p.product_id || p.id;
+          return `
+            <tr class="hover:bg-noir-950/40 transition">
+              <td class="p-3">
+                <img src="${displayImg}" class="w-12 h-14 object-cover rounded-lg bg-noir-950 border border-gold-500/20" onerror="this.src='Cover.png'" />
+              </td>
+              <td class="p-3 font-mono font-bold text-gold-400">${p.product_code || 'ZIV'}</td>
+              <td class="p-3">
+                <div class="font-semibold text-white">${p.title}</div>
+                <div class="text-[10px] text-slate-500">Menu: ${p.menu_code} | Sub: ${p.submenu_code || 'None'}</div>
+              </td>
+              <td class="p-3 font-bold">₹${Number(p.price).toLocaleString('en-IN')}</td>
+              <td class="p-3">${p.stock_quantity} units</td>
+              <td class="p-3">
+                <button onclick="toggleProductStatus('${pKey}', ${p.is_active})" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${p.is_active ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' : 'bg-rose-950 text-rose-400 border border-rose-500/30'}">
+                  ${p.is_active ? 'Live' : 'Hidden'}
+                </button>
+              </td>
+              <td class="p-3 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button onclick="window.startEditProduct('${pKey}')" class="text-gold-400 hover:text-gold-300 p-1.5 rounded-lg hover:bg-gold-500/10 transition" title="Edit Product">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                  </button>
+                  <button onclick="window.deleteProduct('${pKey}')" class="text-rose-400 hover:text-rose-300 p-1.5 rounded-lg hover:bg-rose-950/40 transition cursor-pointer" title="Delete Product">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
 
       if (window.lucide) window.lucide.createIcons();
