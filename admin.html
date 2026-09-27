@@ -139,19 +139,27 @@
       </button>
     </div>
 
-    <!-- ================= TAB 1: ORDERS SUMMARY WITH SEARCH ================= -->
+<!-- ================= TAB 1: ORDERS SUMMARY WITH SUB-TABS & SEARCH ================= -->
     <section id="tab-orders" class="tab-content space-y-4">
       <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
+        
+        <!-- Header & Search -->
         <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gold-500/15 pb-4 gap-4">
           <div>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Live Customer Orders & Shiprocket Dispatches</h3>
-            <p class="text-xs text-slate-400">Razorpay verified transactions and automated courier tracking synced with Shiprocket.</p>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Live Customer Orders & Lifecycle Controller</h3>
+            <p class="text-xs text-slate-400">3-day return policy tracking, delivery archiving & Shiprocket sync.</p>
           </div>
           
           <div class="flex flex-wrap items-center gap-3">
             <div class="relative w-full sm:w-64">
               <i data-lucide="search" class="w-3.5 h-3.5 text-gold-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-              <input type="text" id="searchOrdersInput" oninput="filterOrdersTable()" placeholder="Search Order ID, Phone, Customer..." class="w-full bg-noir-950 border border-gold-500/30 rounded-xl pl-9 pr-8 py-2 text-xs text-white focus:outline-none focus:border-gold-400 transition" />
+              <input 
+                type="text" 
+                id="searchOrdersInput" 
+                oninput="filterOrdersTable()" 
+                placeholder="Search ID, Customer, Phone, AWB..." 
+                class="w-full bg-noir-950 border border-gold-500/30 rounded-xl pl-9 pr-8 py-2 text-xs text-white focus:outline-none focus:border-gold-400 transition" 
+              />
               <button onclick="clearSearch('searchOrdersInput', filterOrdersTable)" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs">✕</button>
             </div>
             <button onclick="fetchOrdersData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1 shrink-0">
@@ -160,6 +168,30 @@
           </div>
         </div>
 
+        <!-- SUB-TABS BAR FOR LIFECYCLE FILTERING -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gold-500/10 text-xs">
+          <button onclick="switchOrderSubTab('active')" id="subTabBtn-active" class="order-subtab-btn px-3 py-1.5 rounded-xl bg-gold-500 text-noir-950 font-bold transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="truck" class="w-3.5 h-3.5"></i> Active Dispatches <span id="badge-active" class="px-1.5 py-0.2 bg-noir-950 text-gold-400 rounded-full text-[10px]">0</span>
+          </button>
+          
+          <button onclick="switchOrderSubTab('delivered_active')" id="subTabBtn-delivered_active" class="order-subtab-btn px-3 py-1.5 rounded-xl bg-noir-950 border border-gold-500/15 text-slate-300 hover:text-white transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i> Delivered (Return Active) <span id="badge-delivered_active" class="px-1.5 py-0.2 bg-emerald-950 text-emerald-400 rounded-full text-[10px]">0</span>
+          </button>
+
+          <button onclick="switchOrderSubTab('archived')" id="subTabBtn-archived" class="order-subtab-btn px-3 py-1.5 rounded-xl bg-noir-950 border border-gold-500/15 text-slate-300 hover:text-white transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="archive" class="w-3.5 h-3.5 text-gold-400"></i> Archived (Return Expired) <span id="badge-archived" class="px-1.5 py-0.2 bg-noir-900 border border-gold-500/30 text-gold-400 rounded-full text-[10px]">0</span>
+          </button>
+
+          <button onclick="switchOrderSubTab('cancelled')" id="subTabBtn-cancelled" class="order-subtab-btn px-3 py-1.5 rounded-xl bg-noir-950 border border-gold-500/15 text-slate-300 hover:text-white transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-400"></i> Cancelled Orders <span id="badge-cancelled" class="px-1.5 py-0.2 bg-rose-950 text-rose-300 rounded-full text-[10px]">0</span>
+          </button>
+
+          <button onclick="switchOrderSubTab('all')" id="subTabBtn-all" class="order-subtab-btn px-3 py-1.5 rounded-xl bg-noir-950 border border-gold-500/15 text-slate-300 hover:text-white transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="list" class="w-3.5 h-3.5"></i> All Orders <span id="badge-all" class="px-1.5 py-0.2 bg-slate-800 text-slate-300 rounded-full text-[10px]">0</span>
+          </button>
+        </div>
+
+        <!-- Table Display -->
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse">
             <thead>
@@ -168,14 +200,14 @@
                 <th class="p-3">Customer Info</th>
                 <th class="p-3">Shipping Address</th>
                 <th class="p-3">Amount</th>
-                <th class="p-3">Payment Mode</th>
-                <th class="p-3">Shiprocket / Tracking</th>
-                <th class="p-3">Items</th>
-                <th class="p-3 text-right">Fulfillment Status</th>
+                <th class="p-3">Payment</th>
+                <th class="p-3">Courier / Tracking</th>
+                <th class="p-3">Return Window</th>
+                <th class="p-3 text-right">Update Status</th>
               </tr>
             </thead>
             <tbody id="ordersTableBody" class="divide-y divide-gold-500/10 text-slate-300">
-              <tr><td colspan="8" class="p-4 text-center text-slate-500">Loading live orders...</td></tr>
+              <tr><td colspan="8" class="p-4 text-center text-slate-500">Loading orders...</td></tr>
             </tbody>
           </table>
         </div>
