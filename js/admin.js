@@ -337,7 +337,7 @@ window.retryShiprocketOrder = async function(orderId) {
   const order = cachedOrders.find(o => o.order_id === orderId);
   if (!order) return;
 
-  if (!confirm(`Kya aap Order [${orderId}] ko Shiprocket par dispatch ke liye bhejna chahte hain?`)) return;
+  if (!confirm(`Do you want to send order [${orderId}] for dispatch via Shiprokt?`)) return;
 
   try {
     const isCod = (order.payment_method === 'COD') || (order.razorpay_payment_id && order.razorpay_payment_id.startsWith('COD'));
