@@ -103,7 +103,52 @@ window.clearSearch = function(inputId, filterFunc) {
   }
 };
 
-// ================= ORDERS CONTROLLER =================
+// ==========================================================
+// ORDERS CONTROLLER (WITH 3-DAY RETURN WINDOW & ARCHIVE TABS)
+// ==========================================================
+let currentOrderSubTab = 'active'; // Default active sub-tab
+const RETURN_PERIOD_DAYS = 3; // 3 Days policy
+
+// Sub-Tab Switcher
+window.switchOrderSubTab = function(subTabKey) {
+  currentOrderSubTab = subTabKey;
+  
+  document.querySelectorAll('.order-subtab-btn').forEach(btn => {
+    btn.className = "order-subtab-btn px-3 py-1.5 rounded-xl bg-noir-950 border border-gold-500/15 text-slate-300 hover:text-white transition flex items-center gap-1.5 shrink-0";
+  });
+
+  const activeBtn = document.getElementById(`subTabBtn-${subTabKey}`);
+  if (activeBtn) {
+    activeBtn.className = "order-subtab-btn px-3 py-1.5 rounded-xl bg-gold-500 text-noir-950 font-bold transition flex items-center gap-1.5 shrink-0 shadow";
+  }
+
+  filterOrdersTable();
+};
+
+// Check if return window is expired (> 3 days)
+function checkReturnStatus(order) {
+  const status = (order.status || '').toLowerCase();
+  if (status !== 'delivered') {
+    return { isDelivered: false, isExpired: false, daysLeft: null, hoursLeft: null };
+  }
+
+  // delivered_at agar DB mein nahi hai toh created_at ya fallback use karega
+  const deliveredDate = order.delivered_at ? new Date(order.delivered_at) : new Date(order.created_at);
+  const now = new Date();
+  
+  const diffMs = now - deliveredDate;
+  const diffHours = diffMs / (1000 * 60 * 60);
+  const totalAllowedHours = RETURN_PERIOD_DAYS * 24; // 72 hours
+
+  if (diffHours >= totalAllowedHours) {
+    return { isDelivered: true, isExpired: true, daysLeft: 0, hoursLeft: 0 };
+  } else {
+    const remainingHours = Math.max(0, Math.ceil(totalAllowedHours - diffHours));
+    const remainingDays = Math.ceil(remainingHours / 24);
+    return { isDelivered: true, isExpired: false, daysLeft: remainingDays, hoursLeft: remainingHours };
+  }
+}
+
 async function fetchOrdersData() {
   if (!db) return;
   const { data: orders, error } = await db.from('orders').select('*').order('created_at', { ascending: false });
@@ -114,24 +159,82 @@ async function fetchOrdersData() {
   document.getElementById('statTotalSales').innerText = `₹${totalRev.toLocaleString('en-IN')}`;
   document.getElementById('statTotalOrders').innerText = cachedOrders.length;
 
+  // Calculate Sub-tab Badges
+  updateOrderBadges();
   filterOrdersTable();
+}
+
+function updateOrderBadges() {
+  let activeCount = 0;
+  let deliveredActiveCount = 0;
+  let archivedCount = 0;
+  let cancelledCount = 0;
+
+  cachedOrders.forEach(o => {
+    const status = (o.status || 'placed').toLowerCase();
+    const returnInfo = checkReturnStatus(o);
+
+    if (status === 'cancelled') {
+      cancelledCount++;
+    } else if (status === 'delivered') {
+      if (returnInfo.isExpired) {
+        archivedCount++;
+      } else {
+        deliveredActiveCount++;
+      }
+    } else {
+      activeCount++;
+    }
+  });
+
+  const bActive = document.getElementById('badge-active');
+  const bDelActive = document.getElementById('badge-delivered_active');
+  const bArchived = document.getElementById('badge-archived');
+  const bCancelled = document.getElementById('badge-cancelled');
+  const bAll = document.getElementById('badge-all');
+
+  if (bActive) bActive.innerText = activeCount;
+  if (bDelActive) bDelActive.innerText = deliveredActiveCount;
+  if (bArchived) bArchived.innerText = archivedCount;
+  if (bCancelled) bCancelled.innerText = cancelledCount;
+  if (bAll) bAll.innerText = cachedOrders.length;
 }
 
 window.filterOrdersTable = function() {
   const q = (document.getElementById('searchOrdersInput')?.value || '').toLowerCase().trim();
-  const filtered = cachedOrders.filter(o => {
-    if (!q) return true;
-    return [o.order_id, o.customer_name, o.customer_phone, o.customer_email, o.shipping_address, o.shiprocket_order_id, o.awb_code]
-      .some(field => String(field || '').toLowerCase().includes(q));
+
+  // 1. First Filter by Sub-tab
+  let subFiltered = cachedOrders.filter(o => {
+    const status = (o.status || 'placed').toLowerCase();
+    const returnInfo = checkReturnStatus(o);
+
+    if (currentOrderSubTab === 'active') {
+      return status !== 'delivered' && status !== 'cancelled';
+    } else if (currentOrderSubTab === 'delivered_active') {
+      return status === 'delivered' && !returnInfo.isExpired;
+    } else if (currentOrderSubTab === 'archived') {
+      return status === 'delivered' && returnInfo.isExpired;
+    } else if (currentOrderSubTab === 'cancelled') {
+      return status === 'cancelled';
+    }
+    return true; // 'all'
   });
 
-  renderOrdersTable(filtered);
+  // 2. Second Filter by Search Query
+  if (q) {
+    subFiltered = subFiltered.filter(o => {
+      return [o.order_id, o.customer_name, o.customer_phone, o.customer_email, o.shipping_address, o.shiprocket_order_id, o.awb_code]
+        .some(field => String(field || '').toLowerCase().includes(q));
+    });
+  }
+
+  renderOrdersTable(subFiltered);
 };
 
 function renderOrdersTable(ordersList) {
   const tbody = document.getElementById('ordersTableBody');
   if (!ordersList.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500">No matching orders found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500">No orders found in this view.</td></tr>`;
     return;
   }
 
@@ -140,19 +243,23 @@ function renderOrdersTable(ordersList) {
     const itemsList = Array.isArray(o.items) ? o.items : [];
     const status = (o.status || 'placed').toLowerCase();
     const isCod = (o.payment_method === 'COD') || (o.razorpay_payment_id && o.razorpay_payment_id.startsWith('COD'));
+    const returnInfo = checkReturnStatus(o);
 
     return `
       <tr class="hover:bg-noir-950/40 transition">
         <td class="p-3">
           <div class="font-mono font-bold text-gold-400">${o.order_id || 'ZIV-ORD'}</div>
           <div class="text-[10px] text-slate-500">${dateStr}</div>
+          <button onclick="viewOrderItems('${o.order_id}')" class="mt-1 text-[10px] text-gold-400 hover:underline flex items-center gap-1 font-semibold">
+            <i data-lucide="eye" class="w-3 h-3"></i> ${itemsList.length} Item(s)
+          </button>
         </td>
         <td class="p-3">
           <div class="font-semibold text-white">${o.customer_name || 'Guest User'}</div>
           <div class="text-[11px] text-slate-400 font-mono">${o.customer_phone ? '+91 ' + o.customer_phone : 'N/A'}</div>
           <div class="text-[10px] text-slate-500">${o.customer_email || ''}</div>
         </td>
-        <td class="p-3 max-w-[200px]">
+        <td class="p-3 max-w-[180px]">
           <div class="text-slate-300 line-clamp-2 text-[11px]" title="${o.shipping_address || ''}">
             ${o.shipping_address || 'No address provided'}
           </div>
@@ -166,23 +273,44 @@ function renderOrdersTable(ordersList) {
         <td class="p-3 font-mono text-[11px]">
           ${o.shiprocket_order_id ? `
             <div class="space-y-0.5">
-              <span class="inline-block px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-500/30 rounded font-bold text-[10px]">SR: ${o.shiprocket_order_id}</span>
-              <div class="text-[10px] text-slate-400">AWB: <span class="text-white font-semibold">${o.awb_code || 'Pending'}</span></div>
+              <span class="inline-block px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-500/30 rounded font-bold text-[9px]">SR: ${o.shiprocket_order_id}</span>
+              <div class="text-[10px] text-slate-400 truncate max-w-[120px]">AWB: ${o.awb_code || 'Pending'}</div>
             </div>
           ` : `
             <button onclick="retryShiprocketOrder('${o.order_id}')" class="text-[10px] text-gold-400 hover:text-gold-300 underline font-bold transition">
-              ⚡ Push to Courier
+              ⚡ Shiprocket
             </button>
           `}
         </td>
+        
+        <!-- RETURN WINDOW LIFECYCLE BADGE -->
         <td class="p-3">
-          <button onclick="viewOrderItems('${o.order_id}')" class="px-2.5 py-1 rounded-lg bg-noir-950 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition font-bold text-[10px] flex items-center gap-1">
-            <i data-lucide="eye" class="w-3 h-3"></i><span>${itemsList.length} Items</span>
-          </button>
+          ${status === 'delivered' ? (
+            returnInfo.isExpired ? `
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-noir-950 border border-gold-500/30 text-gold-400 rounded text-[10px] font-bold font-mono">
+                <i data-lucide="archive" class="w-3 h-3"></i> Expired (Archived)
+              </span>
+            ` : `
+              <div class="space-y-0.5">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-950 border border-emerald-500/40 text-emerald-300 rounded text-[10px] font-bold font-mono">
+                  <i data-lucide="clock" class="w-3 h-3"></i> ${returnInfo.hoursLeft}h Left
+                </span>
+                <div class="text-[9px] text-slate-500">Return Window Active</div>
+              </div>
+            `
+          ) : (status === 'cancelled' ? `
+            <span class="text-[10px] text-rose-400 font-mono">Cancelled</span>
+          ` : `
+            <span class="text-[10px] text-slate-500 font-mono">Not Delivered Yet</span>
+          `)}
         </td>
+
+        <!-- UPDATE STATUS -->
         <td class="p-3 text-right">
           <select onchange="updateOrderStatus('${o.order_id}', this.value)" class="bg-noir-950 border border-gold-500 text-gold-400 rounded-lg px-2.5 py-1 text-[11px] font-bold cursor-pointer">
-            ${['placed', 'paid', 'processing', 'dispatched', 'delivered', 'cancelled'].map(st => `<option value="${st}" ${status === st ? 'selected' : ''}>${st.toUpperCase()}</option>`).join('')}
+            ${['placed', 'paid', 'processing', 'dispatched', 'delivered', 'cancelled'].map(st => `
+              <option value="${st}" ${status === st ? 'selected' : ''}>${st.toUpperCase()}</option>
+            `).join('')}
           </select>
         </td>
       </tr>`;
@@ -191,31 +319,22 @@ function renderOrdersTable(ordersList) {
   if (window.lucide) window.lucide.createIcons();
 }
 
-window.retryShiprocketOrder = async function(orderId) {
-  const order = cachedOrders.find(o => o.order_id === orderId);
-  if (!order || !confirm(`Order [${orderId}] ko Shiprocket dispatch bhejein?`)) return;
-
+// Order Status Updater (With delivered_at timestamp recording)
+window.updateOrderStatus = async function(orderId, newStatus) {
+  if (!confirm(`Status '${newStatus.toUpperCase()}' update karein?`)) return fetchOrdersData();
   try {
-    const isCod = (order.payment_method === 'COD') || (order.razorpay_payment_id && order.razorpay_payment_id.startsWith('COD'));
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` },
-      body: JSON.stringify({ ...order, payment_method: isCod ? "COD" : "Prepaid" })
-    });
-    const data = await res.json();
-    if (data.order_id) {
-      await db.from('orders').update({
-        shiprocket_order_id: String(data.order_id),
-        shiprocket_shipment_id: String(data.shipment_id || ''),
-        awb_code: String(data.awb_code || '')
-      }).eq('order_id', orderId);
-      alert(`✅ Shiprocket Order ID: ${data.order_id} generated!`);
-      fetchOrdersData();
-    } else {
-      alert("❌ Response: " + (data.message || JSON.stringify(data)));
+    const payload = { status: newStatus };
+    if (newStatus === 'delivered') {
+      payload.delivered_at = new Date().toISOString(); // Timestamp when delivered
     }
+
+    const { error } = await db.from('orders').update(payload).eq('order_id', orderId);
+    if (error) throw error;
+    alert(`✅ Order ${orderId} ka status updated!`);
+    fetchOrdersData();
   } catch (err) {
-    alert("Request error: " + err.message);
+    alert("❌ Error: " + err.message);
+    fetchOrdersData();
   }
 };
 
