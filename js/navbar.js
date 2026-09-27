@@ -2,6 +2,7 @@ import { db, state, refreshIcons } from './config.js';
 import { applyFiltersAndSort } from './products.js';
 
 let dropdownTimer = null;
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 // Safe Lucide Icon Resolver
 function mapSafeIcon(rawIcon) {
@@ -88,26 +89,51 @@ export async function loadMenuSubmenu() {
       menuWrapper.className = "relative shrink-0 inline-flex items-center";
       
       const btn = document.createElement('button');
-      btn.className = "category-btn text-slate-800 hover:text-gold-600 font-semibold transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 cursor-pointer";
+      btn.className = "category-btn text-slate-800 hover:text-gold-600 font-semibold transition flex items-center gap-1.5 whitespace-nowrap pb-0.5 cursor-pointer select-none";
       btn.innerHTML = `
-        <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-600"></i>
-        <span>${menu.menuName}</span>
+        <i data-lucide="${menu.icon}" class="w-4 h-4 text-gold-600 pointer-events-none"></i>
+        <span class="pointer-events-none">${menu.menuName}</span>
         ${hasSubs ? `<i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 pointer-events-none"></i>` : ''}
       `;
 
-      // Click: Menu select
-      btn.onclick = (e) => {
+      // Single-Tap Trigger Engine for Touch & Click
+      let touchMoved = false;
+
+      btn.addEventListener('touchstart', () => {
+        touchMoved = false;
+      }, { passive: true });
+
+      btn.addEventListener('touchmove', () => {
+        touchMoved = true;
+      }, { passive: true });
+
+      btn.addEventListener('touchend', (e) => {
+        if (touchMoved) return; // Scroll gesture ko tap na maane
+        e.preventDefault();
+        e.stopPropagation();
+
         if (!hasSubs) {
           window.selectMenu(menu.menuId, null, menu.menuName);
           window.hideSubmenu();
         } else {
-          // On mobile tap or click toggle
           window.toggleSubmenu(btn, menu);
         }
-      };
+      });
 
-      // Hover: Desktop par cursor aane par dropdown open
-      if (hasSubs) {
+      // Desktop Click Fallback
+      btn.addEventListener('click', (e) => {
+        if (isTouchDevice) return; // Mobile touch already handled above
+        e.stopPropagation();
+        if (!hasSubs) {
+          window.selectMenu(menu.menuId, null, menu.menuName);
+          window.hideSubmenu();
+        } else {
+          window.toggleSubmenu(btn, menu);
+        }
+      });
+
+      // Desktop Hover Only (Disabled completely on touch screens to eliminate 2-tap delay)
+      if (hasSubs && !isTouchDevice) {
         menuWrapper.onmouseenter = () => {
           clearTimeout(dropdownTimer);
           window.showSubmenu(btn, menu);
@@ -122,7 +148,7 @@ export async function loadMenuSubmenu() {
       menuWrapper.appendChild(btn);
       if (navContainer) navContainer.appendChild(menuWrapper);
 
-      // Desktop Filters
+      // Desktop Checkbox
       if (filterContainer) {
         const catLabel = document.createElement('label');
         catLabel.className = "flex items-center gap-2 cursor-pointer text-slate-700 hover:text-slate-900 font-medium";
@@ -133,7 +159,7 @@ export async function loadMenuSubmenu() {
         filterContainer.appendChild(catLabel);
       }
 
-      // Mobile Filters
+      // Mobile Checkbox
       if (mobileFilterContainer) {
         const mobLabel = document.createElement('label');
         mobLabel.className = "flex items-center gap-2.5 p-2 rounded-xl bg-ivory-50 border border-ivory-200 text-slate-700 cursor-pointer";
@@ -145,9 +171,9 @@ export async function loadMenuSubmenu() {
       }
     });
 
-    // Floating Dropdown par cursor rehne par band na ho
+    // Dropdown hover persistence for desktop
     const globalDropdown = document.getElementById('globalSubmenuDropdown');
-    if (globalDropdown) {
+    if (globalDropdown && !isTouchDevice) {
       globalDropdown.onmouseenter = () => clearTimeout(dropdownTimer);
       globalDropdown.onmouseleave = () => {
         dropdownTimer = setTimeout(() => window.hideSubmenu(), 200);
@@ -168,16 +194,25 @@ window.showSubmenu = function(btnElement, menu) {
 
   const rect = btnElement.getBoundingClientRect();
   
-  // Exact button ke theek niche 4px gap par position set karein
-  dropdown.style.left = `${Math.max(10, rect.left)}px`;
+  // Mobile horizontal viewport safety
+  const dropdownWidth = 210;
+  let leftPos = rect.left;
+  if (leftPos + dropdownWidth > window.innerWidth - 10) {
+    leftPos = Math.max(10, window.innerWidth - dropdownWidth - 10);
+  } else {
+    leftPos = Math.max(10, leftPos);
+  }
+
+  dropdown.style.left = `${leftPos}px`;
   dropdown.style.top = `${rect.bottom + 4}px`;
+  dropdown.dataset.activeMenuId = menu.menuId;
 
   content.innerHTML = `
     <div class="px-3.5 py-1 text-[10px] uppercase font-bold text-gold-700 bg-gold-50/70 border-b border-ivory-200 tracking-wider">
       ${menu.menuName}
     </div>
     ${menu.submenus.map(sub => `
-      <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}'); window.hideSubmenu();" class="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-800 hover:text-gold-600 hover:bg-ivory-100 transition flex items-center justify-between group/item cursor-pointer">
+      <button onclick="event.stopPropagation(); window.selectMenu('${menu.menuId}', '${sub.subId}', '${sub.subName}'); window.hideSubmenu();" class="w-full text-left px-3.5 py-2.5 text-xs font-semibold text-slate-800 hover:text-gold-600 hover:bg-ivory-100 transition flex items-center justify-between group/item cursor-pointer">
         <span>${sub.subName}</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all text-gold-600"></i>
       </button>
@@ -190,20 +225,26 @@ window.showSubmenu = function(btnElement, menu) {
 
 window.hideSubmenu = function() {
   const dropdown = document.getElementById('globalSubmenuDropdown');
-  if (dropdown) dropdown.classList.add('hidden');
+  if (dropdown) {
+    dropdown.classList.add('hidden');
+    dropdown.dataset.activeMenuId = '';
+  }
 };
 
 window.toggleSubmenu = function(btnElement, menu) {
   const dropdown = document.getElementById('globalSubmenuDropdown');
-  if (dropdown && !dropdown.classList.contains('hidden')) {
+  if (dropdown && !dropdown.classList.contains('hidden') && dropdown.dataset.activeMenuId === menu.menuId) {
     window.hideSubmenu();
   } else {
     window.showSubmenu(btnElement, menu);
   }
 };
 
-// Bahar click karne par dropdown band ho jaye
-document.addEventListener('click', (e) => {
+// Bahar click/tap karne par dropdown close karein
+document.addEventListener('pointerdown', (e) => {
+  const dropdown = document.getElementById('globalSubmenuDropdown');
+  if (!dropdown || dropdown.classList.contains('hidden')) return;
+
   if (!e.target.closest('#globalSubmenuDropdown') && !e.target.closest('.category-btn')) {
     window.hideSubmenu();
   }
