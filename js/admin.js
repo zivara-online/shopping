@@ -267,24 +267,29 @@ function renderOrdersTable(ordersList) {
           </span>
         </td>
         
-        <!-- SHIPROCKET & TRACKING COLUMN (WITH ACTIVE PUSH BUTTON) -->
+        <!-- SHIPROCKET & TRACKING COLUMN (WITH PUSH / RE-PUSH BUTTON ALWAYS AVAILABLE) -->
         <td class="p-3 font-mono text-[11px]">
           ${o.shiprocket_order_id ? `
-            <div class="space-y-0.5">
-              <span class="inline-block px-1.5 py-0.2 bg-emerald-950 text-emerald-400 border border-emerald-500/30 rounded font-bold text-[9px]">
-                SR ID: ${o.shiprocket_order_id}
-              </span>
-              <div class="text-[10px] text-slate-400 truncate max-w-[120px]">
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="inline-block px-1.5 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-500/30 rounded font-bold text-[9px]">
+                  SR ID: ${o.shiprocket_order_id}
+                </span>
+                ${o.shiprocket_shipment_id ? `<span class="text-[9px] text-slate-400 font-sans">#${o.shiprocket_shipment_id}</span>` : ''}
+              </div>
+              <div class="text-[10px] text-slate-300">
                 AWB: <span class="text-white font-semibold">${o.awb_code || 'Assigned'}</span>
               </div>
-              ${o.shiprocket_shipment_id ? `<div class="text-[9px] text-slate-500 font-sans">Shipment: #${o.shiprocket_shipment_id}</div>` : ''}
+              <button onclick="retryShiprocketOrder('${o.order_id}')" class="px-2 py-1 bg-gold-500/10 hover:bg-gold-500/20 text-gold-400 border border-gold-500/30 rounded text-[9px] font-bold flex items-center gap-1 transition cursor-pointer mt-1">
+                ⚡ Re-Push to Shiprocket
+              </button>
             </div>
           ` : `
             <div class="space-y-1">
               <span class="inline-block px-2 py-0.5 bg-amber-950/80 text-amber-400 border border-amber-500/30 rounded text-[10px] font-semibold">
                 Pending Dispatch
               </span>
-              <button onclick="retryShiprocketOrder('${o.order_id}')" class="block text-[10px] text-gold-400 hover:text-gold-300 underline font-bold transition cursor-pointer">
+              <button onclick="retryShiprocketOrder('${o.order_id}')" class="px-2.5 py-1.5 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 rounded-lg text-[10px] font-black uppercase tracking-wider shadow hover:from-gold-400 hover:to-gold-300 flex items-center gap-1 transition cursor-pointer">
                 ⚡ Push to Shiprocket
               </button>
             </div>
