@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zivara - Fashion • Style • You</title>
+  <title>Zivara Privé - Member Portal</title>
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D4AF37'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
 
@@ -313,10 +313,9 @@
         <p id="modalUserOrderSub" class="text-[10px] text-slate-400 font-mono mt-0.5"></p>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="window.print()" class="no-print px-3 py-1.5 rounded-xl bg-noir-950 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="Print Invoice">
-          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-          <span class="hidden sm:inline">Invoice</span>
-        </button>
+        <!-- INVOICE ACTION CONTAINER (DYNAMICALLY UNLOCKED ONLY ON DELIVERY) -->
+        <div id="modalInvoiceActionContainer"></div>
+
         <button onclick="closeUserOrderModal()" class="no-print text-slate-400 hover:text-white p-1 cursor-pointer">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -400,6 +399,262 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
+    // NUMBER TO WORDS (INR FORMAT)
+    function priceToWordsINR(num) {
+      const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+      const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+      function inWords(n) {
+        let str = '';
+        if (n > 19) {
+          str += b[Math.floor(n / 10)] + ' ' + a[n % 10];
+        } else {
+          str += a[n];
+        }
+        return str.trim();
+      }
+
+      num = Math.floor(Number(num) || 0);
+      if (num === 0) return 'Zero Rupees';
+
+      let crore = Math.floor(num / 10000000);
+      num %= 10000000;
+      let lakh = Math.floor(num / 100000);
+      num %= 100000;
+      let thousand = Math.floor(num / 1000);
+      num %= 1000;
+      let hundred = Math.floor(num / 100);
+      let rem = num % 100;
+
+      let res = '';
+      if (crore > 0) res += inWords(crore) + ' Crore ';
+      if (lakh > 0) res += inWords(lakh) + ' Lakh ';
+      if (thousand > 0) res += inWords(thousand) + ' Thousand ';
+      if (hundred > 0) res += inWords(hundred) + ' Hundred ';
+      if (rem > 0) res += inWords(rem) + ' ';
+
+      return (res + 'Rupees Only').replace(/\s+/g, ' ').trim();
+    }
+
+    // QUOTATION-STYLE A4 TAX INVOICE PRINT CONTROLLER
+    window.generateAndPrintInvoice = function(orderId) {
+      const order = userOrdersList.find(o => o.order_id === orderId);
+      if (!order) {
+        alert("Order details nahi mili!");
+        return;
+      }
+
+      if (String(order.status || '').toLowerCase() !== 'delivered') {
+        alert("Invoice order delivered hone ke baad hi generate hota hai.");
+        return;
+      }
+
+      const items = Array.isArray(order.items) ? order.items : [];
+      const grandTotal = Number(order.amount || 0);
+      const taxableAmount = Math.round((grandTotal / 1.18) * 100) / 100;
+      const totalTax = Math.round((grandTotal - taxableAmount) * 100) / 100;
+
+      const orderDate = new Date(order.created_at || Date.now()).toLocaleDateString('en-IN', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+
+      const deliveryDate = order.delivered_at 
+        ? new Date(order.delivered_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        : orderDate;
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert("Please allow popups in your browser to view the invoice.");
+        return;
+      }
+
+      const itemsRowsHtml = items.map(it => {
+        const itemTotal = Number(it.price || 0) * Number(it.quantity || 1);
+        const itemBase = Math.round((itemTotal / 1.18) * 100) / 100;
+        const itemTax = Math.round((itemTotal - itemBase) * 100) / 100;
+        const sizeInfo = it.size ? ' | Size: ' + it.size : '';
+        const colorInfo = it.color ? ' | Color: ' + it.color : '';
+
+        return '<tr>' +
+          '<td>' +
+            '<b>' + (it.title || 'Product') + '</b>' +
+            '<div style="font-size: 9px; color: #64748b; font-family: monospace;">SKU: ' + (it.product_code || 'ZIV') + sizeInfo + colorInfo + '</div>' +
+          '</td>' +
+          '<td class="center">' + (it.quantity || 1) + ' EACH</td>' +
+          '<td class="right">' + itemBase.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + '</td>' +
+          '<td class="right">' + itemTax.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + '</td>' +
+          '<td class="right"><b>₹' + itemTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + '</b></td>' +
+        '</tr>';
+      }).join('');
+
+      const totalQuantity = items.reduce((s, i) => s + Number(i.quantity || 1), 0);
+
+      const invoiceHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>Tax Invoice - ${order.order_id}</title>
+          <style>
+            * { box-sizing: border-box; font-family: 'Helvetica Neue', Arial, sans-serif; color: #1e293b; margin: 0; padding: 0; }
+            body { background: #fff; padding: 30px; font-size: 11px; line-height: 1.4; }
+            .invoice-box { max-width: 800px; margin: auto; }
+            .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #0f172a; margin-bottom: 8px; }
+            .header-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+            .header-table td { vertical-align: top; }
+            .brand-logo { height: 55px; object-fit: contain; }
+            .company-name { font-size: 20px; font-weight: 800; color: #D4AF37; margin-bottom: 2px; }
+            .company-details { font-size: 10px; color: #334155; line-height: 1.35; }
+            .highlight-bar { background: #D4AF37; height: 3px; width: 100%; margin: 8px 0 10px 0; }
+            
+            .meta-strip { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; display: flex; justify-content: space-between; padding: 7px 12px; font-size: 10.5px; margin-bottom: 14px; font-weight: 700; }
+            .meta-strip span { font-weight: 400; color: #475569; }
+
+            .bill-to-section { margin-bottom: 16px; font-size: 11px; }
+            .bill-to-title { font-weight: 800; text-transform: uppercase; font-size: 10px; color: #64748b; margin-bottom: 3px; letter-spacing: 0.5px; }
+            .customer-name { font-size: 13px; font-weight: 800; color: #0f172a; }
+
+            .items-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+            .items-table th { background: #fff; border-bottom: 2px solid #0f172a; padding: 8px 6px; text-align: left; font-size: 10px; text-transform: uppercase; font-weight: 800; }
+            .items-table td { padding: 9px 6px; border-bottom: 1px solid #e2e8f0; font-size: 10.5px; vertical-align: middle; }
+            .items-table th.right, .items-table td.right { text-align: right; }
+            .items-table th.center, .items-table td.center { text-align: center; }
+
+            .subtotal-row td { font-weight: 800; border-top: 2px solid #D4AF37; border-bottom: 2px solid #D4AF37; padding: 9px 6px; }
+
+            .bottom-section { display: flex; justify-content: space-between; margin-top: 10px; gap: 20px; }
+            .left-col { flex: 1.2; font-size: 10px; }
+            .right-col { flex: 1; text-align: right; font-size: 10.5px; }
+            
+            .calc-table { width: 100%; border-collapse: collapse; }
+            .calc-table td { padding: 4px 0; }
+            .calc-table .total-row { border-top: 1.5px solid #0f172a; border-bottom: 1.5px solid #0f172a; font-size: 12px; font-weight: 800; padding: 6px 0; }
+
+            .words-block { margin-top: 8px; font-size: 10.5px; font-weight: 800; }
+            .sign-box { margin-top: 35px; text-align: right; }
+            .sign-box .sign-title { font-weight: 800; font-size: 9.5px; text-transform: uppercase; color: #0f172a; }
+
+            @media print {
+              body { padding: 15mm; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-box">
+            <div class="doc-title">TAX INVOICE</div>
+
+            <!-- HEADER -->
+            <table class="header-table">
+              <tr>
+                <td style="width: 14%;">
+                  <img src="Logo.png" class="brand-logo" onerror="this.style.display='none'" />
+                </td>
+                <td style="width: 86%;">
+                  <div class="company-name">ZIVARA MAISON</div>
+                  <div class="company-details">
+                    Luxury Fashion & Fine Jewelry Atelier, Corporate Avenue, Gurugram, Haryana - 122002<br>
+                    <b>Mobile:</b> +91 7079950417 &nbsp;|&nbsp; <b>GSTIN:</b> 06AAACZ1234F1Z5 &nbsp;|&nbsp; <b>PAN:</b> AAACZ1234F<br>
+                    <b>Email:</b> info@zivarafashion.online &nbsp;|&nbsp; <b>Website:</b> https://www.zivarafashion.online
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <div class="highlight-bar"></div>
+
+            <!-- META INFORMATION -->
+            <div class="meta-strip">
+              <div>INVOICE NO: <span>INV/${order.order_id.replace('ZIV-ORD-', '')}</span></div>
+              <div>ORDER DATE: <span>${orderDate}</span></div>
+              <div>DELIVERED DATE: <span>${deliveryDate}</span></div>
+            </div>
+
+            <!-- BILL TO -->
+            <div class="bill-to-section">
+              <div class="bill-to-title">BILL TO</div>
+              <div class="customer-name">${order.customer_name || currentUserData?.name || 'Valued Member'}</div>
+              <div><b>Mobile:</b> +91 ${order.customer_phone || currentUserData?.phone || 'N/A'}</div>
+              <div><b>Address:</b> ${order.shipping_address || 'No shipping address provided'}</div>
+              <div><b>Payment Method:</b> ${order.payment_method === 'COD' ? 'Cash on Delivery (COD)' : 'Prepaid (Razorpay / Online Verified)'}</div>
+            </div>
+
+            <!-- ITEMS TABLE -->
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width: 50%;">ITEMS & DESCRIPTION</th>
+                  <th class="center" style="width: 10%;">QTY.</th>
+                  <th class="right" style="width: 15%;">RATE (₹)</th>
+                  <th class="right" style="width: 10%;">TAX (18%)</th>
+                  <th class="right" style="width: 15%;">AMOUNT (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsRowsHtml}
+                <tr class="subtotal-row">
+                  <td>SUBTOTAL</td>
+                  <td class="center">${totalQuantity}</td>
+                  <td class="right">₹${taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td class="right">₹${totalTax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td class="right">₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- BOTTOM SECTION -->
+            <div class="bottom-section">
+              <div class="left-col">
+                <div style="font-weight: 800; font-size: 10px; margin-bottom: 3px;">TERMS AND CONDITIONS</div>
+                <ol style="padding-left: 14px; color: #475569; font-size: 9.5px; line-height: 1.4;">
+                  <li>Eligible luxury items can be requested for return/exchange within 3 days of delivery.</li>
+                  <li>Original packaging, security tags, and certificate must remain intact.</li>
+                  <li>This is an authentic computer-generated tax invoice verified by Zivara Maison.</li>
+                </ol>
+              </div>
+
+              <div class="right-col">
+                <table class="calc-table">
+                  <tr>
+                    <td style="color: #475569;">Taxable Amount:</td>
+                    <td><b>₹${taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</b></td>
+                  </tr>
+                  <tr>
+                    <td style="color: #475569;">IGST / GST @18%:</td>
+                    <td><b>₹${totalTax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</b></td>
+                  </tr>
+                  <tr class="total-row">
+                    <td>Total Amount:</td>
+                    <td style="color: #D4AF37;">₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                </table>
+
+                <div class="words-block">
+                  <span style="font-weight: 400; color: #64748b; font-size: 9.5px; display: block;">Total Amount (in words)</span>
+                  ${priceToWordsINR(grandTotal)}
+                </div>
+
+                <div class="sign-box">
+                  <div class="sign-title">AUTHORISED SIGNATORY FOR</div>
+                  <div style="font-weight: 800; font-size: 11px; color: #D4AF37;">Zivara Maison Pvt. Ltd.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          <\/script>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.open();
+      printWindow.document.write(invoiceHtml);
+      printWindow.document.close();
+    };
+
     // 1. SESSION INITIALIZER
     async function checkUserSession() {
       const localSession = JSON.parse(localStorage.getItem('zivara_session'));
@@ -420,7 +675,7 @@
             return;
           }
         } catch (e) {
-          console.warn(e);
+          console.warn("Session fetch warning:", e);
         }
       }
 
@@ -514,6 +769,9 @@
         // COD vs Online Logic
         const isCod = (order.payment_method === 'COD') || (order.razorpay_payment_id && order.razorpay_payment_id.startsWith('COD'));
 
+        const sizeBadge = firstItem.size ? `<span class="text-[9px] px-1.5 py-0.5 bg-noir-900 border border-gold-500/20 text-slate-300 rounded font-mono">Size: ${firstItem.size}</span>` : '';
+        const colorBadge = firstItem.color ? `<span class="text-[9px] px-1.5 py-0.5 bg-gold-500/10 border border-gold-500/30 text-gold-400 rounded font-mono font-bold">Color: ${firstItem.color}</span>` : '';
+
         return `
           <div class="bg-noir-950 border ${isDelivered ? 'border-emerald-500/30' : 'border-gold-500/25'} p-4 sm:p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-gold-400/50 transition">
             
@@ -537,12 +795,12 @@
                   `}
                 </div>
 
-                <h4 class="font-semibold text-white text-xs sm:text-sm line-clamp-1">${firstItem.title || 'Luxury Piece'} ${items.length > 1 ? `(+${items.length - 1} more items)` : ''}</h4>
+                <h4 class="font-semibold text-white text-xs sm:text-sm line-clamp-1">${firstItem.title || 'Luxury Piece'} ${items.length > 1 ? '(+' + (items.length - 1) + ' more items)' : ''}</h4>
                 
                 <div class="flex flex-wrap items-center gap-2 pt-0.5">
                   <span class="text-xs font-bold text-white font-mono">₹${Number(order.amount).toLocaleString('en-IN')}</span>
-                  ${firstItem.size ? `<span class="text-[9px] px-1.5 py-0.5 bg-noir-900 border border-gold-500/20 text-slate-300 rounded font-mono">Size: ${firstItem.size}</span>` : ''}
-                  ${firstItem.color ? `<span class="text-[9px] px-1.5 py-0.5 bg-gold-500/10 border border-gold-500/30 text-gold-400 rounded font-mono font-bold">Color: ${firstItem.color}</span>` : ''}
+                  ${sizeBadge}
+                  ${colorBadge}
                 </div>
 
                 <div class="pt-1 flex items-center gap-1.5 text-[11px] font-semibold ${isDelivered ? 'text-emerald-400' : 'text-gold-400'}">
@@ -553,13 +811,19 @@
             </div>
 
             <!-- ACTION CONTROLS -->
-            <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-gold-500/10 shrink-0">
+            <div class="flex flex-wrap sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-gold-500/10 shrink-0">
               <button onclick="viewUserOrderDetails('${order.order_id}')" class="px-4 py-2 rounded-xl bg-gold-500/10 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 transition text-xs font-bold flex items-center gap-1.5 cursor-pointer">
                 <i data-lucide="eye" class="w-3.5 h-3.5"></i> View Details
               </button>
 
+              ${isDelivered ? `
+                <button onclick="generateAndPrintInvoice('${order.order_id}')" class="px-3.5 py-1.5 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5 cursor-pointer">
+                  <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Tax Invoice
+                </button>
+              ` : ''}
+
               ${order.awb_code ? `
-                <a href="https://shiprocket.co/tracking/${order.awb_code}" target="_blank" class="px-4 py-2 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-900 transition text-xs font-bold flex items-center gap-1.5">
+                <a href="https://shiprocket.co/tracking/${order.awb_code}" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-900 transition text-xs font-bold flex items-center gap-1.5">
                   <i data-lucide="map" class="w-3.5 h-3.5"></i> Live Map
                 </a>
               ` : ''}
@@ -605,6 +869,23 @@
       const isDispatched = status === 'dispatched' || order.shiprocket_order_id;
       const isDelivered = status === 'delivered';
 
+      // INVOICE BUTTON IN MODAL HEADER (Only on Delivered)
+      const invoiceContainer = document.getElementById('modalInvoiceActionContainer');
+      if (isDelivered) {
+        invoiceContainer.innerHTML = `
+          <button onclick="generateAndPrintInvoice('${order.order_id}')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow">
+            <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+            <span>Tax Invoice</span>
+          </button>
+        `;
+      } else {
+        invoiceContainer.innerHTML = `
+          <span class="text-[10px] text-slate-500 bg-noir-950 border border-gold-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1 font-mono">
+            <i data-lucide="lock" class="w-3 h-3"></i> Invoice Locked
+          </span>
+        `;
+      }
+
       document.getElementById('modalOrderTimeline').innerHTML = `
         <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
           <span class="text-gold-400 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> 1. Confirmed</span>
@@ -624,25 +905,30 @@
 
       // Items list with individual specs
       const items = Array.isArray(order.items) ? order.items : [];
-      document.getElementById('modalUserOrderItemsList').innerHTML = items.map(it => `
-        <div class="flex items-center gap-4 pt-3">
-          <img src="${it.thumbnail_url || it.image || 'Cover.png'}" class="w-14 h-16 object-cover rounded-xl bg-noir-900 border border-gold-500/30 shrink-0 shadow-md" onerror="this.src='Cover.png'" />
-          <div class="flex-1 space-y-1">
-            <h5 class="font-semibold text-white text-xs leading-snug">${it.title}</h5>
-            
-            <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
-              <span class="text-slate-400">SKU: <b class="text-slate-200">${it.product_code || 'ZIV'}</b></span>
-              ${it.size ? `<span class="px-2 py-0.5 bg-noir-950 border border-gold-500/20 text-gold-300 rounded font-bold">Size: ${it.size}</span>` : ''}
-              ${it.color ? `<span class="px-2 py-0.5 bg-gold-500/10 border border-gold-500/40 text-gold-400 rounded font-bold">Color: ${it.color}</span>` : ''}
-            </div>
+      document.getElementById('modalUserOrderItemsList').innerHTML = items.map(it => {
+        const itemSize = it.size ? `<span class="px-2 py-0.5 bg-noir-950 border border-gold-500/20 text-gold-300 rounded font-bold">Size: ${it.size}</span>` : '';
+        const itemColor = it.color ? `<span class="px-2 py-0.5 bg-gold-500/10 border border-gold-500/40 text-gold-400 rounded font-bold">Color: ${it.color}</span>` : '';
 
-            <div class="text-xs font-bold text-white pt-0.5">
-              <span class="text-gold-400">₹${Number(it.price).toLocaleString('en-IN')}</span> 
-              <span class="text-slate-400 font-normal">× ${it.quantity || 1} units</span>
+        return `
+          <div class="flex items-center gap-4 pt-3">
+            <img src="${it.thumbnail_url || it.image || 'Cover.png'}" class="w-14 h-16 object-cover rounded-xl bg-noir-900 border border-gold-500/30 shrink-0 shadow-md" onerror="this.src='Cover.png'" />
+            <div class="flex-1 space-y-1">
+              <h5 class="font-semibold text-white text-xs leading-snug">${it.title}</h5>
+              
+              <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
+                <span class="text-slate-400">SKU: <b class="text-slate-200">${it.product_code || 'ZIV'}</b></span>
+                ${itemSize}
+                ${itemColor}
+              </div>
+
+              <div class="text-xs font-bold text-white pt-0.5">
+                <span class="text-gold-400">₹${Number(it.price).toLocaleString('en-IN')}</span> 
+                <span class="text-slate-400 font-normal">× ${it.quantity || 1} units</span>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       document.getElementById('userOrderDetailsModalBackdrop').classList.remove('hidden');
       document.getElementById('userOrderDetailsModal').classList.remove('hidden');
@@ -736,23 +1022,8 @@
     }
 
     // 5. MOBILE OTP FLOW (INTEGRATED APITXT REAL SMS GATEWAY)
-    otpInputs.forEach((input, index) => {
-      input.addEventListener('input', (e) => {
-        if (e.target.value.length === 1 && index < otpInputs.length - 1) {
-          otpInputs[index + 1].focus();
-        }
-      });
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && !e.target.value && index > 0) {
-          otpInputs[index - 1].focus();
-        }
-      });
-    });
+    const APITXT_AUTH_KEY = "LPMrbgj8eeTbv7a7tjIMTE1q_Z0tif-1BxwdAV_fn3I";
 
-
-const APITXT_AUTH_KEY = "LPMrbgj8eeTbv7a7tjIMTE1q_Z0tif-1BxwdAV_fn3I";
-
-    // 5. MOBILE OTP FLOW (EXACT APITXT sendOTP SPECIFICATION)
     otpInputs.forEach((input, index) => {
       input.addEventListener('input', (e) => {
         if (e.target.value.length === 1 && index < otpInputs.length - 1) {
