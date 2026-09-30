@@ -252,8 +252,8 @@ window.printAdminTaxInvoice = function(orderId) {
             <td style="width: 86%;">
               <div class="company-name">ZIVARA MAISON</div>
               <div class="company-details">
-                Luxury Fashion & Fine Jewelry Atelier, Corporate Avenue, Gurugram, Haryana - 122002<br>
-                <b>Mobile:</b> +91 7079950417 &nbsp;|&nbsp; <b>GSTIN:</b> 06AAACZ1234F1Z5 &nbsp;|&nbsp; <b>PAN:</b> AAACZ1234F<br>
+                 Ground Floor, 447 E , Khata no. 11 Plot No. 757, Dhori Basti Sottardih, Ram Ratan-, Bokaro, Jharkhand- 825102 <br>
+                <b>Mobile:</b> +91 8757875033 &nbsp;|&nbsp; <b>GSTIN:</b> 20EXRPK4999G1ZV &nbsp;|&nbsp; <b>PAN:</b> 0EXRPK4999G<br>
                 <b>Email:</b> info@zivarafashion.online &nbsp;|&nbsp; <b>Website:</b> https://www.zivarafashion.online
               </div>
             </td>
@@ -309,7 +309,7 @@ window.printAdminTaxInvoice = function(orderId) {
             <ol style="padding-left: 14px; color: #475569; font-size: 9.5px; line-height: 1.4;">
               <li>Eligible luxury items can be requested for return/exchange within 3 days of delivery.</li>
               <li>Original packaging, security tags, and certificate must remain intact.</li>
-              <li>This is an authentic computer-generated tax invoice verified by Zivara Maison.</li>
+              <li>This is an authentic computer-generated tax invoice verified by Zivara Fashion.</li>
             </ol>
           </div>
 
@@ -336,7 +336,7 @@ window.printAdminTaxInvoice = function(orderId) {
 
             <div class="sign-box">
               <div class="sign-title">AUTHORISED SIGNATORY FOR</div>
-              <div style="font-weight: 800; font-size: 11px; color: #D4AF37;">Zivara Maison Pvt. Ltd.</div>
+              <div style="font-weight: 800; font-size: 11px; color: #D4AF37;">Zivara Fashion </div>
             </div>
           </div>
         </div>
