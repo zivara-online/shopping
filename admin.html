@@ -35,7 +35,7 @@
           Restricted Master Console
         </span>
         <h1 class="text-2xl font-serif text-white tracking-tight">Admin Authentication</h1>
-        <p class="text-xs text-slate-400">Sign in to control Zivara Maison catalogue & media</p>
+        <p class="text-xs text-slate-400">Sign in to control Zivara Maison catalogue, orders & coupons</p>
       </div>
 
       <form onsubmit="handleAdminLogin(event)" class="space-y-4 text-xs">
@@ -84,10 +84,10 @@
     </div>
 
     <!-- QUICK METRICS BAR -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
       <div class="bg-noir-900 border border-gold-500/20 p-4 rounded-2xl flex items-center justify-between">
         <div>
-          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Total Sales (Orders)</span>
+          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Total Sales</span>
           <h4 id="statTotalSales" class="text-xl font-black text-gold-400 font-mono">₹0</h4>
         </div>
         <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
@@ -112,12 +112,24 @@
           <i data-lucide="users" class="w-5 h-5"></i>
         </div>
       </div>
+      <div class="bg-noir-900 border border-gold-500/20 p-4 rounded-2xl flex items-center justify-between">
+        <div>
+          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Active Coupons</span>
+          <h4 id="statTotalCoupons" class="text-xl font-black text-gold-400 font-mono">0</h4>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+          <i data-lucide="tag" class="w-5 h-5"></i>
+        </div>
+      </div>
     </div>
 
     <!-- TABS BAR -->
     <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gold-500/10 text-xs font-semibold">
       <button onclick="switchAdminTab('orders')" id="tabBtn-orders" class="tab-btn px-4 py-2.5 rounded-xl bg-gold-500 text-noir-950 font-bold transition flex items-center gap-2 shrink-0">
         <i data-lucide="shopping-cart" class="w-4 h-4"></i> Orders Summary
+      </button>
+      <button onclick="switchAdminTab('coupons')" id="tabBtn-coupons" class="tab-btn px-4 py-2.5 rounded-xl bg-noir-900 hover:bg-noir-850 text-slate-300 hover:text-white transition flex items-center gap-2 shrink-0 border border-gold-500/15">
+        <i data-lucide="tag" class="w-4 h-4"></i> Coupons & Discounts
       </button>
       <button onclick="switchAdminTab('users')" id="tabBtn-users" class="tab-btn px-4 py-2.5 rounded-xl bg-noir-900 hover:bg-noir-850 text-slate-300 hover:text-white transition flex items-center gap-2 shrink-0 border border-gold-500/15">
         <i data-lucide="users" class="w-4 h-4"></i> Users Directory
@@ -139,15 +151,15 @@
       </button>
     </div>
 
-<!-- ================= TAB 1: ORDERS SUMMARY WITH SUB-TABS & SEARCH ================= -->
+    <!-- ================= TAB 1: ORDERS SUMMARY ================= -->
     <section id="tab-orders" class="tab-content space-y-4">
       <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
         
         <!-- Header & Search -->
         <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gold-500/15 pb-4 gap-4">
           <div>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Live Customer Orders & Lifecycle Controller</h3>
-            <p class="text-xs text-slate-400">3-day return policy tracking, delivery archiving & Shiprocket sync.</p>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Live Customer Orders, Lifecycle & Invoice Controller</h3>
+            <p class="text-xs text-slate-400">View tax receipts, track 3-day return window & trigger Shiprocket dispatch.</p>
           </div>
           
           <div class="flex flex-wrap items-center gap-3">
@@ -168,7 +180,7 @@
           </div>
         </div>
 
-        <!-- SUB-TABS BAR FOR LIFECYCLE FILTERING -->
+        <!-- SUB-TABS BAR -->
         <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gold-500/10 text-xs">
           <button onclick="switchOrderSubTab('active')" id="subTabBtn-active" class="order-subtab-btn px-3 py-1.5 rounded-xl bg-gold-500 text-noir-950 font-bold transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="truck" class="w-3.5 h-3.5"></i> Active Dispatches <span id="badge-active" class="px-1.5 py-0.2 bg-noir-950 text-gold-400 rounded-full text-[10px]">0</span>
@@ -203,7 +215,7 @@
                 <th class="p-3">Payment</th>
                 <th class="p-3">Courier / Tracking</th>
                 <th class="p-3">Return Window</th>
-                <th class="p-3 text-right">Update Status</th>
+                <th class="p-3 text-right">Update Status & Invoice</th>
               </tr>
             </thead>
             <tbody id="ordersTableBody" class="divide-y divide-gold-500/10 text-slate-300">
@@ -214,7 +226,104 @@
       </div>
     </section>
 
-    <!-- ================= TAB 2: USERS DIRECTORY WITH SEARCH ================= -->
+    <!-- ================= TAB 2: COUPONS & DISCOUNTS CONTROLLER ================= -->
+    <section id="tab-coupons" class="tab-content hidden space-y-6 max-w-5xl mx-auto w-full">
+      <div class="bg-noir-900 border border-gold-500/30 p-6 sm:p-8 rounded-3xl shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
+          <h2 id="couponFormHeading" class="text-sm font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="tag" class="w-4 h-4"></i> Create Promotional Coupon Code
+          </h2>
+          <button id="cancelCouponEditBtn" onclick="resetCouponForm()" class="hidden text-xs text-rose-400 hover:underline">
+            Cancel Edit
+          </button>
+        </div>
+
+        <form id="couponMasterForm" onsubmit="handleCreateOrUpdateCoupon(event)" class="space-y-4 text-xs">
+          <input type="hidden" id="editCouponId" value="" />
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-slate-400 mb-1 font-semibold">Coupon Code (Promo Code)</label>
+              <input type="text" id="couponCode" required placeholder="e.g. FESTIVE20" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2.5 text-white uppercase font-mono font-bold focus:border-gold-400" />
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1 font-semibold">Discount Type</label>
+              <select id="couponType" onchange="toggleDiscountTypeLabel()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2.5 text-white focus:border-gold-400">
+                <option value="percentage">Percentage Discount (% OFF)</option>
+                <option value="flat">Flat Amount Discount (₹ OFF)</option>
+              </select>
+            </div>
+            <div>
+              <label id="couponValueLabel" class="block text-slate-400 mb-1 font-semibold">Discount Value (% or ₹)</label>
+              <input type="number" id="couponValue" required step="0.1" min="1" placeholder="e.g. 20" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2.5 text-white font-bold focus:border-gold-400" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-slate-400 mb-1 font-semibold">Min. Order Amount (₹)</label>
+              <input type="number" id="couponMinOrder" value="0" placeholder="0 = No limit" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2.5 text-white focus:border-gold-400" />
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1 font-semibold">Max Discount Cap (₹)</label>
+              <input type="number" id="couponMaxDiscount" placeholder="e.g. 1000 (Optional)" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2.5 text-white focus:border-gold-400" />
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1 font-semibold">Expiry Date</label>
+              <input type="date" id="couponExpiry" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2.5 text-white focus:border-gold-400" />
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1 font-semibold">Total Usage Limit</label>
+              <input type="number" id="couponUsageLimit" value="100" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl px-3 py-2.5 text-white focus:border-gold-400" />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="couponActive" checked class="accent-gold-500 w-4 h-4 rounded cursor-pointer" />
+            <label for="couponActive" class="text-slate-300 font-semibold cursor-pointer">Live Active on Checkout</label>
+          </div>
+
+          <button type="submit" id="couponSubmitBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2 uppercase tracking-wider cursor-pointer">
+            <i data-lucide="tag" class="w-4 h-4"></i>
+            <span id="couponSubmitBtnText">Publish Coupon Code</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Live Coupons List -->
+      <div class="bg-noir-900 border border-gold-500/20 p-6 rounded-3xl shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
+          <div>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Active Promotional Coupons</h3>
+            <p class="text-xs text-slate-400">Control active discount codes, usage count and validity</p>
+          </div>
+          <button onclick="fetchCouponsData()" class="text-xs text-gold-400 hover:underline flex items-center gap-1">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-gold-500/20 text-slate-400">
+                <th class="p-3">Coupon Code</th>
+                <th class="p-3">Discount</th>
+                <th class="p-3">Conditions</th>
+                <th class="p-3">Usage</th>
+                <th class="p-3">Expiry</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="couponsTableBody" class="divide-y divide-gold-500/10 text-slate-300">
+              <tr><td colspan="7" class="p-4 text-center text-slate-500">Loading coupon records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: USERS DIRECTORY ================= -->
     <section id="tab-users" class="tab-content hidden space-y-4">
       <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gold-500/15 pb-4 gap-4">
@@ -254,7 +363,7 @@
       </div>
     </section>
 
-    <!-- ================= TAB 3: LIVE INVENTORY WITH SEARCH ================= -->
+    <!-- ================= TAB 4: LIVE INVENTORY ================= -->
     <section id="tab-inventory" class="tab-content hidden space-y-4">
       <div class="bg-noir-900 border border-gold-500/20 rounded-3xl p-6 shadow-2xl space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gold-500/15 pb-4 gap-4">
@@ -299,7 +408,7 @@
       </div>
     </section>
 
-    <!-- ================= TAB 4: PRODUCT CREATION / EDITING ================= -->
+    <!-- ================= TAB 5: PRODUCT FORM ================= -->
     <section id="tab-productForm" class="tab-content hidden max-w-4xl mx-auto w-full">
       <div id="productFormContainer" class="bg-noir-900 border border-gold-500/20 p-6 sm:p-8 rounded-3xl shadow-xl space-y-4">
         <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
@@ -421,7 +530,7 @@
       </div>
     </section>
 
-    <!-- ================= TAB 5: HERO CAROUSEL ================= -->
+    <!-- ================= TAB 6: HERO CAROUSEL ================= -->
     <section id="tab-banners" class="tab-content hidden space-y-6 max-w-4xl mx-auto w-full">
       <div class="bg-noir-900 border border-gold-500/30 p-6 sm:p-8 rounded-3xl shadow-xl space-y-5">
         <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
@@ -470,7 +579,7 @@
       </div>
     </section>
 
-    <!-- ================= TAB 6: MAIN MENUS ================= -->
+    <!-- ================= TAB 7: MAIN MENUS ================= -->
     <section id="tab-menu" class="tab-content hidden space-y-6 max-w-4xl mx-auto w-full">
       <div class="bg-noir-900 border border-gold-500/20 p-6 sm:p-8 rounded-3xl shadow-xl space-y-4">
         <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
@@ -540,7 +649,7 @@
       </div>
     </section>
 
-    <!-- ================= TAB 7: SUB-MENUS ================= -->
+    <!-- ================= TAB 8: SUB-MENUS ================= -->
     <section id="tab-submenu" class="tab-content hidden space-y-6 max-w-4xl mx-auto w-full">
       <div class="bg-noir-900 border border-gold-500/20 p-6 sm:p-8 rounded-3xl shadow-xl space-y-4">
         <div class="flex items-center justify-between border-b border-gold-500/15 pb-3">
@@ -618,7 +727,7 @@
 
   </div>
 
-  <!-- ORDER DETAILS MODAL -->
+  <!-- ORDER DETAILS MODAL (WITH DIRECT TAX INVOICE PRINT BUTTON) -->
   <div id="orderDetailsModalBackdrop" class="fixed inset-0 bg-black/80 z-[90] hidden backdrop-blur-sm" onclick="closeOrderModal()"></div>
   <div id="orderDetailsModal" class="fixed inset-x-4 top-[10%] sm:inset-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-lg bg-noir-900 border border-gold-500/40 rounded-3xl p-6 shadow-2xl z-[100] hidden space-y-4 max-h-[85vh] overflow-y-auto">
     <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
@@ -626,9 +735,15 @@
         <h3 id="modalOrderTitle" class="text-sm font-serif font-bold text-white uppercase tracking-wider">Order Items</h3>
         <p id="modalOrderSub" class="text-[10px] text-slate-400 font-mono"></p>
       </div>
-      <button onclick="closeOrderModal()" class="text-slate-400 hover:text-white p-1">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="modalPrintInvoiceBtn" onclick="" class="px-3 py-1.5 rounded-xl bg-gold-500/10 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-noir-950 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Tax Invoice</span>
+        </button>
+        <button onclick="closeOrderModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
     </div>
     <div id="modalOrderItemsList" class="space-y-2.5 text-xs divide-y divide-gold-500/10"></div>
   </div>
