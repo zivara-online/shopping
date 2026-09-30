@@ -6,6 +6,7 @@ let cachedHierarchy = [];
 let cachedProducts = [];
 let cachedOrders = [];
 let cachedUsers = [];
+let cachedCoupons = [];
 let imageItemList = [];
 let selectedBannerFile = null;
 
@@ -28,6 +29,7 @@ window.switchAdminTab = function(tabId) {
   }
 
   if (tabId === 'orders') fetchOrdersData();
+  if (tabId === 'coupons') fetchCouponsData();
   if (tabId === 'users') fetchUsersData();
   if (tabId === 'inventory') fetchAllData();
 
@@ -48,6 +50,7 @@ async function checkAdminSession() {
     fetchAllData();
     fetchBanners();
     fetchOrdersData();
+    fetchCouponsData();
     fetchUsersData();
   } else {
     loginSection.classList.remove('hidden');
@@ -104,10 +107,260 @@ window.clearSearch = function(inputId, filterFunc) {
 };
 
 // ==========================================================
-// ORDERS CONTROLLER (WITH 3-DAY RETURN WINDOW & SHIPROCKET DISPATCH)
+// NUMBER TO WORDS CONVERTER (INR FORMAT)
 // ==========================================================
-let currentOrderSubTab = 'active'; // Default active sub-tab
-const RETURN_PERIOD_DAYS = 3; // 3 Days return policy
+function priceToWordsINR(num) {
+  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  function inWords(n) {
+    let str = '';
+    if (n > 19) {
+      str += b[Math.floor(n / 10)] + ' ' + a[n % 10];
+    } else {
+      str += a[n];
+    }
+    return str.trim();
+  }
+
+  num = Math.floor(Number(num) || 0);
+  if (num === 0) return 'Zero Rupees';
+
+  let crore = Math.floor(num / 10000000);
+  num %= 10000000;
+  let lakh = Math.floor(num / 100000);
+  num %= 100000;
+  let thousand = Math.floor(num / 1000);
+  num %= 1000;
+  let hundred = Math.floor(num / 100);
+  let rem = num % 100;
+
+  let res = '';
+  if (crore > 0) res += inWords(crore) + ' Crore ';
+  if (lakh > 0) res += inWords(lakh) + ' Lakh ';
+  if (thousand > 0) res += inWords(thousand) + ' Thousand ';
+  if (hundred > 0) res += inWords(hundred) + ' Hundred ';
+  if (rem > 0) res += inWords(rem) + ' ';
+
+  return (res + 'Rupees Only').replace(/\s+/g, ' ').trim();
+}
+
+// ==========================================================
+// ADMIN TAX INVOICE GENERATOR (QUOTATION STYLE A4)
+// ==========================================================
+window.printAdminTaxInvoice = function(orderId) {
+  const order = cachedOrders.find(o => o.order_id === orderId);
+  if (!order) return alert("Order details nahi mili!");
+
+  const items = Array.isArray(order.items) ? order.items : [];
+  const grandTotal = Number(order.amount || 0);
+  const taxableAmount = Math.round((grandTotal / 1.18) * 100) / 100;
+  const totalTax = Math.round((grandTotal - taxableAmount) * 100) / 100;
+
+  const orderDate = new Date(order.created_at || Date.now()).toLocaleDateString('en-IN', {
+    day: '2-digit', month: '2-digit', year: 'numeric'
+  });
+
+  const deliveryDate = order.delivered_at 
+    ? new Date(order.delivered_at).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    : (order.status === 'delivered' ? orderDate : 'Pending Delivery');
+
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return alert("Popups allow karein invoice print karne ke liye.");
+
+  const itemsRowsHtml = items.map(it => {
+    const itemTotal = Number(it.price || 0) * Number(it.quantity || 1);
+    const itemBase = Math.round((itemTotal / 1.18) * 100) / 100;
+    const itemTax = Math.round((itemTotal - itemBase) * 100) / 100;
+    const sizeInfo = it.size ? ' | Size: ' + it.size : '';
+    const colorInfo = it.color ? ' | Color: ' + it.color : '';
+
+    return '<tr>' +
+      '<td>' +
+        '<b>' + (it.title || 'Product') + '</b>' +
+        '<div style="font-size: 9px; color: #64748b; font-family: monospace;">SKU: ' + (it.product_code || 'ZIV') + sizeInfo + colorInfo + '</div>' +
+      '</td>' +
+      '<td class="center">' + (it.quantity || 1) + ' EACH</td>' +
+      '<td class="right">' + itemBase.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + '</td>' +
+      '<td class="right">' + itemTax.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + '</td>' +
+      '<td class="right"><b>₹' + itemTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 }) + '</b></td>' +
+    '</tr>';
+  }).join('');
+
+  const totalQuantity = items.reduce((s, i) => s + Number(i.quantity || 1), 0);
+
+  const invoiceHtml = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Tax Invoice - ${order.order_id}</title>
+      <style>
+        * { box-sizing: border-box; font-family: 'Helvetica Neue', Arial, sans-serif; color: #1e293b; margin: 0; padding: 0; }
+        body { background: #fff; padding: 30px; font-size: 11px; line-height: 1.4; }
+        .invoice-box { max-width: 800px; margin: auto; }
+        .doc-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #0f172a; margin-bottom: 8px; }
+        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+        .header-table td { vertical-align: top; }
+        .brand-logo { height: 55px; object-fit: contain; }
+        .company-name { font-size: 20px; font-weight: 800; color: #D4AF37; margin-bottom: 2px; }
+        .company-details { font-size: 10px; color: #334155; line-height: 1.35; }
+        .highlight-bar { background: #D4AF37; height: 3px; width: 100%; margin: 8px 0 10px 0; }
+        
+        .meta-strip { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; display: flex; justify-content: space-between; padding: 7px 12px; font-size: 10.5px; margin-bottom: 14px; font-weight: 700; }
+        .meta-strip span { font-weight: 400; color: #475569; }
+
+        .bill-to-section { margin-bottom: 16px; font-size: 11px; }
+        .bill-to-title { font-weight: 800; text-transform: uppercase; font-size: 10px; color: #64748b; margin-bottom: 3px; letter-spacing: 0.5px; }
+        .customer-name { font-size: 13px; font-weight: 800; color: #0f172a; }
+
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+        .items-table th { background: #fff; border-bottom: 2px solid #0f172a; padding: 8px 6px; text-align: left; font-size: 10px; text-transform: uppercase; font-weight: 800; }
+        .items-table td { padding: 9px 6px; border-bottom: 1px solid #e2e8f0; font-size: 10.5px; vertical-align: middle; }
+        .items-table th.right, .items-table td.right { text-align: right; }
+        .items-table th.center, .items-table td.center { text-align: center; }
+
+        .subtotal-row td { font-weight: 800; border-top: 2px solid #D4AF37; border-bottom: 2px solid #D4AF37; padding: 9px 6px; }
+
+        .bottom-section { display: flex; justify-content: space-between; margin-top: 10px; gap: 20px; }
+        .left-col { flex: 1.2; font-size: 10px; }
+        .right-col { flex: 1; text-align: right; font-size: 10.5px; }
+        
+        .calc-table { width: 100%; border-collapse: collapse; }
+        .calc-table td { padding: 4px 0; }
+        .calc-table .total-row { border-top: 1.5px solid #0f172a; border-bottom: 1.5px solid #0f172a; font-size: 12px; font-weight: 800; padding: 6px 0; }
+
+        .words-block { margin-top: 8px; font-size: 10.5px; font-weight: 800; }
+        .sign-box { margin-top: 35px; text-align: right; }
+        .sign-box .sign-title { font-weight: 800; font-size: 9.5px; text-transform: uppercase; color: #0f172a; }
+
+        @media print {
+          body { padding: 15mm; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="invoice-box">
+        <div class="doc-title">TAX INVOICE (ADMIN ARCHIVE COPY)</div>
+
+        <!-- HEADER -->
+        <table class="header-table">
+          <tr>
+            <td style="width: 14%;">
+              <img src="Logo.png" class="brand-logo" onerror="this.style.display='none'" />
+            </td>
+            <td style="width: 86%;">
+              <div class="company-name">ZIVARA MAISON</div>
+              <div class="company-details">
+                Luxury Fashion & Fine Jewelry Atelier, Corporate Avenue, Gurugram, Haryana - 122002<br>
+                <b>Mobile:</b> +91 7079950417 &nbsp;|&nbsp; <b>GSTIN:</b> 06AAACZ1234F1Z5 &nbsp;|&nbsp; <b>PAN:</b> AAACZ1234F<br>
+                <b>Email:</b> info@zivarafashion.online &nbsp;|&nbsp; <b>Website:</b> https://www.zivarafashion.online
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <div class="highlight-bar"></div>
+
+        <!-- META INFORMATION -->
+        <div class="meta-strip">
+          <div>INVOICE NO: <span>INV/${order.order_id.replace('ZIV-ORD-', '')}</span></div>
+          <div>ORDER DATE: <span>${orderDate}</span></div>
+          <div>DELIVERED DATE: <span>${deliveryDate}</span></div>
+        </div>
+
+        <!-- BILL TO -->
+        <div class="bill-to-section">
+          <div class="bill-to-title">BILL TO</div>
+          <div class="customer-name">${order.customer_name || 'Valued Member'}</div>
+          <div><b>Mobile:</b> +91 ${order.customer_phone || 'N/A'}</div>
+          <div><b>Address:</b> ${order.shipping_address || 'No shipping address provided'}</div>
+          <div><b>Payment Mode:</b> ${order.payment_method === 'COD' ? 'Cash on Delivery (COD)' : 'Prepaid (Razorpay / Online Verified)'}</div>
+          <div><b>Status:</b> ${String(order.status || 'placed').toUpperCase()}</div>
+        </div>
+
+        <!-- ITEMS TABLE -->
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th style="width: 50%;">ITEMS & DESCRIPTION</th>
+              <th class="center" style="width: 10%;">QTY.</th>
+              <th class="right" style="width: 15%;">RATE (₹)</th>
+              <th class="right" style="width: 10%;">TAX (18%)</th>
+              <th class="right" style="width: 15%;">AMOUNT (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsRowsHtml}
+            <tr class="subtotal-row">
+              <td>SUBTOTAL</td>
+              <td class="center">${totalQuantity}</td>
+              <td class="right">₹${taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+              <td class="right">₹${totalTax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+              <td class="right">₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- BOTTOM SECTION -->
+        <div class="bottom-section">
+          <div class="left-col">
+            <div style="font-weight: 800; font-size: 10px; margin-bottom: 3px;">TERMS AND CONDITIONS</div>
+            <ol style="padding-left: 14px; color: #475569; font-size: 9.5px; line-height: 1.4;">
+              <li>Eligible luxury items can be requested for return/exchange within 3 days of delivery.</li>
+              <li>Original packaging, security tags, and certificate must remain intact.</li>
+              <li>This is an authentic computer-generated tax invoice verified by Zivara Maison.</li>
+            </ol>
+          </div>
+
+          <div class="right-col">
+            <table class="calc-table">
+              <tr>
+                <td style="color: #475569;">Taxable Amount:</td>
+                <td><b>₹${taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</b></td>
+              </tr>
+              <tr>
+                <td style="color: #475569;">IGST / GST @18%:</td>
+                <td><b>₹${totalTax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</b></td>
+              </tr>
+              <tr class="total-row">
+                <td>Total Amount:</td>
+                <td style="color: #D4AF37;">₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+              </tr>
+            </table>
+
+            <div class="words-block">
+              <span style="font-weight: 400; color: #64748b; font-size: 9.5px; display: block;">Total Amount (in words)</span>
+              ${priceToWordsINR(grandTotal)}
+            </div>
+
+            <div class="sign-box">
+              <div class="sign-title">AUTHORISED SIGNATORY FOR</div>
+              <div style="font-weight: 800; font-size: 11px; color: #D4AF37;">Zivara Maison Pvt. Ltd.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.print();
+        };
+      <\/script>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.open();
+  printWindow.document.write(invoiceHtml);
+  printWindow.document.close();
+};
+
+// ==========================================================
+// ORDERS CONTROLLER (WITH RETURN WINDOW & INVOICE CONTROLS)
+// ==========================================================
+let currentOrderSubTab = 'active';
+const RETURN_PERIOD_DAYS = 3;
 
 window.switchOrderSubTab = function(subTabKey) {
   currentOrderSubTab = subTabKey;
@@ -135,7 +388,7 @@ function checkReturnStatus(order) {
   
   const diffMs = now - deliveredDate;
   const diffHours = diffMs / (1000 * 60 * 60);
-  const totalAllowedHours = RETURN_PERIOD_DAYS * 24; // 72 hours
+  const totalAllowedHours = RETURN_PERIOD_DAYS * 24;
 
   if (diffHours >= totalAllowedHours) {
     return { isDelivered: true, isExpired: true, daysLeft: 0, hoursLeft: 0 };
@@ -199,7 +452,6 @@ function updateOrderBadges() {
 window.filterOrdersTable = function() {
   const q = (document.getElementById('searchOrdersInput')?.value || '').toLowerCase().trim();
 
-  // 1. Filter by Sub-tab
   let subFiltered = cachedOrders.filter(o => {
     const status = (o.status || 'placed').toLowerCase();
     const returnInfo = checkReturnStatus(o);
@@ -213,10 +465,9 @@ window.filterOrdersTable = function() {
     } else if (currentOrderSubTab === 'cancelled') {
       return status === 'cancelled';
     }
-    return true; // 'all'
+    return true;
   });
 
-  // 2. Filter by Search Query
   if (q) {
     subFiltered = subFiltered.filter(o => {
       return [o.order_id, o.customer_name, o.customer_phone, o.customer_email, o.shipping_address, o.shiprocket_order_id, o.awb_code]
@@ -267,7 +518,7 @@ function renderOrdersTable(ordersList) {
           </span>
         </td>
         
-        <!-- SHIPROCKET & TRACKING COLUMN (WITH PUSH / RE-PUSH BUTTON ALWAYS AVAILABLE) -->
+        <!-- SHIPROCKET & TRACKING -->
         <td class="p-3 font-mono text-[11px]">
           ${o.shiprocket_order_id ? `
             <div class="space-y-1">
@@ -281,7 +532,7 @@ function renderOrdersTable(ordersList) {
                 AWB: <span class="text-white font-semibold">${o.awb_code || 'Assigned'}</span>
               </div>
               <button onclick="retryShiprocketOrder('${o.order_id}')" class="px-2 py-1 bg-gold-500/10 hover:bg-gold-500/20 text-gold-400 border border-gold-500/30 rounded text-[9px] font-bold flex items-center gap-1 transition cursor-pointer mt-1">
-                ⚡ Re-Push to Shiprocket
+                ⚡ Re-Push
               </button>
             </div>
           ` : `
@@ -289,14 +540,14 @@ function renderOrdersTable(ordersList) {
               <span class="inline-block px-2 py-0.5 bg-amber-950/80 text-amber-400 border border-amber-500/30 rounded text-[10px] font-semibold">
                 Pending Dispatch
               </span>
-              <button onclick="retryShiprocketOrder('${o.order_id}')" class="px-2.5 py-1.5 bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 rounded-lg text-[10px] font-black uppercase tracking-wider shadow hover:from-gold-400 hover:to-gold-300 flex items-center gap-1 transition cursor-pointer">
+              <button onclick="retryShiprocketOrder('${o.order_id}')" class="block text-[10px] text-gold-400 hover:text-gold-300 underline font-bold transition cursor-pointer">
                 ⚡ Push to Shiprocket
               </button>
             </div>
           `}
         </td>
         
-        <!-- RETURN WINDOW LIFECYCLE BADGE -->
+        <!-- RETURN WINDOW -->
         <td class="p-3">
           ${status === 'delivered' ? (
             returnInfo.isExpired ? `
@@ -318,13 +569,19 @@ function renderOrdersTable(ordersList) {
           `)}
         </td>
 
-        <!-- UPDATE STATUS -->
-        <td class="p-3 text-right">
+        <!-- UPDATE STATUS & DIRECT TAX INVOICE BUTTON -->
+        <td class="p-3 text-right space-y-1.5">
           <select onchange="updateOrderStatus('${o.order_id}', this.value)" class="bg-noir-950 border border-gold-500 text-gold-400 rounded-lg px-2.5 py-1 text-[11px] font-bold cursor-pointer">
             ${['placed', 'paid', 'processing', 'dispatched', 'delivered', 'cancelled'].map(st => `
               <option value="${st}" ${status === st ? 'selected' : ''}>${st.toUpperCase()}</option>
             `).join('')}
           </select>
+          <div>
+            <button onclick="printAdminTaxInvoice('${o.order_id}')" class="px-2.5 py-1 rounded-lg bg-gold-500/10 hover:bg-gold-500/20 text-gold-400 border border-gold-500/30 text-[10px] font-bold transition inline-flex items-center gap-1 cursor-pointer">
+              <i data-lucide="printer" class="w-3 h-3"></i>
+              <span>Tax Invoice</span>
+            </button>
+          </div>
         </td>
       </tr>`;
   }).join('');
@@ -332,25 +589,18 @@ function renderOrdersTable(ordersList) {
   if (window.lucide) window.lucide.createIcons();
 }
 
-// SHIPROCKET DISPATCH TRIGGER
 window.retryShiprocketOrder = async function(orderId) {
   const order = cachedOrders.find(o => o.order_id === orderId);
   if (!order) return;
-
-  if (!confirm(`Do you want to send order [${orderId}] for dispatch via Shiprokt?`)) return;
+  if (!confirm(`Kya aap Order [${orderId}] ko Shiprocket par dispatch ke liye bhejna chahte hain?`)) return;
 
   try {
     const isCod = (order.payment_method === 'COD') || (order.razorpay_payment_id && order.razorpay_payment_id.startsWith('COD'));
     const res = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
-      },
+      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` },
       body: JSON.stringify({ ...order, payment_method: isCod ? "COD" : "Prepaid" })
     });
-
     const data = await res.json();
     if (data.order_id) {
       await db.from('orders').update({
@@ -369,7 +619,6 @@ window.retryShiprocketOrder = async function(orderId) {
   }
 };
 
-// ORDER STATUS UPDATER (WITH delivered_at TIMESTAMP RECORDING)
 window.updateOrderStatus = async function(orderId, newStatus) {
   if (!confirm(`Status '${newStatus.toUpperCase()}' update karein?`)) return fetchOrdersData();
   try {
@@ -394,6 +643,12 @@ window.viewOrderItems = function(orderId) {
 
   document.getElementById('modalOrderTitle').innerText = `Order: ${order.order_id}`;
   document.getElementById('modalOrderSub').innerText = `Customer: ${order.customer_name} | Total: ₹${Number(order.amount).toLocaleString('en-IN')}`;
+  
+  // Link Print Invoice button directly with this order
+  const printBtn = document.getElementById('modalPrintInvoiceBtn');
+  if (printBtn) {
+    printBtn.setAttribute('onclick', `printAdminTaxInvoice('${order.order_id}')`);
+  }
 
   const items = Array.isArray(order.items) ? order.items : [];
   document.getElementById('modalOrderItemsList').innerHTML = items.map(it => `
@@ -421,6 +676,177 @@ window.viewOrderItems = function(orderId) {
 window.closeOrderModal = function() {
   document.getElementById('orderDetailsModalBackdrop').classList.add('hidden');
   document.getElementById('orderDetailsModal').classList.add('hidden');
+};
+
+// ==========================================================
+// COUPONS & DISCOUNTS CONTROLLER (NEW FULL SYSTEM)
+// ==========================================================
+function toggleDiscountTypeLabel() {
+  const type = document.getElementById('couponType').value;
+  const label = document.getElementById('couponValueLabel');
+  if (label) {
+    label.innerText = type === 'percentage' ? 'Discount Percentage (% OFF)' : 'Flat Discount Amount (₹ OFF)';
+  }
+}
+
+async function fetchCouponsData() {
+  if (!db) return;
+  try {
+    const { data: coupons, error } = await db.from('coupons').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.warn("Coupons fetch error:", error.message);
+      return;
+    }
+
+    cachedCoupons = coupons || [];
+    const activeCoupons = cachedCoupons.filter(c => c.is_active !== false);
+    const badgeEl = document.getElementById('statTotalCoupons');
+    if (badgeEl) badgeEl.innerText = activeCoupons.length;
+
+    renderCouponsTable(cachedCoupons);
+  } catch (err) {
+    console.warn("Coupons error:", err);
+  }
+}
+
+function renderCouponsTable(list) {
+  const tbody = document.getElementById('couponsTableBody');
+  if (!list || list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">No promo coupons published yet. Create one above!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(c => {
+    const expiryStr = c.expiry_date ? new Date(c.expiry_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Never';
+    const isExpired = c.expiry_date && new Date(c.expiry_date) < new Date();
+    const discountDisplay = c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} FLAT`;
+
+    return `
+      <tr class="hover:bg-noir-950/40 transition">
+        <td class="p-3">
+          <div class="font-mono font-bold text-gold-400 text-sm tracking-wider uppercase">${c.code}</div>
+          <div class="text-[10px] text-slate-500">Created: ${new Date(c.created_at).toLocaleDateString('en-IN')}</div>
+        </td>
+        <td class="p-3">
+          <span class="inline-block px-2 py-0.5 bg-gold-500/10 border border-gold-500/30 text-gold-400 rounded-md font-bold text-xs font-mono">
+            ${discountDisplay}
+          </span>
+        </td>
+        <td class="p-3 text-[11px] text-slate-300">
+          <div>Min Order: <b class="text-white">₹${c.min_order_amount || 0}</b></div>
+          ${c.max_discount ? `<div class="text-slate-400 text-[10px]">Max Cap: ₹${c.max_discount}</div>` : ''}
+        </td>
+        <td class="p-3 font-mono text-[11px]">
+          <span class="text-white font-bold">${c.times_used || 0}</span> / ${c.usage_limit || '∞'} used
+        </td>
+        <td class="p-3 text-[11px] font-mono ${isExpired ? 'text-rose-400 font-bold' : 'text-slate-300'}">
+          ${expiryStr} ${isExpired ? '(Expired)' : ''}
+        </td>
+        <td class="p-3">
+          <button onclick="toggleCouponStatus(${c.id}, ${c.is_active})" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${c.is_active ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'}">
+            ${c.is_active ? 'Active' : 'Disabled'}
+          </button>
+        </td>
+        <td class="p-3 text-right">
+          <button onclick="startEditCoupon(${c.id})" class="text-gold-400 p-1.5 mr-1 hover:text-gold-300 cursor-pointer" title="Edit Coupon">
+            <i data-lucide="edit" class="w-4 h-4"></i>
+          </button>
+          <button onclick="deleteCoupon(${c.id})" class="text-rose-400 p-1.5 hover:text-rose-300 cursor-pointer" title="Delete Coupon">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+async function handleCreateOrUpdateCoupon(e) {
+  e.preventDefault();
+  const editId = document.getElementById('editCouponId').value;
+  const btn = document.getElementById('couponSubmitBtn');
+  const btnText = document.getElementById('couponSubmitBtnText');
+
+  const payload = {
+    code: document.getElementById('couponCode').value.trim().toUpperCase(),
+    discount_type: document.getElementById('couponType').value,
+    discount_value: parseFloat(document.getElementById('couponValue').value),
+    min_order_amount: parseFloat(document.getElementById('couponMinOrder').value) || 0,
+    max_discount: document.getElementById('couponMaxDiscount').value ? parseFloat(document.getElementById('couponMaxDiscount').value) : null,
+    expiry_date: document.getElementById('couponExpiry').value || null,
+    usage_limit: parseInt(document.getElementById('couponUsageLimit').value, 10) || 100,
+    is_active: document.getElementById('couponActive').checked
+  };
+
+  btn.disabled = true;
+  btnText.innerText = "Saving Coupon...";
+
+  try {
+    if (editId) {
+      const { error } = await db.from('coupons').update(payload).eq('id', editId);
+      if (error) throw error;
+      alert(`✅ Coupon [${payload.code}] updated!`);
+    } else {
+      const { error } = await db.from('coupons').insert([payload]);
+      if (error) throw error;
+      alert(`✅ Coupon [${payload.code}] published successfully!`);
+    }
+
+    resetCouponForm();
+    fetchCouponsData();
+  } catch (err) {
+    alert("❌ Error: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btnText.innerText = editId ? "Update Coupon Code" : "Publish Coupon Code";
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
+window.startEditCoupon = function(id) {
+  const item = cachedCoupons.find(c => c.id === id);
+  if (!item) return;
+
+  document.getElementById('editCouponId').value = item.id;
+  document.getElementById('couponCode').value = item.code || '';
+  document.getElementById('couponType').value = item.discount_type || 'percentage';
+  document.getElementById('couponValue').value = item.discount_value || '';
+  document.getElementById('couponMinOrder').value = item.min_order_amount || 0;
+  document.getElementById('couponMaxDiscount').value = item.max_discount || '';
+  document.getElementById('couponExpiry').value = item.expiry_date || '';
+  document.getElementById('couponUsageLimit').value = item.usage_limit || 100;
+  document.getElementById('couponActive').checked = item.is_active !== false;
+
+  toggleDiscountTypeLabel();
+
+  document.getElementById('couponFormHeading').innerHTML = `<i data-lucide="edit" class="w-4 h-4 text-gold-400"></i> Edit Coupon: ${item.code}`;
+  document.getElementById('couponSubmitBtnText').innerText = "Update Coupon Code";
+  document.getElementById('cancelCouponEditBtn').classList.remove('hidden');
+
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.resetCouponForm = function() {
+  document.getElementById('couponMasterForm').reset();
+  document.getElementById('editCouponId').value = "";
+  document.getElementById('couponActive').checked = true;
+  document.getElementById('couponFormHeading').innerHTML = `<i data-lucide="tag" class="w-4 h-4"></i> Create Promotional Coupon Code`;
+  document.getElementById('couponSubmitBtnText').innerText = "Publish Coupon Code";
+  document.getElementById('cancelCouponEditBtn').classList.add('hidden');
+  toggleDiscountTypeLabel();
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.toggleCouponStatus = async function(id, currentStatus) {
+  await db.from('coupons').update({ is_active: !currentStatus }).eq('id', id);
+  fetchCouponsData();
+};
+
+window.deleteCoupon = async function(id) {
+  if (!confirm("Kya aap sach me ye coupon delete karna chahte hain?")) return;
+  await db.from('coupons').delete().eq('id', id);
+  fetchCouponsData();
 };
 
 // ==========================================================
