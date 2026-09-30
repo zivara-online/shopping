@@ -250,7 +250,7 @@ window.printAdminTaxInvoice = function(orderId) {
               <img src="Logo.png" class="brand-logo" onerror="this.style.display='none'" />
             </td>
             <td style="width: 86%;">
-              <div class="company-name">ZIVARA MAISON</div>
+              <div class="company-name">ZIVARA FASHION</div>
               <div class="company-details">
                  Ground Floor, 447 E , Khata no. 11 Plot No. 757, Dhori Basti Sottardih, Ram Ratan-, Bokaro, Jharkhand- 825102 <br>
                 <b>Mobile:</b> +91 8757875033 &nbsp;|&nbsp; <b>GSTIN:</b> 20EXRPK4999G1ZV &nbsp;|&nbsp; <b>PAN:</b> 0EXRPK4999G<br>
