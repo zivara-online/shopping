@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zivara - Fashion • Style • You </title>
+  <title>Zivara Privé - Member Portal</title>
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D4AF37'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
 
@@ -570,7 +570,7 @@
                     <tr>
                       <td>
                         <b>${it.title || 'Product'}</b>
-                        <div style="font-size: 9px; color: #64748b; font-family: monospace;">SKU: ${it.product_code \vert{}\vert{} 'ZIV'}${it.size ? `| Size: ${it.size}` : ''} ${it.color ? `| Color: ${it.color}` : ''}</div>
+                        <div style="font-size: 9px; color: #64748b; font-family: monospace;">SKU: ${it.product_code || 'ZIV'} ${it.size ? '\vert{} Size: ' + it.size : ''} ${it.color ? '| Color: ' + it.color : ''}</div>
                       </td>
                       <td class="center">${it.quantity || 1} EACH</td>
                       <td class="right">${itemBase.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
@@ -663,7 +663,7 @@
             return;
           }
         } catch (e) {
-          console.warn(e);
+          console.warn("Session fetch warning:", e);
         }
       }
 
@@ -755,6 +755,9 @@
         const isDelivered = (order.status || '').toLowerCase() === 'delivered';
         const isCod = (order.payment_method === 'COD') || (order.razorpay_payment_id && order.razorpay_payment_id.startsWith('COD'));
 
+        const sizeBadge = firstItem.size ? `<span class="text-[9px] px-1.5 py-0.5 bg-noir-900 border border-gold-500/20 text-slate-300 rounded font-mono">Size: ${firstItem.size}</span>` : '';
+        const colorBadge = firstItem.color ? `<span class="text-[9px] px-1.5 py-0.5 bg-gold-500/10 border border-gold-500/30 text-gold-400 rounded font-mono font-bold">Color: ${firstItem.color}</span>` : '';
+
         return `
           <div class="bg-noir-950 border ${isDelivered ? 'border-emerald-500/30' : 'border-gold-500/25'} p-4 sm:p-5 rounded-2xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-gold-400/50 transition">
             
@@ -777,12 +780,12 @@
                   `}
                 </div>
 
-                <h4 class="font-semibold text-white text-xs sm:text-sm line-clamp-1">${firstItem.title || 'Luxury Piece'} ${items.length > 1 ? `(+${items.length - 1} more items)` : ''}</h4>
+                <h4 class="font-semibold text-white text-xs sm:text-sm line-clamp-1">${firstItem.title || 'Luxury Piece'} ${items.length > 1 ? '(+' + (items.length - 1) + ' more items)' : ''}</h4>
                 
                 <div class="flex flex-wrap items-center gap-2 pt-0.5">
                   <span class="text-xs font-bold text-white font-mono">₹${Number(order.amount).toLocaleString('en-IN')}</span>
-                  ${firstItem.size ? `<span class="text-[9px] px-1.5 py-0.5 bg-noir-900 border border-gold-500/20 text-slate-300 rounded font-mono">Size: ${firstItem.size}</span>` : ''}
-                  ${firstItem.color ? `<span class="text-[9px] px-1.5 py-0.5 bg-gold-500/10 border border-gold-500/30 text-gold-400 rounded font-mono font-bold">Color: ${firstItem.color}</span>` : ''}
+                  ${sizeBadge}
+                  ${colorBadge}
                 </div>
 
                 <div class="pt-1 flex items-center gap-1.5 text-[11px] font-semibold ${isDelivered ? 'text-emerald-400' : 'text-gold-400'}">
@@ -887,25 +890,30 @@
 
       // Items list with individual specs
       const items = Array.isArray(order.items) ? order.items : [];
-      document.getElementById('modalUserOrderItemsList').innerHTML = items.map(it => `
-        <div class="flex items-center gap-4 pt-3">
-          <img src="${it.thumbnail_url || it.image || 'Cover.png'}" class="w-14 h-16 object-cover rounded-xl bg-noir-900 border border-gold-500/30 shrink-0 shadow-md" onerror="this.src='Cover.png'" />
-          <div class="flex-1 space-y-1">
-            <h5 class="font-semibold text-white text-xs leading-snug">${it.title}</h5>
-            
-            <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
-              <span class="text-slate-400">SKU: <b class="text-slate-200">${it.product_code || 'ZIV'}</b></span>
-              ${it.size ? `<span class="px-2 py-0.5 bg-noir-950 border border-gold-500/20 text-gold-300 rounded font-bold">Size: ${it.size}</span>` : ''}
-              ${it.color ? `<span class="px-2 py-0.5 bg-gold-500/10 border border-gold-500/40 text-gold-400 rounded font-bold">Color: ${it.color}</span>` : ''}
-            </div>
+      document.getElementById('modalUserOrderItemsList').innerHTML = items.map(it => {
+        const itemSize = it.size ? `<span class="px-2 py-0.5 bg-noir-950 border border-gold-500/20 text-gold-300 rounded font-bold">Size: ${it.size}</span>` : '';
+        const itemColor = it.color ? `<span class="px-2 py-0.5 bg-gold-500/10 border border-gold-500/40 text-gold-400 rounded font-bold">Color: ${it.color}</span>` : '';
 
-            <div class="text-xs font-bold text-white pt-0.5">
-              <span class="text-gold-400">₹${Number(it.price).toLocaleString('en-IN')}</span> 
-              <span class="text-slate-400 font-normal">× ${it.quantity || 1} units</span>
+        return `
+          <div class="flex items-center gap-4 pt-3">
+            <img src="${it.thumbnail_url || it.image || 'Cover.png'}" class="w-14 h-16 object-cover rounded-xl bg-noir-900 border border-gold-500/30 shrink-0 shadow-md" onerror="this.src='Cover.png'" />
+            <div class="flex-1 space-y-1">
+              <h5 class="font-semibold text-white text-xs leading-snug">${it.title}</h5>
+              
+              <div class="flex flex-wrap items-center gap-2 text-[10px] font-mono">
+                <span class="text-slate-400">SKU: <b class="text-slate-200">${it.product_code || 'ZIV'}</b></span>
+                ${itemSize}
+                ${itemColor}
+              </div>
+
+              <div class="text-xs font-bold text-white pt-0.5">
+                <span class="text-gold-400">₹${Number(it.price).toLocaleString('en-IN')}</span> 
+                <span class="text-slate-400 font-normal">× ${it.quantity || 1} units</span>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       document.getElementById('userOrderDetailsModalBackdrop').classList.remove('hidden');
       document.getElementById('userOrderDetailsModal').classList.remove('hidden');
@@ -998,7 +1006,7 @@
       window.location.href = 'index.html';
     }
 
-    // 5. MOBILE OTP FLOW
+    // 5. MOBILE OTP FLOW (APITXT GATEWAY)
     const APITXT_AUTH_KEY = "LPMrbgj8eeTbv7a7tjIMTE1q_Z0tif-1BxwdAV_fn3I";
 
     otpInputs.forEach((input, index) => {
