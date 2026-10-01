@@ -1,8 +1,10 @@
 [{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "online.zivarafashion.www.twa",
-        "sha256_cert_fingerprints": ["2A:35:4C:67:D1:76:8A:23:D0:4C:AD:F4:7E:D6:EC:C1:E4:FB:3B:FE:DE:B1:61:FD:55:3F:3A:28:99:13:B4:4D"]
-      }
-    }]
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "online.zivarafashion.app",
+    "sha256_cert_fingerprints": [
+      "2A:35:4C:67:D1:76:8A:23:D0:4C:AD:F4:7E:D6:EC:C1:E4:FB:3B:FE:DE:B1:61:FD:55:3F:3A:28:99:13:B4:4D"
+    ]
+  }
+}]
