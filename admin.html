@@ -78,7 +78,7 @@
 
     /* 2. Order Sub-Tabs (.order-subtab-btn) - FIXED FAINT TEXT */
     .order-subtab-btn {
-      color: #0f172a !important; /* Bold deep slate for full visibility */
+      color: #0f172a !important;
       font-weight: 700 !important;
       background-color: #ffffff !important;
       border: 1.5px solid #cbd5e1 !important;
@@ -88,12 +88,10 @@
       background-color: #f1f5f9 !important;
       border-color: #94a3b8 !important;
     }
-    /* Icons inside sub-tabs */
     .order-subtab-btn svg,
     .order-subtab-btn i {
       stroke-width: 2.5px !important;
     }
-    /* Active sub-tab styling */
     .order-subtab-btn.bg-gold-500,
     .order-subtab-btn.bg-sap-600 {
       background-color: #0854a0 !important;
@@ -125,7 +123,7 @@
 
     /* 4. Table Body & Cell High Contrast Overrides */
     table tbody td {
-      color: #0f172a !important; /* Dark solid text */
+      color: #0f172a !important;
       font-weight: 600 !important;
       font-size: 12px !important;
     }
@@ -139,7 +137,7 @@
     table tbody td .text-slate-500,
     table tbody td .text-gray-400,
     table tbody td .text-gray-500 {
-      color: #334155 !important; /* Sharp readable medium slate */
+      color: #334155 !important;
       font-weight: 600 !important;
     }
     table thead th {
@@ -158,18 +156,15 @@
       color: #64748b !important;
       font-weight: 500 !important;
     }
-    /* =========================================================================
-       ORDER TABLE BADGES, DROPDOWNS & BUTTONS HIGH CONTRAST (SAP STYLE)
-       ========================================================================= */
 
-    /* 1. Shiprocket Badges & Timer Badges (SR ID, 9h Left) */
+    /* Shiprocket Badges & Status */
     table tbody td [class*="bg-emerald-950"],
     table tbody td [class*="bg-green-950"],
     table tbody td [class*="bg-black"],
     table tbody td [class*="bg-slate-900"],
     table tbody td [class*="bg-noir"] {
-      background-color: #064e3b !important; /* Rich Dark Green */
-      color: #ffffff !important;           /* Pure White readable text */
+      background-color: #064e3b !important;
+      color: #ffffff !important;
       font-weight: 700 !important;
       border: 1px solid #047857 !important;
     }
@@ -178,16 +173,14 @@
       color: #ffffff !important;
     }
 
-    /* Timer / Return window pill */
     table tbody td span[class*="text-emerald"],
     table tbody td div[class*="text-emerald"] {
       font-weight: 700 !important;
     }
 
-    /* 2. Status Select Dropdown (e.g. DELIVERED) */
     table tbody td select {
       background-color: #ffffff !important;
-      color: #047857 !important;          /* Sharp Green for Delivered */
+      color: #047857 !important;
       border: 1.5px solid #10b981 !important;
       font-weight: 800 !important;
       padding: 6px 12px !important;
@@ -195,11 +188,10 @@
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
     }
 
-    /* 3. Tax Invoice & Action Buttons */
     table tbody td button,
     table tbody td a[class*="border"] {
       background-color: #f8fafc !important;
-      color: #0f172a !important;          /* Dark visible text */
+      color: #0f172a !important;
       border: 1.5px solid #cbd5e1 !important;
       font-weight: 700 !important;
       border-radius: 8px !important;
@@ -223,18 +215,16 @@
       stroke: #ffffff !important;
     }
 
-    /* 4. COD & Payment Badges */
     table tbody td span[class*="COD"],
     table tbody td div:has(> span:contains("COD")),
     table tbody td [class*="amber"],
     table tbody td [class*="yellow"] {
-      background-color: #fef3c7 !important; /* Soft Amber Background */
-      color: #92400e !important;          /* Deep Amber Dark Text */
+      background-color: #fef3c7 !important;
+      color: #92400e !important;
       font-weight: 800 !important;
       border: 1px solid #fcd34d !important;
     }
 
-    /* 5. Item Count Tag (1 Item(s)) */
     table tbody td span:has(svg),
     table tbody td span[class*="text-gold"] {
       color: #0f172a !important;
@@ -467,7 +457,7 @@
         <form id="couponMasterForm" onsubmit="handleCreateOrUpdateCoupon(event)" class="space-y-4 text-xs">
           <input type="hidden" id="editCouponId" value="" />
 
-<!-- COUPON FORM INPUTS -->
+          <!-- COUPON BASIC & CATEGORY ROW -->
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div>
               <label class="block text-slate-800 mb-1 font-bold">Coupon Code (Promo Code)</label>
@@ -489,10 +479,6 @@
               <select id="couponApplicableMenu" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-bold focus:bg-white focus:border-sap-500">
                 <option value="all">🌟 All Store Products</option>
               </select>
-            </div>
-          </div>
-              <label id="couponValueLabel" class="block text-slate-800 mb-1 font-bold">Discount Value (% or ₹)</label>
-              <input type="number" id="couponValue" required step="0.1" min="1" placeholder="e.g. 20" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-bold focus:bg-white focus:border-sap-500" />
             </div>
           </div>
 
@@ -532,7 +518,7 @@
         <div class="flex items-center justify-between border-b border-slate-200 pb-3">
           <div>
             <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Active Promotional Coupons</h3>
-            <p class="text-xs text-slate-600 font-medium">Control active discount codes, usage count and validity</p>
+            <p class="text-xs text-slate-600 font-medium">Control active discount codes, category scoping, usage count and validity</p>
           </div>
           <button onclick="fetchCouponsData()" class="text-xs text-sap-700 hover:text-sap-900 font-bold flex items-center gap-1">
             <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
@@ -543,7 +529,7 @@
           <table class="w-full text-left text-xs border-collapse">
             <thead>
               <tr class="bg-slate-100 border-b border-slate-300 text-slate-800 font-bold uppercase tracking-wider text-[11px]">
-                <th class="p-3">Coupon Code</th>
+                <th class="p-3">Coupon Code & Scope</th>
                 <th class="p-3">Discount</th>
                 <th class="p-3">Conditions</th>
                 <th class="p-3">Usage</th>
