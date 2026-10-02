@@ -10,47 +10,30 @@ const ONESIGNAL_REST_KEY = "os_v2_app_..."; // <-- Yahan apni OneSignal REST API
 
 async function sendBroadcastNotification(title, message, imageUrl = "", targetUrl = "https://www.zivarafashion.online") {
   try {
-    console.log("🚀 Triggering OneSignal Broadcast...", { title, message });
-
-    if (!ONESIGNAL_REST_KEY || ONESIGNAL_REST_KEY === "REST_API_KEY_YAHAN_DAALEIN") {
-      alert("⚠️ OneSignal REST API Key missing hai! admin.js me key paste karein.");
-      return;
-    }
+    console.log("🚀 Triggering Broadcast Notification...", { title, message });
 
     const payload = {
-      app_id: ONESIGNAL_APP_ID,
-      included_segments: ["Total Subscriptions"],
-      headings: { en: title },
-      contents: { en: message },
-      url: targetUrl,
-      chrome_web_icon: "https://www.zivarafashion.online/Logo.png"
+      action: "send_push_notification",
+      title: title,
+      message: message,
+      image_url: imageUrl,
+      target_url: targetUrl
     };
 
-    if (imageUrl) {
-      payload.chrome_web_image = imageUrl;
-      payload.big_picture = imageUrl;
-    }
-
-    const res = await fetch("https://onesignal.com/api/v1/notifications", {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Authorization": `Key ${ONESIGNAL_REST_KEY}` // Note: V2 keys use 'Key', purani V1 keys use 'Basic'
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify(payload)
     });
 
     const result = await res.json();
-    console.log("📢 OneSignal Response:", result);
-
-    if (result.errors) {
-      alert("OneSignal Error: " + JSON.stringify(result.errors));
-    } else {
-      console.log(`✅ Push Sent! Recipients: ${result.recipients || 0}`);
-    }
+    console.log("📢 Push Function Response:", result);
   } catch (err) {
-    console.error("❌ OneSignal Push Error:", err);
-    alert("OneSignal request failed: " + err.message);
+    console.error("❌ Notification Relay Error:", err);
   }
 }
 
