@@ -46,45 +46,117 @@
       box-shadow: 0 0 0 3px rgba(10, 110, 209, 0.22);
     }
 
-    /* HIGH-CONTRAST DATA VISIBILITY OVERRIDES (Solves faint/invisible text permanently) */
-    table tbody td {
-      color: #0f172a !important; /* Rich Dark Slate for all table values */
-      font-weight: 500 !important;
+    /* =========================================================================
+       100% BULLETPROOF VISIBILITY OVERRIDES (Fixes all washed-out / faint text)
+       ========================================================================= */
+
+    /* 1. Main Navigation Tabs (.tab-btn) */
+    .tab-btn {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+      background-color: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
-    table tbody td span:not([class*="bg-"]):not([class*="badge"]),
+    .tab-btn:hover {
+      background-color: #f8fafc !important;
+      color: #0854a0 !important;
+      border-color: #94a3b8 !important;
+    }
+    /* Active Main Tab */
+    .tab-btn.bg-sap-600,
+    .tab-btn.bg-gold-500 {
+      background-color: #0854a0 !important;
+      color: #ffffff !important;
+      border-color: #06407c !important;
+      box-shadow: 0 2px 4px rgba(8, 84, 160, 0.25) !important;
+    }
+    .tab-btn.bg-sap-600 * ,
+    .tab-btn.bg-gold-500 * {
+      color: #ffffff !important;
+    }
+
+    /* 2. Order Sub-Tabs (.order-subtab-btn) - FIXED FAINT TEXT */
+    .order-subtab-btn {
+      color: #0f172a !important; /* Bold deep slate for full visibility */
+      font-weight: 700 !important;
+      background-color: #ffffff !important;
+      border: 1.5px solid #cbd5e1 !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .order-subtab-btn:hover {
+      background-color: #f1f5f9 !important;
+      border-color: #94a3b8 !important;
+    }
+    /* Icons inside sub-tabs */
+    .order-subtab-btn svg,
+    .order-subtab-btn i {
+      stroke-width: 2.5px !important;
+    }
+    /* Active sub-tab styling */
+    .order-subtab-btn.bg-gold-500,
+    .order-subtab-btn.bg-sap-600 {
+      background-color: #0854a0 !important;
+      color: #ffffff !important;
+      border-color: #06407c !important;
+      box-shadow: 0 2px 4px rgba(8, 84, 160, 0.25) !important;
+    }
+    .order-subtab-btn.bg-gold-500 *,
+    .order-subtab-btn.bg-sap-600 * {
+      color: #ffffff !important;
+    }
+
+    /* 3. Sub-tab Badges (Counter pills) */
+    .order-subtab-btn span[id^="badge-"] {
+      font-weight: 800 !important;
+      font-size: 11px !important;
+      padding: 1px 7px !important;
+      border-radius: 9999px !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      background-color: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    .order-subtab-btn.bg-gold-500 span[id^="badge-"],
+    .order-subtab-btn.bg-sap-600 span[id^="badge-"] {
+      background-color: #ffffff !important;
+      color: #0854a0 !important;
+      border: none !important;
+    }
+
+    /* 4. Table Body & Cell High Contrast Overrides */
+    table tbody td {
+      color: #0f172a !important; /* Dark solid text */
+      font-weight: 600 !important;
+      font-size: 12px !important;
+    }
+    table tbody td span,
     table tbody td p,
-    table tbody td div {
-      color: #1e293b !important;
+    table tbody td div,
+    table tbody td strong {
+      color: #0f172a !important;
     }
     table tbody td .text-slate-400,
     table tbody td .text-slate-500,
     table tbody td .text-gray-400,
     table tbody td .text-gray-500 {
-      color: #475569 !important; /* High-contrast readable gray for subtitles/dates */
-      font-weight: 500 !important;
+      color: #334155 !important; /* Sharp readable medium slate */
+      font-weight: 600 !important;
     }
     table thead th {
-      color: #0f172a !important; /* Bold headers */
-      font-weight: 700 !important;
+      color: #0f172a !important;
+      font-weight: 800 !important;
     }
-    /* Tab Buttons high contrast when inactive */
-    .tab-btn:not(.bg-sap-600) {
-      color: #1e293b !important;
-      font-weight: 600 !important;
-      background-color: #ffffff !important;
-      border: 1px solid #cbd5e1 !important;
-    }
-    .tab-btn:not(.bg-sap-600):hover {
-      background-color: #f1f5f9 !important;
-      color: #0854a0 !important;
-    }
-    /* Input Search visibility */
+
+    /* 5. Inputs & Search Visibility */
     #searchOrdersInput, #searchUsersInput, #searchInventoryInput {
       color: #0f172a !important;
-      font-weight: 500 !important;
+      font-weight: 600 !important;
     }
-    #searchOrdersInput::placeholder, #searchUsersInput::placeholder, #searchInventoryInput::placeholder {
+    #searchOrdersInput::placeholder, 
+    #searchUsersInput::placeholder, 
+    #searchInventoryInput::placeholder {
       color: #64748b !important;
+      font-weight: 500 !important;
     }
   </style>
 </head>
@@ -190,7 +262,7 @@
       </div>
     </div>
 
-    <!-- TABS BAR (SAP FIORI SEGMENTED BAR WITH HIGH CONTRAST) -->
+    <!-- TABS BAR (SAP FIORI SEGMENTED BAR) -->
     <div class="flex items-center gap-2 overflow-x-auto p-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold shadow-inner">
       <button onclick="switchAdminTab('orders')" id="tabBtn-orders" class="tab-btn px-4 py-2.5 rounded-lg bg-sap-600 text-white font-bold transition flex items-center gap-2 shrink-0 shadow">
         <i data-lucide="shopping-cart" class="w-4 h-4"></i> Orders Summary
@@ -255,19 +327,19 @@
             <i data-lucide="truck" class="w-3.5 h-3.5"></i> Active Dispatches <span id="badge-active" class="px-1.5 py-0.2 bg-white/20 text-white rounded-full text-[10px]">0</span>
           </button>
           
-          <button onclick="switchOrderSubTab('delivered_active')" id="subTabBtn-delivered_active" class="order-subtab-btn px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-800 hover:bg-slate-200 transition flex items-center gap-1.5 shrink-0">
+          <button onclick="switchOrderSubTab('delivered_active')" id="subTabBtn-delivered_active" class="order-subtab-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-700"></i> Delivered (Return Active) <span id="badge-delivered_active" class="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold">0</span>
           </button>
 
-          <button onclick="switchOrderSubTab('archived')" id="subTabBtn-archived" class="order-subtab-btn px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-800 hover:bg-slate-200 transition flex items-center gap-1.5 shrink-0">
+          <button onclick="switchOrderSubTab('archived')" id="subTabBtn-archived" class="order-subtab-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="archive" class="w-3.5 h-3.5 text-amber-700"></i> Archived (Return Expired) <span id="badge-archived" class="px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded-full text-[10px] font-bold">0</span>
           </button>
 
-          <button onclick="switchOrderSubTab('cancelled')" id="subTabBtn-cancelled" class="order-subtab-btn px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-800 hover:bg-slate-200 transition flex items-center gap-1.5 shrink-0">
+          <button onclick="switchOrderSubTab('cancelled')" id="subTabBtn-cancelled" class="order-subtab-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-700"></i> Cancelled Orders <span id="badge-cancelled" class="px-1.5 py-0.2 bg-rose-100 text-rose-800 rounded-full text-[10px] font-bold">0</span>
           </button>
 
-          <button onclick="switchOrderSubTab('all')" id="subTabBtn-all" class="order-subtab-btn px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-800 hover:bg-slate-200 transition flex items-center gap-1.5 shrink-0">
+          <button onclick="switchOrderSubTab('all')" id="subTabBtn-all" class="order-subtab-btn px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 transition flex items-center gap-1.5 shrink-0">
             <i data-lucide="list" class="w-3.5 h-3.5 text-slate-700"></i> All Orders <span id="badge-all" class="px-1.5 py-0.2 bg-slate-200 text-slate-800 rounded-full text-[10px] font-bold">0</span>
           </button>
         </div>
