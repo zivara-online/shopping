@@ -2,6 +2,43 @@ const SUPABASE_URL = "https://ybybvetysdqpfbvfznoq.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlieWJ2ZXR5c2RxcGZidmZ6bm9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODkyNDAsImV4cCI6MjEwNDg2NTI0MH0.wipbN28UaIRdiqwdoIMnmXeagXB1vKvS7B8quvlgcLo";
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+// ==========================================================
+// ONESIGNAL PUSH NOTIFICATION TRIGGER ENGINE
+// ==========================================================
+const ONESIGNAL_APP_ID = "724a8d07-873c-418e-b7e3-b7059c922db2";
+const ONESIGNAL_REST_KEY = "724a8d07-873c-418e-b7e3-b7059c922db2"; // OneSignal -> Keys & IDs se copy ki hui REST API key yahan paste karein
+
+async function sendBroadcastNotification(title, message, imageUrl = "", targetUrl = "https://www.zivarafashion.online") {
+  try {
+    const payload = {
+      app_id: ONESIGNAL_APP_ID,
+      included_segments: ["Total Subscriptions"],
+      headings: { en: title },
+      contents: { en: message },
+      url: targetUrl,
+      chrome_web_icon: "https://www.zivarafashion.online/Logo.png"
+    };
+
+    if (imageUrl) {
+      payload.chrome_web_image = imageUrl;
+      payload.big_picture = imageUrl;
+    }
+
+    const res = await fetch("https://onesignal.com/api/v1/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": `Basic ${ONESIGNAL_REST_KEY}`
+      },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    console.log("Push Notification Result:", result);
+  } catch (err) {
+    console.error("OneSignal push error:", err);
+  }
+}
+
 let cachedHierarchy = [];
 let cachedProducts = [];
 let cachedOrders = [];
@@ -644,7 +681,6 @@ window.viewOrderItems = function(orderId) {
   document.getElementById('modalOrderTitle').innerText = `Order: ${order.order_id}`;
   document.getElementById('modalOrderSub').innerText = `Customer: ${order.customer_name} | Total: ₹${Number(order.amount).toLocaleString('en-IN')}`;
   
-  // Link Print Invoice button directly with this order
   const printBtn = document.getElementById('modalPrintInvoiceBtn');
   if (printBtn) {
     printBtn.setAttribute('onclick', `printAdminTaxInvoice('${order.order_id}')`);
@@ -679,7 +715,7 @@ window.closeOrderModal = function() {
 };
 
 // ==========================================================
-// COUPONS & DISCOUNTS CONTROLLER (NEW FULL SYSTEM)
+// COUPONS & DISCOUNTS CONTROLLER
 // ==========================================================
 function toggleDiscountTypeLabel() {
   const type = document.getElementById('couponType').value;
@@ -791,6 +827,14 @@ async function handleCreateOrUpdateCoupon(e) {
       const { error } = await db.from('coupons').insert([payload]);
       if (error) throw error;
       alert(`✅ Coupon [${payload.code}] published successfully!`);
+
+      // BROADCAST NOTIFICATION FOR NEW COUPON
+      const discText = payload.discount_type === 'percentage' ? `${payload.discount_value}% OFF` : `Flat ₹${payload.discount_value} OFF`;
+      sendBroadcastNotification(
+        `🎁 Exclusive Offer: Use Code ${payload.code}!`,
+        `Unlock ${discText} on your next order! Limited period offer. Tap to shop now.`,
+        ""
+      );
     }
 
     resetCouponForm();
@@ -1295,6 +1339,13 @@ async function handleCreateOrUpdateProduct(e) {
       payload.product_id = product_id;
       await db.from('products').insert([payload]);
       alert(`Product published!`);
+
+      // BROADCAST NOTIFICATION FOR NEW PRODUCT
+      sendBroadcastNotification(
+        "✨ New Arrival at Zivara!",
+        `${payload.title} is now live starting at ₹${payload.price.toLocaleString('en-IN')}. Tap to explore now!`,
+        payload.thumbnail_url
+      );
     }
 
     resetProductFormToCreate();
