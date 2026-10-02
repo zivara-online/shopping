@@ -158,6 +158,92 @@
       color: #64748b !important;
       font-weight: 500 !important;
     }
+    /* =========================================================================
+       ORDER TABLE BADGES, DROPDOWNS & BUTTONS HIGH CONTRAST (SAP STYLE)
+       ========================================================================= */
+
+    /* 1. Shiprocket Badges & Timer Badges (SR ID, 9h Left) */
+    table tbody td [class*="bg-emerald-950"],
+    table tbody td [class*="bg-green-950"],
+    table tbody td [class*="bg-black"],
+    table tbody td [class*="bg-slate-900"],
+    table tbody td [class*="bg-noir"] {
+      background-color: #064e3b !important; /* Rich Dark Green */
+      color: #ffffff !important;           /* Pure White readable text */
+      font-weight: 700 !important;
+      border: 1px solid #047857 !important;
+    }
+    table tbody td [class*="bg-emerald-950"] *,
+    table tbody td [class*="bg-green-950"] * {
+      color: #ffffff !important;
+    }
+
+    /* Timer / Return window pill */
+    table tbody td span[class*="text-emerald"],
+    table tbody td div[class*="text-emerald"] {
+      color: #047857 !important;
+      font-weight: 700 !important;
+    }
+
+    /* 2. Status Select Dropdown (e.g. DELIVERED) */
+    table tbody td select {
+      background-color: #ffffff !important;
+      color: #047857 !important;          /* Sharp Green for Delivered */
+      border: 1.5px solid #10b981 !important;
+      font-weight: 800 !important;
+      padding: 6px 12px !important;
+      border-radius: 8px !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* 3. Tax Invoice & Action Buttons */
+    table tbody td button,
+    table tbody td a[class*="border"] {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;          /* Dark visible text */
+      border: 1.5px solid #cbd5e1 !important;
+      font-weight: 700 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    }
+    table tbody td button:hover {
+      background-color: #0854a0 !important;
+      color: #ffffff !important;
+      border-color: #06407c !important;
+    }
+    table tbody td button:hover * {
+      color: #ffffff !important;
+    }
+    table tbody td button svg,
+    table tbody td button i {
+      stroke: #0f172a !important;
+      stroke-width: 2.2px !important;
+    }
+    table tbody td button:hover svg,
+    table tbody td button:hover i {
+      stroke: #ffffff !important;
+    }
+
+    /* 4. COD & Payment Badges */
+    table tbody td span[class*="COD"],
+    table tbody td div:has(> span:contains("COD")),
+    table tbody td [class*="amber"],
+    table tbody td [class*="yellow"] {
+      background-color: #fef3c7 !important; /* Soft Amber Background */
+      color: #92400e !important;          /* Deep Amber Dark Text */
+      font-weight: 800 !important;
+      border: 1px solid #fcd34d !important;
+    }
+
+    /* 5. Item Count Tag (1 Item(s)) */
+    table tbody td span:has(svg),
+    table tbody td span[class*="text-gold"] {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+    table tbody td span:has(svg) svg {
+      stroke: #0854a0 !important;
+    }
   </style>
 </head>
 <body class="bg-sap-50 text-slate-900 font-sans min-h-screen flex flex-col selection:bg-sap-500 selection:text-white">
