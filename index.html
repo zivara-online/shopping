@@ -88,7 +88,7 @@
       </div>
     </header>
 
-<!-- NAVIGATION BAR -->
+    <!-- NAVIGATION BAR -->
     <nav class="bg-ivory-50/95 border-b border-ivory-300 py-2.5 relative z-40">
       <div class="max-w-7xl mx-auto px-2 sm:px-4 relative flex items-center">
         <!-- Left Arrow -->
@@ -111,8 +111,8 @@
         </button>
       </div>
 
-      <!-- UNIVERSAL FLOATING SUBMENU DROPDOWN (NEVER GETS CLIPPED BY OVERFLOW) -->
-<div id="globalSubmenuDropdown" class="hidden fixed z-[999999] transition-opacity duration-150">
+      <!-- UNIVERSAL FLOATING SUBMENU DROPDOWN -->
+      <div id="globalSubmenuDropdown" class="hidden fixed z-[999999] transition-opacity duration-150">
         <div id="globalSubmenuContent" class="bg-white border border-ivory-300 shadow-2xl rounded-2xl py-2 min-w-[200px] divide-y divide-ivory-200"></div>
       </div>
     </nav>
@@ -121,25 +121,16 @@
   <!-- MAIN BODY -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1 w-full">
 
-    <!-- HERO SECTION -->
+    <!-- HERO SECTION (RESPONSIVE AUTO-FIT ON ALL SCREENS) -->
     <div id="heroBannerSection" class="transition-all duration-300">
-      <div class="bg-white p-2.5 sm:p-4 rounded-3xl sm:rounded-[2.5rem] shadow-lg border border-ivory-200">
-        <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner bg-ivory-200 min-h-[320px] sm:min-h-[440px] flex items-center">
+      <div class="bg-white p-2 sm:p-3.5 rounded-3xl sm:rounded-[2.5rem] shadow-lg border border-ivory-200">
+        <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner bg-ivory-200 aspect-[16/10] sm:aspect-[16/9] md:aspect-[2.4/1] lg:aspect-[2.6/1]">
           
           <div id="bannerSlidesTrack" class="absolute inset-0 w-full h-full">
             <div class="banner-slide absolute inset-0 w-full h-full bg-cover bg-center opacity-100" style="background-image: url('Cover.png');"></div>
           </div>
 
-          <div class="relative z-20 max-w-2xl p-6 sm:p-14 space-y-2.5">
-            <div class="pt-5 sm:pt-7">
-              <a id="bannerBtn" href="#products-section" class="inline-flex items-center gap-2.5 bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-600 hover:to-gold-500 text-white px-7 sm:px-8 py-3.5 sm:py-4 rounded-full font-extrabold text-xs uppercase tracking-widest shadow-xl transition transform hover:-translate-y-1 active:scale-95">
-                <span>Explore The Collection</span>
-                <i data-lucide="arrow-right" class="w-4 h-4 stroke-[2.5]"></i>
-              </a>
-            </div>
-          </div>
-
-          <div id="bannerDots" class="absolute bottom-4 right-6 z-20 flex items-center gap-2"></div>
+          <div id="bannerDots" class="absolute bottom-3 right-4 sm:bottom-4 sm:right-6 z-20 flex items-center gap-2"></div>
         </div>
       </div>
 
@@ -241,7 +232,7 @@
           </div>
         </aside>
 
-        <!-- PRODUCTS GRID (EMPTY CONTAINER FOR DYNAMIC INJECTION) -->
+        <!-- PRODUCTS GRID -->
         <section class="col-span-1 lg:col-span-9 w-full">
           <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5 min-h-[380px]"></div>
         </section>
@@ -419,8 +410,8 @@
     </div>
   </div>
 
-  <!-- MODULE ENTRY POINT (FORCED CACHE-BUSTER VERSION 3.0) -->
-<script type="module">
+  <!-- MODULE ENTRY POINT -->
+  <script type="module">
     import { refreshIcons, db } from './js/config.js?v=4.0';
     import { loadHeroBanners, goToSlide } from './js/slider.js?v=4.0';
     import { 
