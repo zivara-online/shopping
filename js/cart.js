@@ -93,7 +93,7 @@ export function getCartSummary(couponDiscountRate = 0) {
 export function initiateRazorpayPayment(customerDetails, couponDiscountRate = 0, onSuccessCallback) {
   const cartItems = JSON.parse(localStorage.getItem('zivara_cart')) || state.cart || [];
   if (cartItems.length === 0) {
-    alert("Aapka shopping bag khali hai!");
+    alert("You Shopping Bag is Empty!");
     return;
   }
 
