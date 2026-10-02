@@ -722,46 +722,36 @@ function toggleDiscountTypeLabel() {
   }
 }
 
-// DYNAMIC CATEGORY DROPDOWN LOADER FOR COUPON FORM
+// DYNAMIC SUB-MENU DROPDOWN LOADER FOR COUPON FORM
 function loadCouponCategoryDropdown() {
   const select = document.getElementById('couponApplicableMenu');
   if (!select) return;
 
-  const parentMenus = [];
-  const seen = new Set();
-  (cachedHierarchy || []).forEach(m => {
-    const id = String(m.MenuID || '').trim();
-    if (id && !seen.has(id)) {
-      seen.add(id);
-      parentMenus.push(m);
-    }
+  // Filter only actual Sub-Menus (ignore parent main menus without sub-menus)
+  const subMenus = (cachedHierarchy || []).filter(m => m.SubmenuID && m.SubmenuID !== 'NULL' && m.SubName);
+
+  // Group sub-menus by Parent Menu Name for clean UI
+  const groups = {};
+  subMenus.forEach(s => {
+    const parent = s.MenuName || `Menu ${s.MenuID}`;
+    if (!groups[parent]) groups[parent] = [];
+    groups[parent].push(s);
   });
 
-  select.innerHTML = `<option value="all">🌟 All Store Products</option>` +
-    parentMenus.map(m => `<option value="${String(m.MenuID).trim()}">📁 ${m.MenuName} (Menu: ${m.MenuID})</option>`).join('');
-}
+  let optionsHtml = `<option value="all">🌟 All Store Products</option>`;
 
-async function fetchCouponsData() {
-  if (!db) return;
-  try {
-    const { data: coupons, error } = await db.from('coupons').select('*').order('created_at', { ascending: false });
-    if (error) {
-      console.warn("Coupons fetch error:", error.message);
-      return;
-    }
-
-    cachedCoupons = coupons || [];
-    const activeCoupons = cachedCoupons.filter(c => c.is_active !== false);
-    const badgeEl = document.getElementById('statTotalCoupons');
-    if (badgeEl) badgeEl.innerText = activeCoupons.length;
-
-    loadCouponCategoryDropdown();
-    renderCouponsTable(cachedCoupons);
-  } catch (err) {
-    console.warn("Coupons error:", err);
+  for (const [parentName, subs] of Object.entries(groups)) {
+    optionsHtml += `<optgroup label="📂 ${parentName}">`;
+    subs.forEach(s => {
+      optionsHtml += `<option value="${String(s.SubmenuID).trim()}">↳ ${s.SubName} (${s.SubmenuID})</option>`;
+    });
+    optionsHtml += `</optgroup>`;
   }
+
+  select.innerHTML = optionsHtml;
 }
 
+// RENDER COUPONS TABLE WITH SUB-MENU NAME
 function renderCouponsTable(list) {
   const tbody = document.getElementById('couponsTableBody');
   if (!list || list.length === 0) {
@@ -774,12 +764,12 @@ function renderCouponsTable(list) {
     const isExpired = c.expiry_date && new Date(c.expiry_date) < new Date();
     const discountDisplay = c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} FLAT`;
     
-    // Find Category Name from Cached Hierarchy
-    const targetMenu = String(c.applicable_menu || 'all').trim();
-    let categoryName = "All Products";
-    if (targetMenu !== 'all') {
-      const match = (cachedHierarchy || []).find(m => String(m.MenuID || '').trim() === targetMenu);
-      categoryName = match ? match.MenuName : `Menu: ${targetMenu}`;
+    // Find Submenu Name from Cached Hierarchy
+    const targetSubmenu = String(c.applicable_menu || 'all').trim();
+    let subMenuName = "All Products";
+    if (targetSubmenu !== 'all') {
+      const match = (cachedHierarchy || []).find(m => String(m.SubmenuID || '').trim() === targetSubmenu);
+      subMenuName = match ? `${match.SubName} (${targetSubmenu})` : `Sub-Menu: ${targetSubmenu}`;
     }
 
     return `
@@ -788,8 +778,8 @@ function renderCouponsTable(list) {
           <div class="font-mono font-bold text-gold-400 text-sm tracking-wider uppercase">${c.code}</div>
           <div class="text-[10px] text-slate-500">Created: ${new Date(c.created_at).toLocaleDateString('en-IN')}</div>
           <div class="mt-0.5">
-            <span class="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold ${targetMenu === 'all' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-purple-50 text-purple-700 border border-purple-200'}">
-              ${targetMenu === 'all' ? '🌟 All Store' : `📁 ${categoryName}`}
+            <span class="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold ${targetSubmenu === 'all' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-purple-50 text-purple-700 border border-purple-200'}">
+              ${targetSubmenu === 'all' ? '🌟 All Store' : `🏷️ ${subMenuName}`}
             </span>
           </div>
         </td>
