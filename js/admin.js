@@ -81,7 +81,7 @@ async function checkAdminSession() {
     loginSection.classList.add('hidden');
     dashSection.classList.remove('hidden');
     document.getElementById('prodRandomId').value = generateRandomProductId();
-    fetchAllData();
+    await fetchAllData();
     fetchBanners();
     fetchOrdersData();
     fetchCouponsData();
@@ -277,7 +277,6 @@ window.printAdminTaxInvoice = function(orderId) {
       <div class="invoice-box">
         <div class="doc-title">TAX INVOICE (ADMIN ARCHIVE COPY)</div>
 
-        <!-- HEADER -->
         <table class="header-table">
           <tr>
             <td style="width: 14%;">
@@ -296,14 +295,12 @@ window.printAdminTaxInvoice = function(orderId) {
 
         <div class="highlight-bar"></div>
 
-        <!-- META INFORMATION -->
         <div class="meta-strip">
           <div>INVOICE NO: <span>INV/${order.order_id.replace('ZIV-ORD-', '')}</span></div>
           <div>ORDER DATE: <span>${orderDate}</span></div>
           <div>DELIVERED DATE: <span>${deliveryDate}</span></div>
         </div>
 
-        <!-- BILL TO -->
         <div class="bill-to-section">
           <div class="bill-to-title">BILL TO</div>
           <div class="customer-name">${order.customer_name || 'Valued Member'}</div>
@@ -313,7 +310,6 @@ window.printAdminTaxInvoice = function(orderId) {
           <div><b>Status:</b> ${String(order.status || 'placed').toUpperCase()}</div>
         </div>
 
-        <!-- ITEMS TABLE -->
         <table class="items-table">
           <thead>
             <tr>
@@ -336,7 +332,6 @@ window.printAdminTaxInvoice = function(orderId) {
           </tbody>
         </table>
 
-        <!-- BOTTOM SECTION -->
         <div class="bottom-section">
           <div class="left-col">
             <div style="font-weight: 800; font-size: 10px; margin-bottom: 3px;">TERMS AND CONDITIONS</div>
@@ -552,7 +547,6 @@ function renderOrdersTable(ordersList) {
           </span>
         </td>
         
-        <!-- SHIPROCKET & TRACKING -->
         <td class="p-3 font-mono text-[11px]">
           ${o.shiprocket_order_id ? `
             <div class="space-y-1">
@@ -581,7 +575,6 @@ function renderOrdersTable(ordersList) {
           `}
         </td>
         
-        <!-- RETURN WINDOW -->
         <td class="p-3">
           ${status === 'delivered' ? (
             returnInfo.isExpired ? `
@@ -603,7 +596,6 @@ function renderOrdersTable(ordersList) {
           `)}
         </td>
 
-        <!-- UPDATE STATUS & DIRECT TAX INVOICE BUTTON -->
         <td class="p-3 text-right space-y-1.5">
           <select onchange="updateOrderStatus('${o.order_id}', this.value)" class="bg-noir-950 border border-gold-500 text-gold-400 rounded-lg px-2.5 py-1 text-[11px] font-bold cursor-pointer">
             ${['placed', 'paid', 'processing', 'dispatched', 'delivered', 'cancelled'].map(st => `
@@ -712,7 +704,7 @@ window.closeOrderModal = function() {
 };
 
 // ==========================================================
-// COUPONS & DISCOUNTS CONTROLLER (CATEGORY-SPECIFIC ENGINE)
+// COUPONS & DISCOUNTS CONTROLLER (SUB-MENU RESTRICTED)
 // ==========================================================
 function toggleDiscountTypeLabel() {
   const type = document.getElementById('couponType').value;
@@ -722,15 +714,13 @@ function toggleDiscountTypeLabel() {
   }
 }
 
-// DYNAMIC SUB-MENU DROPDOWN LOADER FOR COUPON FORM
+// POPULATE APPLICABLE SUB-MENU DROPDOWN
 function loadCouponCategoryDropdown() {
   const select = document.getElementById('couponApplicableMenu');
   if (!select) return;
 
-  // Filter only actual Sub-Menus (ignore parent main menus without sub-menus)
   const subMenus = (cachedHierarchy || []).filter(m => m.SubmenuID && m.SubmenuID !== 'NULL' && m.SubName);
 
-  // Group sub-menus by Parent Menu Name for clean UI
   const groups = {};
   subMenus.forEach(s => {
     const parent = s.MenuName || `Menu ${s.MenuID}`;
@@ -751,7 +741,27 @@ function loadCouponCategoryDropdown() {
   select.innerHTML = optionsHtml;
 }
 
-// RENDER COUPONS TABLE WITH SUB-MENU NAME
+async function fetchCouponsData() {
+  if (!db) return;
+  try {
+    const { data: coupons, error } = await db.from('coupons').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.warn("Coupons fetch error:", error.message);
+      return;
+    }
+
+    cachedCoupons = coupons || [];
+    const activeCoupons = cachedCoupons.filter(c => c.is_active !== false);
+    const badgeEl = document.getElementById('statTotalCoupons');
+    if (badgeEl) badgeEl.innerText = activeCoupons.length;
+
+    loadCouponCategoryDropdown();
+    renderCouponsTable(cachedCoupons);
+  } catch (err) {
+    console.warn("Coupons error:", err);
+  }
+}
+
 function renderCouponsTable(list) {
   const tbody = document.getElementById('couponsTableBody');
   if (!list || list.length === 0) {
@@ -763,8 +773,7 @@ function renderCouponsTable(list) {
     const expiryStr = c.expiry_date ? new Date(c.expiry_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Never';
     const isExpired = c.expiry_date && new Date(c.expiry_date) < new Date();
     const discountDisplay = c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} FLAT`;
-    
-    // Find Submenu Name from Cached Hierarchy
+
     const targetSubmenu = String(c.applicable_menu || 'all').trim();
     let subMenuName = "All Products";
     if (targetSubmenu !== 'all') {
@@ -851,12 +860,11 @@ async function handleCreateOrUpdateCoupon(e) {
       if (error) throw error;
       alert(`✅ Coupon [${payload.code}] published successfully!`);
 
-      // BROADCAST NOTIFICATION WITH CATEGORY CONTEXT
       const discText = payload.discount_type === 'percentage' ? `${payload.discount_value}% OFF` : `Flat ₹${payload.discount_value} OFF`;
       let catText = "on your next order!";
       if (applicableMenu !== 'all') {
-        const catMatch = (cachedHierarchy || []).find(m => String(m.MenuID || '').trim() === applicableMenu);
-        catText = catMatch ? `on ${catMatch.MenuName} collection!` : `on selected category!`;
+        const catMatch = (cachedHierarchy || []).find(m => String(m.SubmenuID || '').trim() === applicableMenu);
+        catText = catMatch ? `on ${catMatch.SubName} items!` : `on selected category!`;
       }
 
       sendBroadcastNotification(
@@ -1376,7 +1384,6 @@ async function handleCreateOrUpdateProduct(e) {
       await db.from('products').insert([payload]);
       alert(`Product published!`);
 
-      // BROADCAST NOTIFICATION FOR NEW PRODUCT
       sendBroadcastNotification(
         "✨ New Arrival at Zivara!",
         `${payload.title} is now live starting at ₹${payload.price.toLocaleString('en-IN')}. Tap to explore now!`,
@@ -1445,7 +1452,7 @@ async function fetchAllData() {
 
   loadSubmenuDropdownForProduct();
   autoSuggestSubmenuCode();
-  loadCouponCategoryDropdown(); // Sync coupon category dropdown
+  loadCouponCategoryDropdown();
   filterInventoryTable();
 
   // Render Main Menus
