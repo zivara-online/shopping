@@ -6,10 +6,17 @@ const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 // ONESIGNAL PUSH NOTIFICATION TRIGGER ENGINE
 // ==========================================================
 const ONESIGNAL_APP_ID = "724a8d07-873c-418e-b7e3-b7059c922db2";
-const ONESIGNAL_REST_KEY = "724a8d07-873c-418e-b7e3-b7059c922db2"; // OneSignal -> Keys & IDs se copy ki hui REST API key yahan paste karein
+const ONESIGNAL_REST_KEY = "os_v2_app_..."; // <-- Yahan apni OneSignal REST API Key daalein (Keys & IDs se)
 
 async function sendBroadcastNotification(title, message, imageUrl = "", targetUrl = "https://www.zivarafashion.online") {
   try {
+    console.log("🚀 Triggering OneSignal Broadcast...", { title, message });
+
+    if (!ONESIGNAL_REST_KEY || ONESIGNAL_REST_KEY === "REST_API_KEY_YAHAN_DAALEIN") {
+      alert("⚠️ OneSignal REST API Key missing hai! admin.js me key paste karein.");
+      return;
+    }
+
     const payload = {
       app_id: ONESIGNAL_APP_ID,
       included_segments: ["Total Subscriptions"],
@@ -28,14 +35,22 @@ async function sendBroadcastNotification(title, message, imageUrl = "", targetUr
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": `Basic ${ONESIGNAL_REST_KEY}`
+        "Authorization": `Key ${ONESIGNAL_REST_KEY}` // Note: V2 keys use 'Key', purani V1 keys use 'Basic'
       },
       body: JSON.stringify(payload)
     });
+
     const result = await res.json();
-    console.log("Push Notification Result:", result);
+    console.log("📢 OneSignal Response:", result);
+
+    if (result.errors) {
+      alert("OneSignal Error: " + JSON.stringify(result.errors));
+    } else {
+      console.log(`✅ Push Sent! Recipients: ${result.recipients || 0}`);
+    }
   } catch (err) {
-    console.error("OneSignal push error:", err);
+    console.error("❌ OneSignal Push Error:", err);
+    alert("OneSignal request failed: " + err.message);
   }
 }
 
