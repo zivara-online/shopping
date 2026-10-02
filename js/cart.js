@@ -15,7 +15,7 @@ export function updateCartBadge() {
   if (navBadge) navBadge.innerText = count;
 }
 
-// 2. ADD PRODUCT TO CART (Category menu_code ke sath)
+// 2. ADD PRODUCT TO CART (Sub-Menu Code Stored)
 export function addToCart(id, selectedSize = '', selectedColor = '') {
   const product = (state.allProducts || []).find(p => p.product_id === id);
   if (!product) return;
@@ -28,7 +28,8 @@ export function addToCart(id, selectedSize = '', selectedColor = '') {
       id: product.product_id,
       product_id: product.product_id,
       product_code: product.product_code || 'ZIV',
-      menu_code: String(product.menu_code || '').trim(), // Category Reference
+      menu_code: String(product.menu_code || '').trim(),
+      submenu_code: String(product.submenu_code || '').trim(), // Exact Sub-Menu SKU reference
       title: product.title,
       price: Number(product.price),
       original_price: product.original_price ? Number(product.original_price) : null,
@@ -64,7 +65,7 @@ export function removeFromCart(id) {
   updateCartBadge();
 }
 
-// 5. VALIDATE & APPLY CATEGORY-SPECIFIC COUPON
+// 5. VALIDATE & APPLY SUB-MENU SPECIFIC COUPON
 export async function applyCouponCode(codeString) {
   if (!codeString || !codeString.trim()) {
     return { success: false, message: "Kripya coupon code enter karein!" };
@@ -98,29 +99,29 @@ export async function applyCouponCode(codeString) {
 
     // Usage Limit Check
     if (coupon.usage_limit && coupon.times_used >= coupon.usage_limit) {
-      return { success: false, message: "Yeh coupon code limit exceed kar chuka hai!" };
+      return { success: false, message: "Yeh coupon code usage limit cross kar chuka hai!" };
     }
 
-    // Category / Menu Restriction Check
-    const targetMenu = String(coupon.applicable_menu || 'all').trim();
+    // Sub-Menu Restriction Check
+    const targetSubmenu = String(coupon.applicable_menu || 'all').trim();
     let eligibleItems = cartItems;
 
-    if (targetMenu !== 'all') {
-      eligibleItems = cartItems.filter(item => String(item.menu_code || '').trim() === targetMenu);
+    if (targetSubmenu !== 'all') {
+      eligibleItems = cartItems.filter(item => String(item.submenu_code || '').trim() === targetSubmenu);
       if (eligibleItems.length === 0) {
         return { 
           success: false, 
-          message: `Yeh coupon sirf specific category products par lagu hota hai! Aapke bag me is category ka product nahi hai.` 
+          message: `Yeh coupon sirf specific item collection par lagu hota hai! Aapke bag me is sub-menu ka product nahi hai.` 
         };
       }
     }
 
-    // Eligible Amount Check (Min Order)
+    // Eligible Amount Check (Min Order on valid items)
     const eligibleAmount = eligibleItems.reduce((sum, item) => sum + (Number(item.price) * (item.quantity || 1)), 0);
     if (coupon.min_order_amount && eligibleAmount < Number(coupon.min_order_amount)) {
       return { 
         success: false, 
-        message: `Min. order amount ₹${coupon.min_order_amount} hona chahiye is category ke products par!` 
+        message: `Min. order amount ₹${coupon.min_order_amount} hona chahiye is specific item par!` 
       };
     }
 
@@ -131,7 +132,7 @@ export async function applyCouponCode(codeString) {
   }
 }
 
-// 6. CALCULATE TOTALS WITH CATEGORY DISCOUNT LOGIC
+// 6. CALCULATE TOTALS WITH SUB-MENU DISCOUNT LOGIC
 export function getCartSummary(couponObj = activeCoupon) {
   let rawTotal = 0;
   let finalPayable = 0;
@@ -146,11 +147,11 @@ export function getCartSummary(couponObj = activeCoupon) {
   let couponCut = 0;
 
   if (couponObj) {
-    const targetMenu = String(couponObj.applicable_menu || 'all').trim();
+    const targetSubmenu = String(couponObj.applicable_menu || 'all').trim();
     
-    // Sirf valid category ke products ka total calculate hoga
+    // Sirf matching sub-menu items ka total calculate hoga
     const eligibleTotal = cartItems
-      .filter(item => targetMenu === 'all' || String(item.menu_code || '').trim() === targetMenu)
+      .filter(item => targetSubmenu === 'all' || String(item.submenu_code || '').trim() === targetSubmenu)
       .reduce((sum, item) => sum + (Number(item.price) * (item.quantity || 1)), 0);
 
     if (eligibleTotal > 0) {
@@ -165,7 +166,6 @@ export function getCartSummary(couponObj = activeCoupon) {
         couponCut = Number(couponObj.max_discount);
       }
 
-      // Discount total payable se zyada nahi ho sakta
       couponCut = Math.min(couponCut, finalPayable);
     }
   }
@@ -255,7 +255,7 @@ export function initiateRazorpayPayment(customerDetails, appliedCoupon = activeC
       contact: customerDetails.phone || ""
     },
     theme: {
-      color: "#D4AF37" // Luxury Gold
+      color: "#D4AF37"
     },
     modal: {
       ondismiss: function () {
