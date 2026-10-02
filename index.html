@@ -13,6 +13,17 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
+  <!-- ONESIGNAL WEB PUSH SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "724a8d07-873c-418e-b7e3-b7059c922db2",
+      });
+    });
+  </script>
+
   <link rel="stylesheet" href="css/styles.css" />
 
   <script>
