@@ -3,10 +3,9 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // ==========================================================
-// ONESIGNAL PUSH NOTIFICATION TRIGGER ENGINE
+// ONESIGNAL PUSH NOTIFICATION TRIGGER ENGINE (VIA EDGE RELAY)
 // ==========================================================
 const ONESIGNAL_APP_ID = "724a8d07-873c-418e-b7e3-b7059c922db2";
-const ONESIGNAL_REST_KEY = "os_v2_app_..."; // <-- Yahan apni OneSignal REST API Key daalein (Keys & IDs se)
 
 async function sendBroadcastNotification(title, message, imageUrl = "", targetUrl = "https://www.zivarafashion.online") {
   try {
@@ -713,7 +712,7 @@ window.closeOrderModal = function() {
 };
 
 // ==========================================================
-// COUPONS & DISCOUNTS CONTROLLER
+// COUPONS & DISCOUNTS CONTROLLER (CATEGORY-SPECIFIC ENGINE)
 // ==========================================================
 function toggleDiscountTypeLabel() {
   const type = document.getElementById('couponType').value;
@@ -721,6 +720,25 @@ function toggleDiscountTypeLabel() {
   if (label) {
     label.innerText = type === 'percentage' ? 'Discount Percentage (% OFF)' : 'Flat Discount Amount (₹ OFF)';
   }
+}
+
+// DYNAMIC CATEGORY DROPDOWN LOADER FOR COUPON FORM
+function loadCouponCategoryDropdown() {
+  const select = document.getElementById('couponApplicableMenu');
+  if (!select) return;
+
+  const parentMenus = [];
+  const seen = new Set();
+  (cachedHierarchy || []).forEach(m => {
+    const id = String(m.MenuID || '').trim();
+    if (id && !seen.has(id)) {
+      seen.add(id);
+      parentMenus.push(m);
+    }
+  });
+
+  select.innerHTML = `<option value="all">🌟 All Store Products</option>` +
+    parentMenus.map(m => `<option value="${String(m.MenuID).trim()}">📁 ${m.MenuName} (Menu: ${m.MenuID})</option>`).join('');
 }
 
 async function fetchCouponsData() {
@@ -737,6 +755,7 @@ async function fetchCouponsData() {
     const badgeEl = document.getElementById('statTotalCoupons');
     if (badgeEl) badgeEl.innerText = activeCoupons.length;
 
+    loadCouponCategoryDropdown();
     renderCouponsTable(cachedCoupons);
   } catch (err) {
     console.warn("Coupons error:", err);
@@ -754,12 +773,25 @@ function renderCouponsTable(list) {
     const expiryStr = c.expiry_date ? new Date(c.expiry_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Never';
     const isExpired = c.expiry_date && new Date(c.expiry_date) < new Date();
     const discountDisplay = c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} FLAT`;
+    
+    // Find Category Name from Cached Hierarchy
+    const targetMenu = String(c.applicable_menu || 'all').trim();
+    let categoryName = "All Products";
+    if (targetMenu !== 'all') {
+      const match = (cachedHierarchy || []).find(m => String(m.MenuID || '').trim() === targetMenu);
+      categoryName = match ? match.MenuName : `Menu: ${targetMenu}`;
+    }
 
     return `
       <tr class="hover:bg-noir-950/40 transition">
         <td class="p-3">
           <div class="font-mono font-bold text-gold-400 text-sm tracking-wider uppercase">${c.code}</div>
           <div class="text-[10px] text-slate-500">Created: ${new Date(c.created_at).toLocaleDateString('en-IN')}</div>
+          <div class="mt-0.5">
+            <span class="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold ${targetMenu === 'all' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-purple-50 text-purple-700 border border-purple-200'}">
+              ${targetMenu === 'all' ? '🌟 All Store' : `📁 ${categoryName}`}
+            </span>
+          </div>
         </td>
         <td class="p-3">
           <span class="inline-block px-2 py-0.5 bg-gold-500/10 border border-gold-500/30 text-gold-400 rounded-md font-bold text-xs font-mono">
@@ -802,6 +834,8 @@ async function handleCreateOrUpdateCoupon(e) {
   const btn = document.getElementById('couponSubmitBtn');
   const btnText = document.getElementById('couponSubmitBtnText');
 
+  const applicableMenu = document.getElementById('couponApplicableMenu')?.value || 'all';
+
   const payload = {
     code: document.getElementById('couponCode').value.trim().toUpperCase(),
     discount_type: document.getElementById('couponType').value,
@@ -810,7 +844,8 @@ async function handleCreateOrUpdateCoupon(e) {
     max_discount: document.getElementById('couponMaxDiscount').value ? parseFloat(document.getElementById('couponMaxDiscount').value) : null,
     expiry_date: document.getElementById('couponExpiry').value || null,
     usage_limit: parseInt(document.getElementById('couponUsageLimit').value, 10) || 100,
-    is_active: document.getElementById('couponActive').checked
+    is_active: document.getElementById('couponActive').checked,
+    applicable_menu: applicableMenu
   };
 
   btn.disabled = true;
@@ -826,11 +861,17 @@ async function handleCreateOrUpdateCoupon(e) {
       if (error) throw error;
       alert(`✅ Coupon [${payload.code}] published successfully!`);
 
-      // BROADCAST NOTIFICATION FOR NEW COUPON
+      // BROADCAST NOTIFICATION WITH CATEGORY CONTEXT
       const discText = payload.discount_type === 'percentage' ? `${payload.discount_value}% OFF` : `Flat ₹${payload.discount_value} OFF`;
+      let catText = "on your next order!";
+      if (applicableMenu !== 'all') {
+        const catMatch = (cachedHierarchy || []).find(m => String(m.MenuID || '').trim() === applicableMenu);
+        catText = catMatch ? `on ${catMatch.MenuName} collection!` : `on selected category!`;
+      }
+
       sendBroadcastNotification(
-        `🎁 Exclusive Offer: Use Code ${payload.code}!`,
-        `Unlock ${discText} on your next order! Limited period offer. Tap to shop now.`,
+        `🎁 Special Offer: Use Code ${payload.code}!`,
+        `Unlock ${discText} ${catText} Limited period offer. Tap to shop now.`,
         ""
       );
     }
@@ -860,6 +901,10 @@ window.startEditCoupon = function(id) {
   document.getElementById('couponUsageLimit').value = item.usage_limit || 100;
   document.getElementById('couponActive').checked = item.is_active !== false;
 
+  if (document.getElementById('couponApplicableMenu')) {
+    document.getElementById('couponApplicableMenu').value = item.applicable_menu || 'all';
+  }
+
   toggleDiscountTypeLabel();
 
   document.getElementById('couponFormHeading').innerHTML = `<i data-lucide="edit" class="w-4 h-4 text-gold-400"></i> Edit Coupon: ${item.code}`;
@@ -873,6 +918,9 @@ window.resetCouponForm = function() {
   document.getElementById('couponMasterForm').reset();
   document.getElementById('editCouponId').value = "";
   document.getElementById('couponActive').checked = true;
+  if (document.getElementById('couponApplicableMenu')) {
+    document.getElementById('couponApplicableMenu').value = "all";
+  }
   document.getElementById('couponFormHeading').innerHTML = `<i data-lucide="tag" class="w-4 h-4"></i> Create Promotional Coupon Code`;
   document.getElementById('couponSubmitBtnText').innerText = "Publish Coupon Code";
   document.getElementById('cancelCouponEditBtn').classList.add('hidden');
@@ -1407,6 +1455,7 @@ async function fetchAllData() {
 
   loadSubmenuDropdownForProduct();
   autoSuggestSubmenuCode();
+  loadCouponCategoryDropdown(); // Sync coupon category dropdown
   filterInventoryTable();
 
   // Render Main Menus
