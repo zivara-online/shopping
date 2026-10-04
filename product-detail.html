@@ -28,7 +28,6 @@
     .custom-scrollbar::-webkit-scrollbar { display: none; }
     .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
-    /* Lightbox Modal styles */
     #lightboxModal {
       touch-action: none;
       user-select: none;
@@ -185,6 +184,7 @@
     let selectedColor = '';
     let currentActivePhoto = '';
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
+    let appliedCoupon = null;
 
     // Slider & Feed States
     let detailImagesList = [];
@@ -208,7 +208,7 @@
       if (badge) badge.innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
     }
 
-    // 1. ROBUST VIDEO EMBED PARSER
+    // 1. VIDEO EMBED PARSER
     function formatVideoEmbed(url) {
       if (!url) return '';
       const cleanUrl = url.trim();
@@ -299,6 +299,7 @@
 
         currentProduct = data;
         renderMainDetail(currentProduct);
+        loadApplicableProductOffers(currentProduct);
         loadRelatedRows(currentProduct);
         loadInfiniteFeed();
       } catch (e) {
@@ -310,7 +311,7 @@
       }
     }
 
-    // 4. RENDER MAIN PRODUCT VIEW (WITH CLICK-TO-ENLARGE ON IMAGE)
+    // 4. RENDER MAIN PRODUCT VIEW
     function renderMainDetail(p) {
       const container = document.getElementById('productDetailContainer');
       const hasDiscount = p.original_price && p.original_price > p.price;
@@ -327,7 +328,7 @@
       selectedColor = colors[0] || '';
 
       container.innerHTML = `
-        <!-- LEFT: AUTO-SLIDING MEDIA SHOWCASE WITH FULLSCREEN EXPAND TRIGGER -->
+        <!-- LEFT: AUTO-SLIDING MEDIA SHOWCASE -->
         <div class="lg:col-span-5 space-y-4">
           <div id="mediaViewerFrame" onclick="openLightbox(currentActivePhoto)" class="relative w-full h-[360px] sm:h-[460px] bg-noir-950 rounded-2xl overflow-hidden border border-gold-500/30 flex items-center justify-center cursor-zoom-in group shadow-xl">
             <img id="mainShowcaseImg" src="${primaryImg}" alt="${p.title}" class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105" onerror="this.src='Cover.png'" />
@@ -356,8 +357,8 @@
           </div>
         </div>
 
-        <!-- RIGHT: SPECIFICATIONS & PURCHASING -->
-        <div class="lg:col-span-7 space-y-6">
+        <!-- RIGHT: SPECIFICATIONS, OFFERS & PURCHASING -->
+        <div class="lg:col-span-7 space-y-5">
           <div>
             <div class="flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-gold-400">
               <span>SKU: ${p.product_code || 'ZIV'}</span>
@@ -366,7 +367,7 @@
             </div>
             <h1 class="text-2xl sm:text-3xl font-serif text-white tracking-tight mt-1 leading-snug">${p.title}</h1>
             
-            <div class="flex items-center gap-2 mt-2.5">
+            <div class="flex items-center gap-2 mt-2">
               <span class="inline-flex items-center text-xs font-bold bg-emerald-950 border border-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-md">
                 ${p.rating || '4.8'} <i data-lucide="star" class="w-3 h-3 fill-current ml-1"></i>
               </span>
@@ -374,11 +375,35 @@
             </div>
           </div>
 
+          <!-- PRICE STRIP (WITH REAL-TIME COUPON DISCOUNT DISPLAY) -->
           <div class="p-4 rounded-2xl bg-noir-950 border border-gold-500/20 space-y-1">
             <div class="flex items-baseline gap-3">
-              <span class="text-2xl sm:text-3xl font-black text-white">₹${Number(p.price).toLocaleString('en-IN')}</span>
-              ${hasDiscount ? `<span class="text-sm text-slate-500 line-through">₹${Number(p.original_price).toLocaleString('en-IN')}</span>` : ''}
-              ${hasDiscount ? `<span class="text-xs font-bold text-emerald-400 font-mono">${discount}% OFF</span>` : ''}
+              <span id="finalDisplayPrice" class="text-2xl sm:text-3xl font-black text-white">₹${Number(p.price).toLocaleString('en-IN')}</span>${hasDiscount ? `<span id="mrpDisplayPrice" class="text-sm text-slate-500 line-through">₹${Number(p.original_price).toLocaleString('en-IN')}</span>` : ''}
+              ${hasDiscount ? `<span id="discountTagBadge" class="text-xs font-bold text-emerald-400 font-mono">${discount}% OFF</span>` : ''}
+            </div>
+            <div id="appliedOfferBadge" class="hidden text-[11px] text-emerald-400 font-semibold flex items-center gap-1.5 pt-1">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+              <span id="appliedOfferText"></span>
+            </div>
+          </div>
+
+          <!-- ============================================================== -->
+          <!-- AMAZON / FLIPKART STYLE: AVAILABLE OFFERS HORIZONTAL SECTION -->
+          <!-- ============================================================== -->
+          <div id="availableOffersSection" class="space-y-2.5 border-t border-b border-gold-500/20 py-4">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center gap-2">
+                <i data-lucide="badge-percent" class="w-4 h-4 text-gold-500"></i>
+                <span>Available Offers</span>
+              </h4>
+              <span id="offersCountBadge" class="text-[10px] text-slate-400 font-mono">Checking eligible offers...</span>
+            </div>
+
+            <!-- Offers Cards Horizontal Scroll -->
+            <div id="offersCardsContainer" class="flex gap-3 overflow-x-auto custom-scrollbar py-1">
+              <div class="w-56 shrink-0 p-3 rounded-xl bg-noir-950 border border-gold-500/20 text-slate-400 text-xs text-center animate-pulse">
+                Loading offers...
+              </div>
             </div>
           </div>
 
@@ -398,7 +423,7 @@
             </div>
           ` : ''}
 
-          <!-- Variants (Colors) with Real-Time Display -->
+          <!-- Variants (Colors) -->
           ${colors.length > 0 ? `
             <div class="space-y-2">
               <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">
@@ -436,7 +461,142 @@
       startAutoProductSlider();
     }
 
-    // 5. AUTO-SLIDER & IMAGE SWITCHER
+    // ================================================================
+    // 5. FLIPKART/AMAZON STYLE OFFERS ENGINE (SUB-MENU / CATEGORY SPECIFIC)
+    // ================================================================
+    async function loadApplicableProductOffers(product) {
+      const container = document.getElementById('offersCardsContainer');
+      const countBadge = document.getElementById('offersCountBadge');
+      if (!container || !db) return;
+
+      try {
+        const { data: coupons, error } = await db
+          .from('coupons')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (error || !coupons || coupons.length === 0) {
+          container.innerHTML = `<p class="text-[11px] text-slate-500 py-1">No promo offers available for this product.</p>`;
+          if (countBadge) countBadge.innerText = `0 Offers`;
+          return;
+        }
+
+        // Filter coupons applicable for ALL products OR matching this product's submenu_code
+        const targetSubmenu = String(product.submenu_code || '').trim();
+        const validOffers = coupons.filter(c => {
+          // Check expiry
+          if (c.expiry_date && new Date(c.expiry_date) < new Date()) return false;
+          // Check usage limit
+          if (c.usage_limit && (c.times_used || 0) >= c.usage_limit) return false;
+
+          const scope = String(c.applicable_menu || 'all').trim();
+          return scope === 'all' || (targetSubmenu && scope === targetSubmenu);
+        });
+
+        if (validOffers.length === 0) {
+          container.innerHTML = `<p class="text-[11px] text-slate-500 py-1">Standard store pricing applies.</p>`;
+          if (countBadge) countBadge.innerText = `0 Offers`;
+          return;
+        }
+
+        if (countBadge) countBadge.innerText = `${validOffers.length} Offers Available`;
+
+        // Render Flipkart/Amazon Styled Offer Cards
+        container.innerHTML = validOffers.map(c => {
+          const isPercentage = c.discount_type === 'percentage';
+          const discountStr = isPercentage ? `${c.discount_value}% Instant OFF` : `Flat ₹${c.discount_value} OFF`;
+          const minSpendStr = c.min_order_amount > 0 ? `Min. purchase ₹${c.min_order_amount}` : `No min. order required`;
+          const maxCapStr = c.max_discount ? `Max cap: ₹${c.max_discount}` : ``;
+
+          return `
+            <div class="w-64 sm:w-72 shrink-0 p-3.5 rounded-2xl bg-noir-950 border border-gold-500/30 hover:border-gold-400 transition shadow-lg flex flex-col justify-between space-y-2">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
+                    <i data-lucide="tag" class="w-3 h-3"></i> ${isPercentage ? 'Special Promo' : 'Flat Savings'}
+                  </span>
+                  <span class="text-[10px] font-mono font-bold text-gold-400">${c.code}</span>
+                </div>
+                <h5 class="text-xs font-bold text-white leading-tight pt-1">${discountStr}</h5>
+                <p class="text-[10px] text-slate-400 leading-snug">${minSpendStr} ${maxCapStr ? `• ${maxCapStr}` : ''}</p>
+              </div>
+
+              <div class="pt-2 border-t border-gold-500/10 flex items-center justify-between">
+                <span class="text-[9px] text-slate-500 uppercase tracking-widest font-mono">T&C Apply</span>
+                <button onclick="applyOfferToProduct('${c.code}', '${c.discount_type}', ${c.discount_value}, ${c.min_order_amount || 0}, ${c.max_discount || 0})" 
+                        id="btn-apply-${c.code}" 
+                        class="px-3 py-1 rounded-lg bg-gold-500/15 hover:bg-gold-500 text-gold-400 hover:text-noir-950 border border-gold-500/40 text-[10px] font-bold uppercase tracking-wider transition cursor-pointer flex items-center gap-1">
+                  <span>Apply</span>
+                  <i data-lucide="sparkles" class="w-3 h-3"></i>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        refreshIcons();
+      } catch (err) {
+        console.warn("Offers error:", err);
+      }
+    }
+
+    // 6. APPLY OFFER IN REAL-TIME & PREVIEW DISCOUNT
+    window.applyOfferToProduct = function(code, type, val, minOrder, maxDiscount) {
+      if (!currentProduct) return;
+      const basePrice = Number(currentProduct.price || 0);
+
+      if (minOrder > 0 && basePrice < minOrder) {
+        alert(`Yeh offer ₹${minOrder} ya usse zyada ke order par applicable hai! Cart me aur items jodein.`);
+        return;
+      }
+
+      let cut = 0;
+      if (type === 'percentage') {
+        cut = (basePrice * Number(val)) / 100;
+        if (maxDiscount > 0 && cut > maxDiscount) cut = maxDiscount;
+      } else {
+        cut = Number(val);
+      }
+      cut = Math.min(cut, basePrice);
+
+      const effectivePrice = Math.max(0, Math.round(basePrice - cut));
+
+      // Update UI
+      const finalPriceEl = document.getElementById('finalDisplayPrice');
+      const badgeWrap = document.getElementById('appliedOfferBadge');
+      const badgeText = document.getElementById('appliedOfferText');
+
+      if (finalPriceEl) {
+        finalPriceEl.innerHTML = `₹${effectivePrice.toLocaleString('en-IN')} <span class="text-xs text-emerald-400 font-sans font-bold">(₹${Math.round(cut)} Saved)</span>`;
+      }
+
+      if (badgeWrap && badgeText) {
+        badgeWrap.classList.remove('hidden');
+        badgeText.innerText = `Offer Applied: Code ${code} (Instant Discount)`;
+      }
+
+      // Reset all buttons and highlight active
+      document.querySelectorAll('[id^="btn-apply-"]').forEach(b => {
+        b.className = "px-3 py-1 rounded-lg bg-gold-500/15 text-gold-400 border border-gold-500/40 text-[10px] font-bold uppercase tracking-wider transition cursor-pointer";
+        b.innerText = "Apply";
+      });
+
+      const activeBtn = document.getElementById(`btn-apply-${code}`);
+      if (activeBtn) {
+        activeBtn.className = "px-3 py-1 rounded-lg bg-emerald-500 text-noir-950 font-black text-[10px] uppercase tracking-wider shadow";
+        activeBtn.innerText = "Applied ✓";
+      }
+
+      appliedCoupon = { code, type, value: val, cut };
+      // Save for auto-apply on checkout cart
+      localStorage.setItem('zivara_auto_coupon', code);
+
+      alert(`🎉 Offer ${code} Applied! Aapko ₹${Math.round(cut)} ka instant discount milega checkout par.`);
+      refreshIcons();
+    };
+
+    // 7. AUTO-SLIDER & IMAGE SWITCHER
     function startAutoProductSlider() {
       if (detailAutoSlideInterval) clearInterval(detailAutoSlideInterval);
       if (detailImagesList.length <= 1) return;
@@ -476,7 +636,7 @@
       refreshIcons();
     }
 
-    // 6. VARIANT SELECTORS
+    // 8. VARIANT SELECTORS
     function selectVariantSize(val, btn) {
       selectedSize = val;
       const displayEl = document.getElementById('displaySelectedSize');
@@ -499,7 +659,7 @@
       btn.className = "color-btn px-4 py-2 rounded-xl text-xs font-bold border bg-gold-500 text-noir-950 border-gold-400 transition";
     }
 
-    // 7. CAROUSEL RECOMMENDATION ROWS
+    // 9. CAROUSEL RECOMMENDATION ROWS
     async function loadRelatedRows(p) {
       if (!db) return;
       try {
@@ -549,7 +709,7 @@
       }).join('');
     }
 
-    // 8. INFINITE FEED
+    // 10. INFINITE FEED
     async function loadInfiniteFeed() {
       if (!db || isFeedLoading || !hasMoreFeed || !currentProduct) return;
       isFeedLoading = true;
@@ -607,7 +767,7 @@
       }
     });
 
-    // 9. CART HANDLERS
+    // 11. CART HANDLERS (CARRIES SUBMENU_CODE & APPLIED COUPON)
     function addCurrentToCart() {
       if (!currentProduct) return;
 
@@ -628,6 +788,8 @@
           id: currentProduct.product_id,
           product_id: currentProduct.product_id,
           product_code: currentProduct.product_code || 'ZIV',
+          menu_code: String(currentProduct.menu_code || '').trim(),
+          submenu_code: String(currentProduct.submenu_code || '').trim(),
           title: currentProduct.title,
           price: Number(currentProduct.price),
           original_price: currentProduct.original_price ? Number(currentProduct.original_price) : null,
@@ -649,9 +811,7 @@
       window.location.href = 'cart.html';
     }
 
-    // ================================================================
-    // 10. ADVANCED PINCH-TO-ZOOM & PAN LIGHTBOX ENGINE
-    // ================================================================
+    // 12. ADVANCED PINCH-TO-ZOOM & PAN LIGHTBOX ENGINE
     let zoomScale = 1;
     let translateX = 0;
     let translateY = 0;
@@ -708,20 +868,17 @@
       applyTransform();
     }
 
-    // Touch & Mouse Event Engine setup
     function setupLightboxInteraction() {
       const viewport = document.getElementById('lightboxViewport');
       const img = document.getElementById('lightboxImg');
       if (!viewport || !img) return;
 
-      // Mouse Wheel Zoom
       viewport.addEventListener('wheel', (e) => {
         e.preventDefault();
         const delta = e.deltaY > 0 ? -0.2 : 0.2;
         zoomStep(delta);
       }, { passive: false });
 
-      // Mouse Drag to Pan
       viewport.addEventListener('mousedown', (e) => {
         if (zoomScale <= 1) return;
         isDragging = true;
@@ -740,7 +897,6 @@
         isDragging = false;
       });
 
-      // Double Click Zoom
       viewport.addEventListener('dblclick', () => {
         if (zoomScale > 1.2) {
           resetLightboxTransform();
@@ -750,13 +906,10 @@
         }
       });
 
-      // Mobile Touch Events (Pinch to Zoom & Double Tap)
       viewport.addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
-          // Pinch start
           initialPinchDistance = getDistance(e.touches[0], e.touches[1]);
         } else if (e.touches.length === 1) {
-          // Double Tap check
           const now = Date.now();
           if (now - lastTapTime < 300) {
             if (zoomScale > 1.2) {
@@ -768,7 +921,6 @@
           }
           lastTapTime = now;
 
-          // Pan start
           if (zoomScale > 1) {
             isDragging = true;
             startX = e.touches[0].clientX - translateX;
@@ -809,7 +961,6 @@
       return Math.sqrt(dx * dx + dy * dy);
     }
 
-    // ESC key to close modal
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeLightbox();
     });
