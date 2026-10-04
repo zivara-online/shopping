@@ -200,7 +200,7 @@ export function initiateRazorpayPayment(customerDetails, appliedCoupon = activeC
     key: RAZORPAY_TEST_KEY,
     amount: amountInPaise,
     currency: "INR",
-    name: "Zivara Maison",
+    name: "Zivara Faishon",
     description: "Luxury Order Payment",
     image: "Logo.png",
     handler: async function (response) {
