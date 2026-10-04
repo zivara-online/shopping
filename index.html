@@ -26,6 +26,28 @@
 
   <link rel="stylesheet" href="css/styles.css" />
 
+  <style>
+    /* Continuous Right to Left Infinite Marquee */
+    @keyframes marqueeScroll {
+      0% {
+        transform: translateX(0%);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .animate-marquee-track {
+      display: inline-flex;
+      white-space: nowrap;
+      animation: marqueeScroll 28s linear infinite;
+    }
+
+    .animate-marquee-track:hover {
+      animation-play-state: paused;
+    }
+  </style>
+
   <script>
     tailwind.config = {
       theme: {
@@ -39,35 +61,21 @@
       }
     }
   </script>
-
-  <style>
-    /* Continuous Right to Left Smooth Marquee */
-    @keyframes marqueeScroll {
-      0% { transform: translateX(0%); }
-      100% { transform: translateX(-50%); }
-    }
-    .animate-marquee-infinite {
-      display: inline-flex;
-      white-space: nowrap;
-      animation: marqueeScroll 25s linear infinite;
-    }
-    .marquee-container:hover .animate-marquee-infinite {
-      animation-play-state: paused;
-    }
-  </style>
 </head>
 <body class="bg-ivory-100 text-charcoal-800 font-sans min-h-screen flex flex-col selection:bg-gold-500 selection:text-white pb-16 lg:pb-0">
 
   <!-- HEADER COMPONENT -->
   <div class="sticky top-0 z-50 w-full shadow-sm bg-white">
-
+    
     <!-- DYNAMIC AUTO-SCROLLING COUPON TICKER (RIGHT TO LEFT) -->
-    <div class="marquee-container relative w-full overflow-hidden bg-gradient-to-r from-gold-600 via-gold-500 to-gold-600 text-white py-1.5 shadow-inner select-none cursor-pointer">
-      <div id="dynamicCouponTicker" class="animate-marquee-infinite items-center text-xs tracking-wider font-semibold">
-        <!-- Initial Fallback / Loader -->
-        <span class="inline-flex items-center gap-2 mx-6">
-          ✨ Zivara Fashion | Compliments on Orders Above ₹1,499 | Use Code <span class="text-charcoal-900 font-black bg-white/95 px-2 py-0.5 rounded border border-white/40">ZIVARA10</span>
-        </span>
+    <div class="bg-gradient-to-r from-gold-600 via-gold-500 to-gold-600 text-white text-xs py-1.5 overflow-hidden relative shadow-inner select-none">
+      <div id="couponTickerWrapper" class="w-full flex items-center">
+        <div id="couponMarqueeTrack" class="animate-marquee-track flex items-center gap-12 font-semibold tracking-wider uppercase text-[11px]">
+          <!-- Dynamic Coupons will be populated here via JavaScript -->
+          <div class="inline-flex items-center gap-2">
+            <span>✨ Zivara Fashion | Loading Live Offers & Coupons...</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -130,7 +138,7 @@
           <i data-lucide="chevron-left" class="w-4 h-4"></i>
         </button>
 
-        <!-- Category Nav Container -->
+        <!-- Category Nav Container (Smooth Scroll Enabled) -->
         <div id="categoryNavContainer" 
              class="w-full flex items-center gap-6 sm:gap-7 text-xs font-bold uppercase tracking-wider text-slate-600 select-none px-9 md:px-4 py-1" 
              style="overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; scroll-behavior: smooth;">
@@ -155,13 +163,15 @@
   <!-- MAIN BODY -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1 w-full">
 
-    <!-- HERO SECTION -->
+    <!-- HERO SECTION (RESPONSIVE AUTO-FIT ON ALL SCREENS) -->
     <div id="heroBannerSection" class="transition-all duration-300">
       <div class="bg-white p-2 sm:p-3.5 rounded-3xl sm:rounded-[2.5rem] shadow-lg border border-ivory-200">
         <div class="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner bg-ivory-200 aspect-[16/10] sm:aspect-[16/9] md:aspect-[2.4/1] lg:aspect-[2.6/1]">
+          
           <div id="bannerSlidesTrack" class="absolute inset-0 w-full h-full">
             <div class="banner-slide absolute inset-0 w-full h-full bg-cover bg-center opacity-100" style="background-image: url('Cover.png');"></div>
           </div>
+
           <div id="bannerDots" class="absolute bottom-3 right-4 sm:bottom-4 sm:right-6 z-20 flex items-center gap-2"></div>
         </div>
       </div>
@@ -475,10 +485,10 @@
     window.syncMobilePrice = syncMobilePrice;
     window.syncMobileRating = syncMobileRating;
 
-    // DYNAMIC RIGHT-TO-LEFT AUTO-SCROLLING COUPON TICKER ENGINE
+    // DYNAMIC TICKER LOADER FROM SUPABASE
     async function loadDynamicCouponsTicker() {
-      const ticker = document.getElementById('dynamicCouponTicker');
-      if (!ticker || !db) return;
+      const track = document.getElementById('couponMarqueeTrack');
+      if (!track) return;
 
       try {
         const { data: coupons, error } = await db
@@ -487,27 +497,52 @@
           .eq('is_active', true)
           .order('created_at', { ascending: false });
 
-        if (error || !coupons || coupons.length === 0) return;
+        // Filter expired coupons if expiry date exists
+        const validCoupons = (coupons || []).filter(c => {
+          if (!c.expiry_date) return true;
+          return new Date(c.expiry_date) >= new Date();
+        });
 
-        // Build individual coupon offer items with gaps
-        const couponItemsHtml = coupons.map(c => {
-          const discountText = c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `FLAT ₹${c.discount_value} OFF`;
+        if (error || validCoupons.length === 0) {
+          track.innerHTML = `
+            <div class="inline-flex items-center gap-12 shrink-0">
+              <span class="flex items-center gap-2">✨ Zivara Fashion | Pan India Insured Delivery | Complimentary Luxury Atelier Packaging</span>
+              <span class="flex items-center gap-2">✨ Curated Luxury Couture & Watches | Pure Craftsmanship</span>
+            </div>
+            <div class="inline-flex items-center gap-12 shrink-0">
+              <span class="flex items-center gap-2">✨ Zivara Fashion | Pan India Insured Delivery | Complimentary Luxury Atelier Packaging</span>
+              <span class="flex items-center gap-2">✨ Curated Luxury Couture & Watches | Pure Craftsmanship</span>
+            </div>
+          `;
+          return;
+        }
+
+        // Build individual coupon tags with gap distance
+        const itemsHtml = validCoupons.map(c => {
+          const discountStr = c.discount_type === 'percentage' 
+            ? `${c.discount_value}% OFF` 
+            : `FLAT ₹${c.discount_value} OFF`;
+
           const minText = c.min_order_amount > 0 ? `On Orders Above ₹${c.min_order_amount}` : `On All Orders`;
-          
+          const targetText = (c.applicable_menu && c.applicable_menu !== 'all') ? ` | Special Collection` : ``;
+
           return `
-            <span class="inline-flex items-center gap-2 mx-10 shrink-0">
-              <span class="text-white drop-shadow-sm">✨ ${discountText} | ${minText} | Use Code:</span>
-              <span class="text-charcoal-900 font-black bg-white/95 px-2.5 py-0.5 rounded-full border border-white/50 shadow-sm font-mono text-[11px] tracking-wider">
+            <div class="inline-flex items-center gap-2.5 mx-6 shrink-0">
+              <span>✨ ${discountStr} ${minText}${targetText} | Use Code:</span>
+              <span class="text-charcoal-900 font-black bg-white px-2 py-0.5 rounded shadow-sm border border-white/60 tracking-wider font-mono">
                 ${c.code}
               </span>
-            </span>
+            </div>
           `;
         }).join('');
 
-        // Duplicate content once to create an uninterrupted infinite seamless loop
-        ticker.innerHTML = couponItemsHtml + couponItemsHtml;
+        // Duplicate itemsHtml twice to create a seamless infinite loop
+        track.innerHTML = `
+          <div class="inline-flex items-center shrink-0">${itemsHtml}</div>
+          <div class="inline-flex items-center shrink-0">${itemsHtml}</div>
+        `;
       } catch (err) {
-        console.warn("Coupon ticker fetch error:", err);
+        console.warn("Coupon ticker error:", err);
       }
     }
 
@@ -610,12 +645,12 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       refreshIcons();
+      loadDynamicCouponsTicker();
       updateCartBadge();
       syncHeaderUserAvatar();
       loadHeroBanners();
       loadMenuSubmenu();
       loadProducts();
-      loadDynamicCouponsTicker(); // Load right-to-left coupon marquee
     });
   </script>
 </body>
