@@ -9,12 +9,11 @@ const ONESIGNAL_APP_ID = "724a8d07-873c-418e-b7e3-b7059c922db2";
 
 async function sendBroadcastNotification(title, message, imageUrl = "", targetUrl = "https://www.zivarafashion.online") {
   try {
-    console.log("🚀 Triggering Broadcast Notification...", { title, message });
-
+    console.log("🚀 Triggering Secure Notification Relay...", { title, message });
     const payload = {
       action: "send_push_notification",
-      title: title,
-      message: message,
+      title,
+      message,
       image_url: imageUrl,
       target_url: targetUrl
     };
@@ -30,7 +29,7 @@ async function sendBroadcastNotification(title, message, imageUrl = "", targetUr
     });
 
     const result = await res.json();
-    console.log("📢 Push Function Response:", result);
+    console.log("📢 Notification Relay Result:", result);
   } catch (err) {
     console.error("❌ Notification Relay Error:", err);
   }
