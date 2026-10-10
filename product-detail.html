@@ -284,72 +284,63 @@
     }
 
     function formatProductDescription(raw) {
-  if (!raw) return '<p class="text-slate-400">Masterfully engineered and curated exclusively under the Zivara Privé atelier.</p>';
+      if (!raw) return '<p class="text-slate-400">Masterfully engineered and curated exclusively under the Zivara Privé atelier.</p>';
 
-  // 1. Separate Key-Value specs from editorial story
-  // Check if text has **Key:** patterns
-  let html = '';
-  
-  // Clean string
-  let text = raw.trim();
+      let html = '';
+      let text = raw.trim();
 
-  // If there is a divider like '--- ##' or '## Product Description'
-  const parts = text.split(/(?:---|##\s*Product Description)/i);
-  const specsPart = parts[0] || '';
-  const storyPart = parts.slice(1).join(' ').trim();
+      const parts = text.split(/(?:---|##\s*Product Description)/i);
+      const specsPart = parts[0] || '';
+      const storyPart = parts.slice(1).join(' ').trim();
 
-  // Parse **Key:** Value pairs into structured badge/table grid
-  const keyValRegex = /\*\*([^*:]+):\*\*\s*([^*]+?)(?=(?:\*\*[^*:]+:|\s*---|\s*##|$))/g;
-  let matches = [];
-  let match;
-  while ((match = keyValRegex.exec(specsPart)) !== null) {
-    const k = match[1].trim();
-    const v = match[2].trim().replace(/---$/, '').trim();
-    if (k && v) matches.push({ key: k, value: v });
-  }
+      const keyValRegex = /\*\*([^*:]+):\*\*\s*([^*]+?)(?=(?:\*\*[^*:]+:|\s*---|\s*##|$))/g;
+      let matches = [];
+      let match;
+      while ((match = keyValRegex.exec(specsPart)) !== null) {
+        const k = match[1].trim();
+        const v = match[2].trim().replace(/---$/, '').trim();
+        if (k && v) matches.push({ key: k, value: v });
+      }
 
-  // If structured key-values found, make a Flipkart/Amazon-style 2-column spec grid
-  if (matches.length > 0) {
-    html += `
-      <div class="space-y-2 mb-4">
-        <h5 class="text-[11px] font-mono uppercase tracking-wider text-gold-400/80">Specifications & Fabric Details</h5>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-noir-950 p-3.5 rounded-xl border border-gold-500/15 text-xs">
-          ${matches.map(item => `
-            <div class="flex items-start gap-2 py-1 border-b border-gold-500/10 sm:border-b-0">
-              <span class="text-slate-400 font-semibold shrink-0 min-w-[110px]">${item.key}:</span>
-              <span class="text-slate-200 font-medium">${item.value}</span>
+      if (matches.length > 0) {
+        html += `
+          <div class="space-y-2 mb-4">
+            <h5 class="text-[11px] font-mono uppercase tracking-wider text-gold-400/80">Specifications & Fabric Details</h5>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-noir-950 p-3.5 rounded-xl border border-gold-500/15 text-xs">
+              ${matches.map(item => `
+                <div class="flex items-start gap-2 py-1 border-b border-gold-500/10 sm:border-b-0">
+                  <span class="text-slate-400 font-semibold shrink-0 min-w-[110px]">${item.key}:</span>
+                  <span class="text-slate-200 font-medium">${item.value}</span>
+                </div>
+              `).join('')}
             </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  } else {
-    // Fallback if not matched
-    let cleanSpecs = specsPart
-      .replace(/\*\*([^*]+)\*\*/g, '<b class="text-white font-bold">$1</b>')
-      .replace(/\n/g, '<br/>');
-    html += `<div class="text-xs text-slate-300 leading-relaxed mb-3">${cleanSpecs}</div>`;
-  }
+          </div>
+        `;
+      } else {
+        let cleanSpecs = specsPart
+          .replace(/\*\*([^*]+)\*\*/g, '<b class="text-white font-bold">$1</b>')
+          .replace(/\n/g, '<br/>');
+        html += `<div class="text-xs text-slate-300 leading-relaxed mb-3">${cleanSpecs}</div>`;
+      }
 
-  // If there is editorial description story text
-  if (storyPart) {
-    let cleanStory = storyPart
-      .replace(/\*\*([^*]+)\*\*/g, '<b class="text-white font-bold">$1</b>')
-      .replace(/\n\n/g, '</p><p class="mt-2 text-xs sm:text-sm text-slate-300 leading-relaxed font-light">')
-      .replace(/\n/g, '<br/>');
+      if (storyPart) {
+        let cleanStory = storyPart
+          .replace(/\*\*([^*]+)\*\*/g, '<b class="text-white font-bold">$1</b>')
+          .replace(/\n\n/g, '</p><p class="mt-2 text-xs sm:text-sm text-slate-300 leading-relaxed font-light">')
+          .replace(/\n/g, '<br/>');
 
-    html += `
-      <div class="space-y-1.5 pt-2 border-t border-gold-500/15">
-        <h5 class="text-[11px] font-mono uppercase tracking-wider text-gold-400/80">About this Piece</h5>
-        <div class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-          ${cleanStory}
-        </div>
-      </div>
-    `;
-  }
+        html += `
+          <div class="space-y-1.5 pt-2 border-t border-gold-500/15">
+            <h5 class="text-[11px] font-mono uppercase tracking-wider text-gold-400/80">About this Piece</h5>
+            <div class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+              ${cleanStory}
+            </div>
+          </div>
+        `;
+      }
 
-  return html;
-}
+      return html;
+    }
 
     // 3. LOAD PRODUCT DETAIL
     async function loadProductDetail() {
@@ -379,7 +370,7 @@
       }
     }
 
-    // 4. RENDER MAIN PRODUCT VIEW
+    // 4. RENDER MAIN PRODUCT VIEW (WITH STOCK LOGIC APPLIED)
     function renderMainDetail(p) {
       const container = document.getElementById('productDetailContainer');
       const hasDiscount = p.original_price && p.original_price > p.price;
@@ -395,12 +386,46 @@
       selectedSize = sizes[0] || '';
       selectedColor = colors[0] || '';
 
+      // ==========================================
+      // STOCK LOGIC: 0 (Out), <= 3 (Limited), > 3 (Available)
+      // ==========================================
+      const stockQty = p.stock !== undefined ? Number(p.stock) : (p.stock_quantity !== undefined ? Number(p.stock_quantity) : 10);
+      const isOutOfStock = stockQty === 0;
+      const isLowStock = stockQty > 0 && stockQty <= 3;
+
+      let stockBadgeOverlay = '';
+      if (isOutOfStock) {
+        stockBadgeOverlay = `<span class="absolute top-3 left-3 bg-rose-600/95 text-white font-mono uppercase text-[10px] font-black px-3 py-1 rounded-md shadow-lg border border-rose-400/30 tracking-wider">Out of Stock</span>`;
+      } else if (isLowStock) {
+        stockBadgeOverlay = `<span class="absolute top-3 left-3 bg-amber-500/95 text-noir-950 font-mono uppercase text-[10px] font-black px-2.5 py-1 rounded-md shadow-lg border border-amber-300 tracking-wider flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-noir-950 animate-ping"></span>Limited Stock (${stockQty} Left)</span>`;
+      } else if (hasDiscount) {
+        stockBadgeOverlay = `<span class="absolute top-3 left-3 bg-noir-950/90 text-gold-400 border border-gold-500/40 text-[10px] font-bold px-2.5 py-1 rounded-md shadow">${discount}% OFF</span>`;
+      }
+
+      let stockNoticeBanner = '';
+      if (isOutOfStock) {
+        stockNoticeBanner = `
+          <div class="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center gap-2">
+            <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-400 shrink-0"></i>
+            <span>Currently Out of Stock. This piece will be restocked in the atelier soon.</span>
+          </div>
+        `;
+      } else if (isLowStock) {
+        stockNoticeBanner = `
+          <div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center gap-2">
+            <i data-lucide="flame" class="w-4 h-4 text-amber-400 shrink-0 animate-bounce"></i>
+            <span>Hurry! Only ${stockQty} items left in stock. High demand.</span>
+          </div>
+        `;
+      }
+
       container.innerHTML = `
         <!-- LEFT: AUTO-SLIDING MEDIA SHOWCASE -->
         <div class="lg:col-span-5 space-y-4">
           <div id="mediaViewerFrame" onclick="openLightbox(currentActivePhoto)" class="relative w-full h-[360px] sm:h-[460px] bg-noir-950 rounded-2xl overflow-hidden border border-gold-500/30 flex items-center justify-center cursor-zoom-in group shadow-xl">
-            <img id="mainShowcaseImg" src="${primaryImg}" alt="${p.title}" class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105" onerror="this.src='Cover.png'" />
-            ${hasDiscount ? `<span class="absolute top-3 left-3 bg-noir-950/90 text-gold-400 border border-gold-500/40 text-[10px] font-bold px-2.5 py-1 rounded-md shadow">${discount}% OFF</span>` : ''}
+            <img id="mainShowcaseImg" src="${primaryImg}" alt="${p.title}" class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}" onerror="this.src='Cover.png'" />
+            
+            ${stockBadgeOverlay}
             
             <div class="absolute bottom-3 right-3 bg-noir-950/80 border border-gold-500/30 text-gold-400 p-2 rounded-xl text-xs flex items-center gap-1.5 shadow-lg opacity-80 group-hover:opacity-100 transition">
               <i data-lucide="maximize-2" class="w-4 h-4"></i>
@@ -443,7 +468,7 @@
             </div>
           </div>
 
-          <!-- PRICE STRIP (WITH REAL-TIME COUPON DISCOUNT DISPLAY) -->
+          <!-- PRICE STRIP -->
           <div class="p-4 rounded-2xl bg-noir-950 border border-gold-500/20 space-y-1">
             <div class="flex items-baseline gap-3">
               <span id="finalDisplayPrice" class="text-2xl sm:text-3xl font-black text-white">₹${Number(p.price).toLocaleString('en-IN')}</span>${hasDiscount ? `<span id="mrpDisplayPrice" class="text-sm text-slate-500 line-through">₹${Number(p.original_price).toLocaleString('en-IN')}</span>` : ''}
@@ -455,9 +480,10 @@
             </div>
           </div>
 
-          <!-- ============================================================== -->
-          <!-- AMAZON / FLIPKART STYLE: AVAILABLE OFFERS HORIZONTAL SECTION -->
-          <!-- ============================================================== -->
+          <!-- STOCK NOTIFICATION BANNER -->
+          ${stockNoticeBanner}
+
+          <!-- AVAILABLE OFFERS SECTION -->
           <div id="availableOffersSection" class="space-y-2.5 border-t border-b border-gold-500/20 py-4">
             <div class="flex items-center justify-between">
               <h4 class="text-xs font-bold uppercase tracking-wider text-gold-400 flex items-center gap-2">
@@ -507,22 +533,35 @@
             </div>
           ` : ''}
 
-<div class="space-y-3 pt-1">
-  <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
-    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-gold-500"></i>
-    <span>Editorial Details & Craftsmanship</span>
-  </h4>
-  <div id="formattedDescriptionContainer">
-    ${formatProductDescription(p.description)}
-  </div>
-</div>
+          <!-- FORMATTED EDITORIAL DETAILS -->
+          <div class="space-y-3 pt-1">
+            <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-gold-500"></i>
+              <span>Editorial Details & Craftsmanship</span>
+            </h4>
+            <div id="formattedDescriptionContainer">
+              ${formatProductDescription(p.description)}
+            </div>
+          </div>
 
+          <!-- PURCHASE ACTION BUTTONS (DYNAMIC DISABLE FOR OUT OF STOCK) -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            <button onclick="addCurrentToCart()" class="w-full bg-noir-950 border border-gold-500/40 text-gold-400 hover:bg-noir-800 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
-              <i data-lucide="shopping-bag" class="w-4 h-4"></i> Add To Bag
+            <button 
+              id="addToBagActionBtn"
+              onclick="addCurrentToCart()" 
+              ${isOutOfStock ? 'disabled' : ''}
+              class="w-full ${isOutOfStock ? 'bg-noir-900 border-slate-700 text-slate-500 cursor-not-allowed opacity-50' : 'bg-noir-950 border-gold-500/40 text-gold-400 hover:bg-noir-800 cursor-pointer shadow-lg'} border font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i> 
+              <span>${isOutOfStock ? 'Out of Stock' : 'Add To Bag'}</span>
             </button>
-            <button onclick="buyNowCurrent()" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-xl transition flex items-center justify-center gap-2 cursor-pointer">
-              <i data-lucide="zap" class="w-4 h-4 text-noir-950 fill-current"></i> Buy Now
+            
+            <button 
+              id="buyNowActionBtn"
+              onclick="buyNowCurrent()" 
+              ${isOutOfStock ? 'disabled' : ''}
+              class="w-full ${isOutOfStock ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50' : 'bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 cursor-pointer shadow-xl'} font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2">
+              <i data-lucide="zap" class="w-4 h-4 ${isOutOfStock ? 'text-slate-500' : 'text-noir-950 fill-current'}"></i> 
+              <span>${isOutOfStock ? 'Unavailable' : 'Buy Now'}</span>
             </button>
           </div>
         </div>
@@ -553,12 +592,9 @@
           return;
         }
 
-        // Filter coupons applicable for ALL products OR matching this product's submenu_code
         const targetSubmenu = String(product.submenu_code || '').trim();
         const validOffers = coupons.filter(c => {
-          // Check expiry
           if (c.expiry_date && new Date(c.expiry_date) < new Date()) return false;
-          // Check usage limit
           if (c.usage_limit && (c.times_used || 0) >= c.usage_limit) return false;
 
           const scope = String(c.applicable_menu || 'all').trim();
@@ -573,7 +609,6 @@
 
         if (countBadge) countBadge.innerText = `${validOffers.length} Offers Available`;
 
-        // Render Flipkart/Amazon Styled Offer Cards
         container.innerHTML = validOffers.map(c => {
           const isPercentage = c.discount_type === 'percentage';
           const discountStr = isPercentage ? `${c.discount_value}% Instant OFF` : `Flat ₹${c.discount_value} OFF`;
@@ -633,7 +668,6 @@
 
       const effectivePrice = Math.max(0, Math.round(basePrice - cut));
 
-      // Update UI
       const finalPriceEl = document.getElementById('finalDisplayPrice');
       const badgeWrap = document.getElementById('appliedOfferBadge');
       const badgeText = document.getElementById('appliedOfferText');
@@ -647,7 +681,6 @@
         badgeText.innerText = `Offer Applied: Code ${code} (Instant Discount)`;
       }
 
-      // Reset all buttons and highlight active
       document.querySelectorAll('[id^="btn-apply-"]').forEach(b => {
         b.className = "px-3 py-1 rounded-lg bg-gold-500/15 text-gold-400 border border-gold-500/40 text-[10px] font-bold uppercase tracking-wider transition cursor-pointer";
         b.innerText = "Apply";
@@ -660,7 +693,6 @@
       }
 
       appliedCoupon = { code, type, value: val, cut };
-      // Save for auto-apply on checkout cart
       localStorage.setItem('zivara_auto_coupon', code);
 
       alert(`🎉 Offer ${code} Applied! You will get an instant discount of ₹${Math.round(cut)} at checkout.`);
@@ -688,9 +720,12 @@
       currentImageIndex = index;
       currentActivePhoto = src;
 
+      const stockQty = currentProduct?.stock !== undefined ? Number(currentProduct.stock) : (currentProduct?.stock_quantity !== undefined ? Number(currentProduct.stock_quantity) : 10);
+      const isOutOfStock = stockQty === 0;
+
       const frame = document.getElementById('mediaViewerFrame');
       frame.innerHTML = `
-        <img id="mainShowcaseImg" src="${src}" alt="${currentProduct?.title || ''}" class="w-full h-full object-cover transition-opacity duration-300" onerror="this.src='Cover.png'" />
+        <img id="mainShowcaseImg" src="${src}" alt="${currentProduct?.title || ''}" class="w-full h-full object-cover transition-opacity duration-300 ${isOutOfStock ? 'opacity-70 grayscale-[30%]' : ''}" onerror="this.src='Cover.png'" />
         <div class="absolute bottom-3 right-3 bg-noir-950/80 border border-gold-500/30 text-gold-400 p-2 rounded-xl text-xs flex items-center gap-1.5 shadow-lg opacity-80 group-hover:opacity-100 transition">
           <i data-lucide="maximize-2" class="w-4 h-4"></i>
           <span class="text-[10px] font-bold uppercase hidden sm:inline">Tap to Zoom</span>
@@ -838,9 +873,15 @@
       }
     });
 
-    // 11. CART HANDLERS (CARRIES SUBMENU_CODE & APPLIED COUPON)
+    // 11. CART HANDLERS (STOCK PROTECTED)
     function addCurrentToCart() {
       if (!currentProduct) return;
+
+      const stockQty = currentProduct.stock !== undefined ? Number(currentProduct.stock) : (currentProduct.stock_quantity !== undefined ? Number(currentProduct.stock_quantity) : 10);
+      if (stockQty === 0) {
+        alert("⚠️ Yeh product abhi Out of Stock hai!");
+        return;
+      }
 
       const primaryImg = currentActivePhoto || currentProduct.thumbnail_url || currentProduct.image_url || 'Cover.png';
       const chosenSize = selectedSize || (currentProduct.available_sizes?.[0] || 'Free Size');
@@ -853,6 +894,10 @@
       );
 
       if (idx > -1) {
+        if (cart[idx].quantity >= stockQty) {
+          alert(`⚠️ Atelier Limit: Is piece ke sirf ${stockQty} units available hain!`);
+          return;
+        }
         cart[idx].quantity += 1;
       } else {
         cart.push({
@@ -878,6 +923,11 @@
     }
 
     function buyNowCurrent() {
+      const stockQty = currentProduct?.stock !== undefined ? Number(currentProduct.stock) : (currentProduct?.stock_quantity !== undefined ? Number(currentProduct.stock_quantity) : 10);
+      if (stockQty === 0) {
+        alert("⚠️ Yeh product abhi Out of Stock hai!");
+        return;
+      }
       addCurrentToCart();
       window.location.href = 'cart.html';
     }
