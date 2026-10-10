@@ -47,6 +47,44 @@ function generateRandomProductId() {
   return "ZIV-" + Math.floor(100000 + Math.random() * 900000);
 }
 
+// ==========================================================
+// STOCK STATUS BADGE HELPER FOR ADMIN INVENTORY
+// ==========================================================
+function getAdminStockBadge(stock) {
+  const qty = Number(stock || 0);
+  if (qty === 0) {
+    return `
+      <div class="space-y-1">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+          Out of Stock
+        </span>
+        <div class="text-[10px] text-slate-500 font-mono">0 units</div>
+      </div>
+    `;
+  } else if (qty <= 3) {
+    return `
+      <div class="space-y-1">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          Low Stock
+        </span>
+        <div class="text-[10px] text-amber-300/80 font-mono font-bold">${qty} units left</div>
+      </div>
+    `;
+  } else {
+    return `
+      <div class="space-y-1">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          In Stock
+        </span>
+        <div class="text-[10px] text-slate-400 font-mono">${qty} units</div>
+      </div>
+    `;
+  }
+}
+
 // TAB CONTROLLER
 window.switchAdminTab = function(tabId) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -713,7 +751,6 @@ function toggleDiscountTypeLabel() {
   }
 }
 
-// POPULATE APPLICABLE SUB-MENU DROPDOWN
 function loadCouponCategoryDropdown() {
   const select = document.getElementById('couponApplicableMenu');
   if (!select) return;
@@ -1282,7 +1319,11 @@ window.startEditProduct = function(productId) {
   document.getElementById('prodRandomId').value = product.product_id;
   document.getElementById('prodCode').value = product.product_code || '';
   document.getElementById('prodBrand').value = product.brand_name || 'Zivara Maison';
-  document.getElementById('prodStock').value = product.stock_quantity || 10;
+  
+  // Existing stock ya stock_quantity pick karein
+  const currentStock = product.stock !== undefined ? product.stock : (product.stock_quantity !== undefined ? product.stock_quantity : 10);
+  document.getElementById('prodStock').value = currentStock;
+  
   document.getElementById('prodTitle').value = product.title || '';
   document.getElementById('prodPrice').value = product.price || '';
   document.getElementById('prodOrigPrice').value = product.original_price || '';
@@ -1337,18 +1378,15 @@ async function handleCreateOrUpdateProduct(e) {
   const isEditing = document.getElementById('isEditingMode').value === "true";
   const btn = document.getElementById('prodSubmitBtn');
   const submitText = document.getElementById('prodSubmitBtnText');
-  const stockUnits = parseInt(document.getElementById('productStock').value, 10);
 
-if (isNaN(stockUnits) || stockUnits < 3) {
-  alert("⚠️ Minimum 3 units stock enter karna anivarya hai!");
-  return;
-}
-
-// Payload mein stock pass karein:
-const productPayload = {
-  // ...baaki product fields
-  stock: stockUnits
-};
+  // ==========================================================
+  // STOCK VALIDATION RULE: MINIMUM 3 UNITS REQUIRED
+  // ==========================================================
+  const stockQty = parseInt(document.getElementById('prodStock').value, 10);
+  if (isNaN(stockQty) || stockQty < 3) {
+    alert("⚠️ Validation Error: Product stock kam se kam 3 units hona anivarya hai!");
+    return;
+  }
 
   if (btn.disabled) return;
   btn.disabled = true;
@@ -1370,7 +1408,8 @@ const productPayload = {
     const payload = {
       product_code: document.getElementById('prodCode').value.trim().toUpperCase(),
       brand_name: document.getElementById('prodBrand').value.trim(),
-      stock_quantity: parseInt(document.getElementById('prodStock').value, 10),
+      stock_quantity: stockQty,
+      stock: stockQty,
       title: document.getElementById('prodTitle').value.trim(),
       menu_code: document.getElementById('prodMenuSelect').value,
       submenu_code: document.getElementById('prodSubmenuSelect').value || null,
@@ -1519,6 +1558,9 @@ function renderInventoryTable(productsList) {
   } else {
     tbody.innerHTML = productsList.map(p => {
       const pKey = p.product_id || p.id;
+      // Stock quantity check (stock ya stock_quantity me se jo bhi available ho)
+      const currentStock = p.stock !== undefined ? p.stock : (p.stock_quantity !== undefined ? p.stock_quantity : 0);
+
       return `
         <tr class="hover:bg-noir-950/40 transition">
           <td class="p-3"><img src="${p.thumbnail_url || 'Cover.png'}" class="w-12 h-14 object-cover rounded-lg bg-noir-950 border border-gold-500/20" onerror="this.src='Cover.png'" /></td>
@@ -1528,7 +1570,12 @@ function renderInventoryTable(productsList) {
             <div class="text-[10px] text-slate-500">Menu: ${p.menu_code} | Sub: ${p.submenu_code || 'None'}</div>
           </td>
           <td class="p-3 font-bold">₹${Number(p.price).toLocaleString('en-IN')}</td>
-          <td class="p-3">${p.stock_quantity} units</td>
+          
+          <!-- UPDATED STOCK MONITORING BADGE CELL -->
+          <td class="p-3">
+            ${getAdminStockBadge(currentStock)}
+          </td>
+          
           <td class="p-3">
             <button onclick="toggleProductStatus('${pKey}', ${p.is_active})" class="px-2.5 py-1 rounded-full text-[10px] font-bold ${p.is_active ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'}">${p.is_active ? 'Live' : 'Hidden'}</button>
           </td>
