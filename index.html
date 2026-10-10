@@ -28,7 +28,7 @@
 
   <style>
     /* Continuous Right to Left Infinite Marquee */
-    @keyframes marqueeScroll {
+@keyframes marqueeScroll {
       0% {
         transform: translateX(0%);
       }
@@ -45,6 +45,20 @@
 
     .animate-marquee-track:hover {
       animation-play-state: paused;
+    }
+
+    /* ========================================== */
+    /* STOCK BADGE OVERLAY STYLES FOR STOREFRONT  */
+    /* ========================================== */
+    .badge-out-of-stock {
+      background-color: rgba(225, 29, 72, 0.95);
+      color: #ffffff;
+      border: 1px solid rgba(254, 205, 211, 0.4);
+    }
+    .badge-limited-stock {
+      background-color: rgba(245, 158, 11, 0.95);
+      color: #111111;
+      border: 1px solid rgba(253, 230, 138, 0.8);
     }
   </style>
 
