@@ -1337,6 +1337,18 @@ async function handleCreateOrUpdateProduct(e) {
   const isEditing = document.getElementById('isEditingMode').value === "true";
   const btn = document.getElementById('prodSubmitBtn');
   const submitText = document.getElementById('prodSubmitBtnText');
+  const stockUnits = parseInt(document.getElementById('productStock').value, 10);
+
+if (isNaN(stockUnits) || stockUnits < 3) {
+  alert("⚠️ Minimum 3 units stock enter karna anivarya hai!");
+  return;
+}
+
+// Payload mein stock pass karein:
+const productPayload = {
+  // ...baaki product fields
+  stock: stockUnits
+};
 
   if (btn.disabled) return;
   btn.disabled = true;
