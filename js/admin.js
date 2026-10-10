@@ -1318,7 +1318,7 @@ window.startEditProduct = function(productId) {
 
   document.getElementById('prodRandomId').value = product.product_id;
   document.getElementById('prodCode').value = product.product_code || '';
-  document.getElementById('prodBrand').value = product.brand_name || 'Zivara Maison';
+  document.getElementById('prodBrand').value = product.brand_name || 'Zivara Faishon';
   
   // Existing stock ya stock_quantity pick karein
   const currentStock = product.stock !== undefined ? product.stock : (product.stock_quantity !== undefined ? product.stock_quantity : 10);
@@ -1358,7 +1358,7 @@ window.resetProductFormToCreate = function() {
   document.getElementById('prodSubmitBtnText').innerText = "Save & Publish Product";
   document.getElementById('cancelEditBtn')?.classList.add('hidden');
   document.getElementById('prodRandomId').value = generateRandomProductId();
-  document.getElementById('prodBrand').value = 'Zivara Maison';
+  document.getElementById('prodBrand').value = 'Zivara Faishon';
   document.getElementById('prodStock').value = 10;
   document.getElementById('prodActive').checked = true;
   document.getElementById('prodFeatured').checked = false;
