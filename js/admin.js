@@ -932,7 +932,7 @@ window.startEditCoupon = function(id) {
   document.getElementById('couponMinOrder').value = item.min_order_amount || 0;
   document.getElementById('couponMaxDiscount').value = item.max_discount || '';
   document.getElementById('couponExpiry').value = item.expiry_date || '';
-  document.getElementById('couponUsageLimit').value = item.usage_limit || 100;
+  document.getElementById('couponUsageLimit').value = item.usage_limit || 10;
   document.getElementById('couponActive').checked = item.is_active !== false;
 
   if (document.getElementById('couponApplicableMenu')) {
