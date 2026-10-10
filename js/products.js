@@ -19,11 +19,11 @@ export async function loadProducts(isAppend = false) {
   }
 
   try {
+    // Note: Removed .gt('stock_quantity', 0) taaki Out of Stock products bhi storefront par badges ke sath dikhein
     const { data, error } = await db
       .from('products')
       .select('*')
       .eq('is_active', true)
-      .gt('stock_quantity', 0)
       .order('created_at', { ascending: false })
       .range(currentOffset, currentOffset + PAGE_LIMIT - 1);
 
@@ -56,7 +56,7 @@ export async function loadProducts(isAppend = false) {
   }
 }
 
-// 2. RENDER GRID (STRICT SINGLE RENDER)
+// 2. RENDER GRID (STRICT SINGLE RENDER WITH STOCK BADGES)
 export function renderProductGrid(items, isAppend = false) {
   const grid = document.getElementById('productGrid');
   const counter = document.getElementById('productCounter');
@@ -100,15 +100,44 @@ export function renderProductGrid(items, isAppend = false) {
     const discount = hasDiscount ? Math.round(((product.original_price - product.price) / product.original_price) * 100) : 0;
     const displayImg = product.thumbnail_url || product.image_url || 'Cover.png';
 
+    // ==========================================================
+    // STOREFRONT STOCK LOGIC (0: Out of Stock, 1-3: Limited Stock)
+    // ==========================================================
+    const stockQty = product.stock !== undefined ? Number(product.stock) : (product.stock_quantity !== undefined ? Number(product.stock_quantity) : 10);
+    const isOutOfStock = stockQty === 0;
+    const isLimitedStock = stockQty > 0 && stockQty <= 3;
+
+    let stockBadgeMarkup = '';
+    if (isOutOfStock) {
+      stockBadgeMarkup = `
+        <span class="absolute top-2 left-2 z-20 bg-rose-600 text-white font-black text-[9px] px-2 py-0.5 rounded shadow-md tracking-wider uppercase font-mono border border-rose-400/40">
+          Out of Stock
+        </span>
+      `;
+    } else if (isLimitedStock) {
+      stockBadgeMarkup = `
+        <span class="absolute top-2 left-2 z-20 bg-amber-500 text-charcoal-950 font-black text-[9px] px-2 py-0.5 rounded shadow-md tracking-wider uppercase font-mono border border-amber-300 flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-charcoal-950 animate-ping"></span>
+          Only ${stockQty} Left
+        </span>
+      `;
+    } else if (hasDiscount) {
+      stockBadgeMarkup = `
+        <span class="absolute top-2 left-2 z-20 bg-gold-500 text-white font-bold text-[9px] px-2 py-0.5 rounded shadow-md tracking-wider uppercase font-mono">
+          ${discount}% OFF
+        </span>
+      `;
+    }
+
     return `
       <div onclick="window.openProductDetail('${product.product_id}')" class="group bg-white border border-ivory-300 rounded-2xl overflow-hidden hover:border-gold-500 hover:shadow-xl transition duration-300 flex flex-col shadow-sm cursor-pointer transform hover:-translate-y-1">
         
         <div class="relative w-full h-48 sm:h-60 bg-ivory-100 overflow-hidden">
-          <img src="${displayImg}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 ease-out" loading="lazy" onerror="this.src='Cover.png'" />
+          <img src="${displayImg}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 ease-out ${isOutOfStock ? 'opacity-65 grayscale-[35%]' : ''}" loading="lazy" onerror="this.src='Cover.png'" />
           
-          ${hasDiscount ? `<span class="absolute top-2 left-2 bg-gold-500 text-white font-bold text-[9px] px-2 py-0.5 rounded shadow-md tracking-wider uppercase font-mono">${discount}% OFF</span>` : ''}
+          ${stockBadgeMarkup}
           
-          <button onclick="event.stopPropagation(); window.toggleWishlist('${product.product_id}')" class="absolute top-2 right-2 bg-white/90 hover:bg-white p-1.5 rounded-full text-slate-600 hover:text-rose-500 transition shadow-sm border border-ivory-200" title="Wishlist">
+          <button onclick="event.stopPropagation(); window.toggleWishlist('${product.product_id}')" class="absolute top-2 right-2 bg-white/90 hover:bg-white p-1.5 rounded-full text-slate-600 hover:text-rose-500 transition shadow-sm border border-ivory-200 z-20" title="Wishlist">
             <i data-lucide="heart" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -138,9 +167,13 @@ export function renderProductGrid(items, isAppend = false) {
             </div>
           </div>
 
-          <button onclick="event.stopPropagation(); window.addToCart('${product.product_id}')" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-600 hover:to-gold-500 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md active:scale-95">
-            <i data-lucide="shopping-bag" class="w-3.5 h-3.5 stroke-[2.5]"></i>
-            <span>Add to Bag</span>
+          <!-- DYNAMIC ACTION BUTTON -->
+          <button 
+            onclick="event.stopPropagation(); ${isOutOfStock ? `alert('⚠️ Yeh piece abhi Out of Stock hai!')` : `window.addToCart('${product.product_id}')`}" 
+            ${isOutOfStock ? 'disabled' : ''}
+            class="w-full ${isOutOfStock ? 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed shadow-none' : 'bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-600 hover:to-gold-500 text-white shadow-md active:scale-95 cursor-pointer'} font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5">
+            <i data-lucide="${isOutOfStock ? 'alert-circle' : 'shopping-bag'}" class="w-3.5 h-3.5 stroke-[2.5]"></i>
+            <span>${isOutOfStock ? 'Out of Stock' : 'Add to Bag'}</span>
           </button>
         </div>
       </div>`;
@@ -331,7 +364,6 @@ export function resetAllFilters() {
 
 // 7. SAFE AUTO-SCROLL TRIGGER (Requires actual user scroll distance)
 window.addEventListener('scroll', () => {
-  // Only trigger if user scrolled down at least 150px (prevents instant-trigger on short page)
   if (window.scrollY < 150) return;
 
   if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
