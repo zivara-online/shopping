@@ -283,6 +283,74 @@
       refreshIcons();
     }
 
+    function formatProductDescription(raw) {
+  if (!raw) return '<p class="text-slate-400">Masterfully engineered and curated exclusively under the Zivara Privé atelier.</p>';
+
+  // 1. Separate Key-Value specs from editorial story
+  // Check if text has **Key:** patterns
+  let html = '';
+  
+  // Clean string
+  let text = raw.trim();
+
+  // If there is a divider like '--- ##' or '## Product Description'
+  const parts = text.split(/(?:---|##\s*Product Description)/i);
+  const specsPart = parts[0] || '';
+  const storyPart = parts.slice(1).join(' ').trim();
+
+  // Parse **Key:** Value pairs into structured badge/table grid
+  const keyValRegex = /\*\*([^*:]+):\*\*\s*([^*]+?)(?=(?:\*\*[^*:]+:|\s*---|\s*##|$))/g;
+  let matches = [];
+  let match;
+  while ((match = keyValRegex.exec(specsPart)) !== null) {
+    const k = match[1].trim();
+    const v = match[2].trim().replace(/---$/, '').trim();
+    if (k && v) matches.push({ key: k, value: v });
+  }
+
+  // If structured key-values found, make a Flipkart/Amazon-style 2-column spec grid
+  if (matches.length > 0) {
+    html += `
+      <div class="space-y-2 mb-4">
+        <h5 class="text-[11px] font-mono uppercase tracking-wider text-gold-400/80">Specifications & Fabric Details</h5>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-noir-950 p-3.5 rounded-xl border border-gold-500/15 text-xs">
+          ${matches.map(item => `
+            <div class="flex items-start gap-2 py-1 border-b border-gold-500/10 sm:border-b-0">
+              <span class="text-slate-400 font-semibold shrink-0 min-w-[110px]">${item.key}:</span>
+              <span class="text-slate-200 font-medium">${item.value}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    // Fallback if not matched
+    let cleanSpecs = specsPart
+      .replace(/\*\*([^*]+)\*\*/g, '<b class="text-white font-bold">$1</b>')
+      .replace(/\n/g, '<br/>');
+    html += `<div class="text-xs text-slate-300 leading-relaxed mb-3">${cleanSpecs}</div>`;
+  }
+
+  // If there is editorial description story text
+  if (storyPart) {
+    let cleanStory = storyPart
+      .replace(/\*\*([^*]+)\*\*/g, '<b class="text-white font-bold">$1</b>')
+      .replace(/\n\n/g, '</p><p class="mt-2 text-xs sm:text-sm text-slate-300 leading-relaxed font-light">')
+      .replace(/\n/g, '<br/>');
+
+    html += `
+      <div class="space-y-1.5 pt-2 border-t border-gold-500/15">
+        <h5 class="text-[11px] font-mono uppercase tracking-wider text-gold-400/80">About this Piece</h5>
+        <div class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+          ${cleanStory}
+        </div>
+      </div>
+    `;
+  }
+
+  return html;
+}
+
     // 3. LOAD PRODUCT DETAIL
     async function loadProductDetail() {
       const params = new URLSearchParams(window.location.search);
@@ -439,12 +507,15 @@
             </div>
           ` : ''}
 
-          <div class="space-y-2">
-            <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider">Editorial Details & Craftsmanship</h4>
-            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-              ${p.description || 'Masterfully engineered and curated exclusively under the Zivara Privé atelier.'}
-            </p>
-          </div>
+<div class="space-y-3 pt-1">
+  <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center gap-2">
+    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-gold-500"></i>
+    <span>Editorial Details & Craftsmanship</span>
+  </h4>
+  <div id="formattedDescriptionContainer">
+    ${formatProductDescription(p.description)}
+  </div>
+</div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button onclick="addCurrentToCart()" class="w-full bg-noir-950 border border-gold-500/40 text-gold-400 hover:bg-noir-800 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
