@@ -655,7 +655,7 @@ function renderOrdersTable(ordersList) {
 window.retryShiprocketOrder = async function(orderId) {
   const order = cachedOrders.find(o => o.order_id === orderId);
   if (!order) return;
-  if (!confirm(`Kya aap Order [${orderId}] ko Shiprocket par dispatch ke liye bhejna chahte hain?`)) return;
+  if (!confirm(`Do you want to send order [${orderId}] for dispatch?`)) return;
 
   try {
     const isCod = (order.payment_method === 'COD') || (order.razorpay_payment_id && order.razorpay_payment_id.startsWith('COD'));
@@ -672,7 +672,7 @@ window.retryShiprocketOrder = async function(orderId) {
         awb_code: String(data.awb_code || '')
       }).eq('order_id', orderId);
 
-      alert(`✅ Success! Shiprocket Order ID: ${data.order_id} generate ho gaya!`);
+      alert(`✅ Success! Shiprocket Order ID: ${data.order_id} Generated!`);
       fetchOrdersData();
     } else {
       alert("❌ Shiprocket Response: " + (data.message || JSON.stringify(data)));
@@ -692,7 +692,7 @@ window.updateOrderStatus = async function(orderId, newStatus) {
 
     const { error } = await db.from('orders').update(payload).eq('order_id', orderId);
     if (error) throw error;
-    alert(`✅ Order ${orderId} ka status updated!`);
+    alert(`✅ Status of Order ${orderId} is updated!`);
     fetchOrdersData();
   } catch (err) {
     alert("❌ Error: " + err.message);
@@ -1071,7 +1071,7 @@ async function fetchBanners() {
 async function handleAddBanner(e) {
   e.preventDefault();
   const btn = document.getElementById('bannerSubmitBtn');
-  if (!selectedBannerFile) return alert("Banner image select karein!");
+  if (!selectedBannerFile) return alert("Select the Banner image!");
 
   btn.disabled = true;
   btn.innerText = "Uploading...";
