@@ -618,7 +618,7 @@
           .order('created_at', { ascending: false });
 
         if (error || !orders || orders.length === 0) {
-          resContainer.innerHTML = `<p class="text-center text-rose-500 text-xs py-2">Koi order nahi mila! Kripya sahi Order ID ya Phone number dalein.</p>`;
+          resContainer.innerHTML = `<p class="text-center text-rose-500 text-xs py-2">No order found! Please enter the correct Order ID or phone number.</p>`;
           return;
         }
 
