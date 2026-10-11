@@ -277,7 +277,7 @@
         <span class="text-[11px] text-slate-400">Fashion • Style • You</span>
       </div>
       <div class="text-[11px] text-slate-500">
-        &copy; 2026 Zivara Technologies Pvt Ltd. All rights reserved.
+        &copy; 2026 AutoTech Solutions. All rights reserved
       </div>
     </div>
   </footer>
@@ -494,7 +494,7 @@
         const onlineRadio = document.querySelector('input[name="paymentMethod"][value="online"]');
         if (onlineRadio) onlineRadio.checked = true;
         togglePaymentSelection('online');
-        noteEl.innerHTML = `ℹ️ Cash on Delivery (COD) sirf Pincode <b class="text-gold-400 font-mono">829104</b> ke liye upalabdha hai. Baaki sabhi locations ke liye 100% insured prepaid Razorpay gateway uplabdh hai.`;
+        noteEl.innerHTML = `ℹ️ Cash on Delivery (COD) not available! Only for <b class="text-gold-400 font-mono">829104</b>Pin Code. Please make an online payment.`;
       }
       refreshIcons();
     };
@@ -620,7 +620,7 @@
 
       if (currentPaymentMode === 'cod') {
         if (!has829104) {
-          alert("Cash on Delivery sirf Pincode 829104 ke liye allow hai! Kripya Online Payment karein.");
+          alert("Cash on Delivery is not available! Please make an online payment.");
           return;
         }
         processCashOnDeliveryOrder();
@@ -781,7 +781,7 @@
             closeCustomerDetailsModal();
 
             // 5. INSTANT SUCCESS ALERT & REDIRECT TO ORDERS
-            alert(`🎉 Payment Successful!\nOrder ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}\n\nAapka order confirm ho chuka hai!`);
+            alert(`🎉 Payment Successful!\nOrder ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}\n\nYour order has been confirmed!`);
             window.location.href = "login.html";
 
           } catch (err) {
