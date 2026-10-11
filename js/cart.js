@@ -68,14 +68,14 @@ export function removeFromCart(id) {
 // 5. VALIDATE & APPLY SUB-MENU SPECIFIC COUPON
 export async function applyCouponCode(codeString) {
   if (!codeString || !codeString.trim()) {
-    return { success: false, message: "Kripya coupon code enter karein!" };
+    return { success: false, message: "Please Enter Valid Coupon Code!" };
   }
 
   const qCode = codeString.trim().toUpperCase();
   const cartItems = state.cart || [];
 
   if (cartItems.length === 0) {
-    return { success: false, message: "Aapka shopping bag khali hai!" };
+    return { success: false, message: "Your Shoping Bag is Empty!" };
   }
 
   try {
@@ -87,19 +87,19 @@ export async function applyCouponCode(codeString) {
       .limit(1);
 
     if (error || !coupons || coupons.length === 0) {
-      return { success: false, message: "Invalid ya expired coupon code!" };
+      return { success: false, message: "Invalid or expired coupon code!" };
     }
 
     const coupon = coupons[0];
 
     // Expiry Check
     if (coupon.expiry_date && new Date(coupon.expiry_date) < new Date()) {
-      return { success: false, message: "Yeh coupon code expire ho chuka hai!" };
+      return { success: false, message: "This coupon code has expired!" };
     }
 
     // Usage Limit Check
     if (coupon.usage_limit && coupon.times_used >= coupon.usage_limit) {
-      return { success: false, message: "Yeh coupon code usage limit cross kar chuka hai!" };
+      return { success: false, message: "This coupon code has exceeded its usage limit!" };
     }
 
     // Sub-Menu Restriction Check
@@ -111,7 +111,7 @@ export async function applyCouponCode(codeString) {
       if (eligibleItems.length === 0) {
         return { 
           success: false, 
-          message: `Yeh coupon sirf specific item collection par lagu hota hai! Aapke bag me is sub-menu ka product nahi hai.` 
+          message: `This coupon applies only to a specific collection of items! Your bag does not contain any products from this menu.` 
         };
       }
     }
@@ -121,12 +121,12 @@ export async function applyCouponCode(codeString) {
     if (coupon.min_order_amount && eligibleAmount < Number(coupon.min_order_amount)) {
       return { 
         success: false, 
-        message: `Min. order amount ₹${coupon.min_order_amount} hona chahiye is specific item par!` 
+        message: `The minimum order amount for this specific item must be ₹${coupon.min_order_amount}!` 
       };
     }
 
     activeCoupon = coupon;
-    return { success: true, coupon, message: `Coupon [${coupon.code}] successfully apply ho gaya!` };
+    return { success: true, coupon, message: `Coupon [${coupon.code}] successfully applied!` };
   } catch (err) {
     return { success: false, message: "Coupon error: " + err.message };
   }
