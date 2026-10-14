@@ -3,6 +3,14 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // ==========================================================
+// 🔒 AUTHORIZED ADMIN WHITELIST GATE
+// ==========================================================
+const AUTHORIZED_ADMINS = [
+  "info.zivara.online@gmail.com",
+  "info.maashardaengineering@gmail.com"
+];
+
+// ==========================================================
 // ONESIGNAL PUSH NOTIFICATION TRIGGER ENGINE (VIA EDGE RELAY)
 // ==========================================================
 const ONESIGNAL_APP_ID = "724a8d07-873c-418e-b7e3-b7059c922db2";
@@ -114,6 +122,16 @@ async function checkAdminSession() {
   const dashSection = document.getElementById('adminDashboardSection');
 
   if (session && session.user) {
+    const userEmail = (session.user.email || "").toLowerCase().trim();
+
+    // 🔒 SECURITY CHECK: Kya user authorized whitelist mein hai?
+    if (!AUTHORIZED_ADMINS.includes(userEmail)) {
+      alert("⛔ Access Denied! Is account ke paas admin dashboard access karne ke rights nahi hain.");
+      await db.auth.signOut();
+      window.location.replace("index.html"); // Turant kick-out to homepage
+      return;
+    }
+
     document.getElementById('adminSessionEmail').innerText = session.user.email;
     loginSection.classList.add('hidden');
     dashSection.classList.remove('hidden');
@@ -132,12 +150,19 @@ async function checkAdminSession() {
 
 async function handleAdminLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('adminEmail').value.trim();
+  const email = document.getElementById('adminEmail').value.trim().toLowerCase();
   const password = document.getElementById('adminPassword').value;
   const errorEl = document.getElementById('loginErrorMsg');
 
   if (!db) {
     alert("Database connection client missing.");
+    return;
+  }
+
+  // 🔒 PRE-LOGIN CHECK: Unauthorized emails ko pehle hi block karein
+  if (!AUTHORIZED_ADMINS.includes(email)) {
+    errorEl.innerText = "⛔ Unauthorized: Yeh email admin console ke liye authorized nahi hai!";
+    errorEl.classList.remove('hidden');
     return;
   }
 
@@ -932,7 +957,7 @@ window.startEditCoupon = function(id) {
   document.getElementById('couponMinOrder').value = item.min_order_amount || 0;
   document.getElementById('couponMaxDiscount').value = item.max_discount || '';
   document.getElementById('couponExpiry').value = item.expiry_date || '';
-  document.getElementById('couponUsageLimit').value = item.usage_limit || 10;
+  document.getElementById('couponUsageLimit').value = item.usage_limit || 100;
   document.getElementById('couponActive').checked = item.is_active !== false;
 
   if (document.getElementById('couponApplicableMenu')) {
@@ -1558,7 +1583,6 @@ function renderInventoryTable(productsList) {
   } else {
     tbody.innerHTML = productsList.map(p => {
       const pKey = p.product_id || p.id;
-      // Stock quantity check (stock ya stock_quantity me se jo bhi available ho)
       const currentStock = p.stock !== undefined ? p.stock : (p.stock_quantity !== undefined ? p.stock_quantity : 0);
 
       return `
