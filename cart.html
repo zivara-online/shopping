@@ -505,7 +505,7 @@
         btnText.innerText = `Confirm Order with Cash on Delivery (₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')})`;
         btnIcon.setAttribute('data-lucide', 'package-check');
       } else {
-        btnText.innerText = `Pay with Razorpay & Dispatch (₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')})`;
+        btnText.innerText = `Pay & Dispatch (₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')})`;
         btnIcon.setAttribute('data-lucide', 'credit-card');
       }
       refreshIcons();
