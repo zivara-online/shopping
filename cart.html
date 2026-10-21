@@ -263,7 +263,7 @@
 
       <button type="submit" id="payNowBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 rounded-xl shadow-xl transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
         <i data-lucide="credit-card" id="btnPaymentIcon" class="w-4 h-4"></i>
-        <span id="btnPaymentText">Pay with Razorpay & Dispatch</span>
+        <span id="btnPaymentText">Pay & Dispatch</span>
       </button>
     </form>
   </div>
@@ -454,7 +454,6 @@
         authStep.classList.add('hidden');
         addrStep.classList.remove('hidden');
         document.getElementById('modalFlowTitle').innerText = "Delivery & Contact Details";
-        document.getElementById('modalFlowSub').innerText = "Insured white-glove dispatch information";
         
         document.getElementById('custName').value = localSession.name || '';
         document.getElementById('custPhone').value = localSession.phone;
