@@ -186,7 +186,6 @@
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
     let appliedCoupon = null;
 
-    // Slider & Feed States
     let detailImagesList = [];
     let currentImageIndex = 0;
     let detailAutoSlideInterval = null;
@@ -370,7 +369,7 @@
       }
     }
 
-    // 4. RENDER MAIN PRODUCT VIEW (WITH STOCK LOGIC APPLIED)
+    // 4. RENDER MAIN PRODUCT VIEW
     function renderMainDetail(p) {
       const container = document.getElementById('productDetailContainer');
       const hasDiscount = p.original_price && p.original_price > p.price;
@@ -386,9 +385,6 @@
       selectedSize = sizes[0] || '';
       selectedColor = colors[0] || '';
 
-      // ==========================================
-      // STOCK LOGIC: 0 (Out), <= 3 (Limited), > 3 (Available)
-      // ==========================================
       const stockQty = p.stock !== undefined ? Number(p.stock) : (p.stock_quantity !== undefined ? Number(p.stock_quantity) : 10);
       const isOutOfStock = stockQty === 0;
       const isLowStock = stockQty > 0 && stockQty <= 3;
@@ -544,7 +540,7 @@
             </div>
           </div>
 
-          <!-- PURCHASE ACTION BUTTONS (DYNAMIC DISABLE FOR OUT OF STOCK) -->
+          <!-- PURCHASE ACTION BUTTONS -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button 
               id="addToBagActionBtn"
@@ -571,9 +567,7 @@
       startAutoProductSlider();
     }
 
-    // ================================================================
-    // 5. FLIPKART/AMAZON STYLE OFFERS ENGINE (SUB-MENU / CATEGORY SPECIFIC)
-    // ================================================================
+    // 5. OFFERS ENGINE
     async function loadApplicableProductOffers(product) {
       const container = document.getElementById('offersCardsContainer');
       const countBadge = document.getElementById('offersCountBadge');
@@ -647,7 +641,7 @@
       }
     }
 
-    // 6. APPLY OFFER IN REAL-TIME & PREVIEW DISCOUNT
+    // 6. APPLY OFFER IN REAL-TIME & SAVE FOR BAG
     window.applyOfferToProduct = function(code, type, val, minOrder, maxDiscount) {
       if (!currentProduct) return;
       const basePrice = Number(currentProduct.price || 0);
@@ -693,9 +687,8 @@
       }
 
       appliedCoupon = { code, type, value: val, cut };
-      localStorage.setItem('zivara_auto_coupon', code);
+      localStorage.setItem('zivara_auto_coupon', String(code).trim().toUpperCase());
 
-      alert(`🎉 Offer ${code} Applied! You will get an instant discount of ₹${Math.round(cut)} at checkout.`);
       refreshIcons();
     };
 
@@ -873,8 +866,8 @@
       }
     });
 
-    // 11. CART HANDLERS (STOCK PROTECTED)
-    function addCurrentToCart() {
+    // 11. CART HANDLERS (PASSES APPLIED COUPON TO BAG AUTOMATICALLY)
+    function addCurrentToCart(silent = false) {
       if (!currentProduct) return;
 
       const stockQty = currentProduct.stock !== undefined ? Number(currentProduct.stock) : (currentProduct.stock_quantity !== undefined ? Number(currentProduct.stock_quantity) : 10);
@@ -895,7 +888,7 @@
 
       if (idx > -1) {
         if (cart[idx].quantity >= stockQty) {
-          alert(`⚠️ Atelier Limit: Is piece ke sirf ${stockQty} units available hain!`);
+          if (!silent) alert(`⚠️ Atelier Limit: Is piece ke sirf ${stockQty} units available hain!`);
           return;
         }
         cart[idx].quantity += 1;
@@ -919,21 +912,23 @@
 
       localStorage.setItem('zivara_cart', JSON.stringify(cart));
       updateCartBadge();
-      alert(`"${currentProduct.title}" (${chosenColor} / ${chosenSize}) added to your shopping bag!`);
+      if (!silent) {
+        alert(`"${currentProduct.title}" (${chosenColor} / ${chosenSize}) added to your shopping bag!`);
+      }
     }
 
-function buyNowCurrent() {
+    function buyNowCurrent() {
       const stockQty = currentProduct?.stock !== undefined ? Number(currentProduct.stock) : (currentProduct?.stock_quantity !== undefined ? Number(currentProduct.stock_quantity) : 10);
       if (stockQty === 0) {
-        alert("⚠️ This Product is now Out of Stock!");
+        alert("⚠️ Yeh product abhi Out of Stock hai!");
         return;
       }
-      addCurrentToCart();
-      const savedCode = appliedCoupon?.code || localStorage.getItem('zivara_auto_coupon') || '';
+      addCurrentToCart(true);
+      const savedCode = (appliedCoupon?.code || localStorage.getItem('zivara_auto_coupon') || '').trim().toUpperCase();
       window.location.href = savedCode ? `cart.html?coupon=${encodeURIComponent(savedCode)}` : 'cart.html';
     }
 
-    // 12. ADVANCED PINCH-TO-ZOOM & PAN LIGHTBOX ENGINE
+    // 12. LIGHTBOX ENGINE
     let zoomScale = 1;
     let translateX = 0;
     let translateY = 0;
