@@ -922,14 +922,15 @@
       alert(`"${currentProduct.title}" (${chosenColor} / ${chosenSize}) added to your shopping bag!`);
     }
 
-    function buyNowCurrent() {
+function buyNowCurrent() {
       const stockQty = currentProduct?.stock !== undefined ? Number(currentProduct.stock) : (currentProduct?.stock_quantity !== undefined ? Number(currentProduct.stock_quantity) : 10);
       if (stockQty === 0) {
-        alert("⚠️ Yeh product abhi Out of Stock hai!");
+        alert("⚠️ This Product is now Out of Stock!");
         return;
       }
       addCurrentToCart();
-      window.location.href = 'cart.html';
+      const savedCode = appliedCoupon?.code || localStorage.getItem('zivara_auto_coupon') || '';
+      window.location.href = savedCode ? `cart.html?coupon=${encodeURIComponent(savedCode)}` : 'cart.html';
     }
 
     // 12. ADVANCED PINCH-TO-ZOOM & PAN LIGHTBOX ENGINE
