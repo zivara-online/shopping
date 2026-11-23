@@ -113,7 +113,7 @@
               <span id="bagTotal" class="font-semibold text-slate-200">₹0</span>
             </div>
             <div class="flex justify-between text-emerald-400">
-              <span> Discount</span>
+              <span>Discount</span>
               <span id="bagDiscount" class="font-semibold">-₹0</span>
             </div>
             <div class="flex justify-between text-slate-400">
@@ -128,15 +128,20 @@
 
           <!-- Coupon Input -->
           <div class="pt-1">
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Apply Code</label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Apply Promo Code</label>
+              <button type="button" id="removeCouponBtn" onclick="removeAppliedCoupon()" class="hidden text-[10px] text-rose-400 hover:underline font-bold cursor-pointer">
+                Remove
+              </button>
+            </div>
             <div class="flex gap-2">
               <input 
                 type="text" 
                 id="couponInput"
-                placeholder="Coupon Code" 
+                placeholder="ENTER PROMO CODE" 
                 class="flex-1 bg-noir-950 border border-gold-500/20 rounded-xl px-3.5 py-2.5 text-xs uppercase font-semibold text-white focus:outline-none focus:border-gold-400 transition"
               />
-              <button onclick="applyCoupon()" class="bg-gold-500 hover:bg-gold-400 text-noir-950 text-xs font-bold px-4 py-2.5 rounded-xl transition shadow">
+              <button type="button" id="applyCouponBtn" onclick="applyCoupon()" class="bg-gold-500 hover:bg-gold-400 text-noir-950 text-xs font-bold px-4 py-2.5 rounded-xl transition shadow cursor-pointer">
                 Apply
               </button>
             </div>
@@ -146,7 +151,7 @@
           <!-- Checkout Button -->
           <button 
             onclick="openCustomerDetailsModal()" 
-            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xl transition active:scale-[0.98]">
+            class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xl transition active:scale-[0.98] cursor-pointer">
             <span>Proceed to Checkout</span>
             <i data-lucide="lock" class="w-4 h-4 text-noir-950"></i>
           </button>
@@ -235,12 +240,11 @@
         <textarea id="custAddress" required rows="3" oninput="checkPincodeForCod()" class="w-full bg-noir-950 border border-gold-500/20 rounded-xl p-2.5 text-white focus:outline-none focus:border-gold-400"></textarea>
       </div>
 
-      <!-- PAYMENT MODE SELECTOR (COD AUTO UNLOCKS FOR PIN 829104) -->
+      <!-- PAYMENT MODE SELECTOR -->
       <div class="p-3 bg-noir-950 rounded-2xl border border-gold-500/30 space-y-2">
         <label class="block text-[10px] font-bold text-gold-400 uppercase tracking-wider">Select Payment Mode</label>
         
         <div class="space-y-2">
-          <!-- Option 1: Prepaid Online Razorpay -->
           <label class="flex items-center justify-between p-2.5 rounded-xl border border-gold-500/30 bg-noir-900 cursor-pointer hover:border-gold-400 transition">
             <div class="flex items-center gap-2.5">
               <input type="radio" name="paymentMethod" value="online" checked onchange="togglePaymentSelection('online')" class="accent-gold-500" />
@@ -249,7 +253,6 @@
             <span class="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">Recommended</span>
           </label>
 
-          <!-- Option 2: Cash On Delivery (Controlled strictly for Pincode 829104) -->
           <label id="codOptionWrapper" class="hidden flex items-center justify-between p-2.5 rounded-xl border border-amber-500/40 bg-noir-900 cursor-pointer hover:border-amber-400 transition">
             <div class="flex items-center gap-2.5">
               <input type="radio" name="paymentMethod" value="cod" onchange="togglePaymentSelection('cod')" class="accent-gold-500" />
@@ -258,6 +261,7 @@
             <span class="text-[9px] bg-amber-950 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono font-bold">SPECIAL</span>
           </label>
         </div>
+        <p id="codUnavailableNote" class="text-[10px] text-slate-400 pt-1"></p>
       </div>
 
       <button type="submit" id="payNowBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-noir-950 font-bold uppercase tracking-widest py-3.5 rounded-xl shadow-xl transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
@@ -289,10 +293,11 @@
     const RAZORPAY_LIVE_KEY = "rzp_live_TfltcPpsnERMcA";
 
     let cart = JSON.parse(localStorage.getItem('zivara_cart')) || [];
-    let couponDiscountRate = 0;
+    let appliedCouponObj = null;
+    let appliedCouponCut = 0;
     let calculatedFinalPayable = 0;
     let isOtpSentInModal = false;
-    let currentPaymentMode = "online"; // "online" or "cod"
+    let currentPaymentMode = "online";
 
     const itemsContainer = document.getElementById('cartItemsList');
     const emptyState = document.getElementById('emptyCartState');
@@ -387,6 +392,7 @@
         }
         localStorage.setItem('zivara_cart', JSON.stringify(cart));
         renderCart();
+        if (appliedCouponObj) applyCoupon(true);
       }
     }
 
@@ -394,21 +400,139 @@
       cart = cart.filter(i => (i.id !== id && i.product_id !== id));
       localStorage.setItem('zivara_cart', JSON.stringify(cart));
       renderCart();
+      if (appliedCouponObj) applyCoupon(true);
     }
 
-    function applyCoupon() {
-      const code = (document.getElementById('couponInput')?.value || '').trim().toUpperCase();
+    // LIVE SUPABASE COUPON VALIDATOR (ADMIN COUPONS ONLY)
+    async function applyCoupon(isAuto = false) {
+      const inputEl = document.getElementById('couponInput');
       const msg = document.getElementById('couponMsg');
-      
-      if (code === 'ZIVARA10') {
-        couponDiscountRate = 0.10;
-        msg.innerText = "Apply code 'ZIVARA10' applied (10% extra savings)";
-        msg.className = "text-[10px] mt-1.5 text-emerald-400 font-semibold block";
-      } else {
-        couponDiscountRate = 0;
-        msg.innerText = "Invalid code. Use 'ZIVARA10' for VIP benefits.";
-        msg.className = "text-[10px] mt-1.5 text-rose-400 font-semibold block";
+      const btn = document.getElementById('applyCouponBtn');
+      const removeBtn = document.getElementById('removeCouponBtn');
+
+      const code = (inputEl?.value || '').trim().toUpperCase();
+      if (!code) {
+        if (!isAuto) {
+          msg.innerText = "Please enter a valid promo code.";
+          msg.className = "text-[10px] mt-1.5 text-rose-400 font-semibold block";
+        }
+        return;
       }
+
+      if (!db || cart.length === 0) return;
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "...";
+      }
+
+      try {
+        const { data: coupons, error } = await db
+          .from('coupons')
+          .select('*')
+          .eq('code', code)
+          .eq('is_active', true)
+          .limit(1);
+
+        if (error || !coupons || coupons.length === 0) {
+          appliedCouponObj = null;
+          appliedCouponCut = 0;
+          localStorage.removeItem('zivara_auto_coupon');
+          if (removeBtn) removeBtn.classList.add('hidden');
+          msg.innerText = "Invalid or expired promo code.";
+          msg.className = "text-[10px] mt-1.5 text-rose-400 font-semibold block";
+          calculateSummary();
+          return;
+        }
+
+        const coupon = coupons[0];
+
+        if (coupon.expiry_date && new Date(coupon.expiry_date) < new Date()) {
+          appliedCouponObj = null;
+          appliedCouponCut = 0;
+          localStorage.removeItem('zivara_auto_coupon');
+          if (removeBtn) removeBtn.classList.add('hidden');
+          msg.innerText = "This promo code has expired!";
+          msg.className = "text-[10px] mt-1.5 text-rose-400 font-semibold block";
+          calculateSummary();
+          return;
+        }
+
+        if (coupon.usage_limit && (coupon.times_used || 0) >= coupon.usage_limit) {
+          appliedCouponObj = null;
+          appliedCouponCut = 0;
+          localStorage.removeItem('zivara_auto_coupon');
+          if (removeBtn) removeBtn.classList.add('hidden');
+          msg.innerText = "This promo code usage limit has been reached!";
+          msg.className = "text-[10px] mt-1.5 text-rose-400 font-semibold block";
+          calculateSummary();
+          return;
+        }
+
+        const targetSubmenu = String(coupon.applicable_menu || 'all').trim();
+        let eligibleItems = cart;
+
+        if (targetSubmenu !== 'all') {
+          eligibleItems = cart.filter(item => String(item.submenu_code || '').trim() === targetSubmenu);
+          if (eligibleItems.length === 0) {
+            appliedCouponObj = null;
+            appliedCouponCut = 0;
+            localStorage.removeItem('zivara_auto_coupon');
+            if (removeBtn) removeBtn.classList.add('hidden');
+            msg.innerText = `Code '${coupon.code}' is valid only for specific collection items.`;
+            msg.className = "text-[10px] mt-1.5 text-rose-400 font-semibold block";
+            calculateSummary();
+            return;
+          }
+        }
+
+        const eligibleAmount = eligibleItems.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
+        if (coupon.min_order_amount && eligibleAmount < Number(coupon.min_order_amount)) {
+          appliedCouponObj = null;
+          appliedCouponCut = 0;
+          if (removeBtn) removeBtn.classList.add('hidden');
+          msg.innerText = `Minimum order amount of ₹${coupon.min_order_amount} required for '${coupon.code}'.`;
+          msg.className = "text-[10px] mt-1.5 text-rose-400 font-semibold block";
+          calculateSummary();
+          return;
+        }
+
+        appliedCouponObj = coupon;
+        localStorage.setItem('zivara_auto_coupon', coupon.code);
+        if (removeBtn) removeBtn.classList.remove('hidden');
+
+        calculateSummary();
+
+        const descLabel = coupon.discount_type === 'percentage'
+          ? `${coupon.discount_value}% OFF`
+          : `₹${coupon.discount_value} FLAT OFF`;
+
+        msg.innerText = `✓ Code '${coupon.code}' applied (${descLabel} — Saved ₹${Math.round(appliedCouponCut)})`;
+        msg.className = "text-[10px] mt-1.5 text-emerald-400 font-semibold block";
+
+      } catch (err) {
+        console.warn("Coupon validation error:", err);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = "Apply";
+        }
+      }
+    }
+
+    function removeAppliedCoupon() {
+      appliedCouponObj = null;
+      appliedCouponCut = 0;
+      localStorage.removeItem('zivara_auto_coupon');
+      const inputEl = document.getElementById('couponInput');
+      const msg = document.getElementById('couponMsg');
+      const removeBtn = document.getElementById('removeCouponBtn');
+      if (inputEl) inputEl.value = '';
+      if (msg) {
+        msg.innerText = '';
+        msg.classList.add('hidden');
+      }
+      if (removeBtn) removeBtn.classList.add('hidden');
       calculateSummary();
     }
 
@@ -423,10 +547,29 @@
       });
 
       let discount = rawTotal - finalPayable;
-      if (couponDiscountRate > 0) {
-        const couponCut = finalPayable * couponDiscountRate;
-        discount += couponCut;
-        finalPayable -= couponCut;
+      appliedCouponCut = 0;
+
+      if (appliedCouponObj) {
+        const targetSubmenu = String(appliedCouponObj.applicable_menu || 'all').trim();
+        const eligibleTotal = cart
+          .filter(item => targetSubmenu === 'all' || String(item.submenu_code || '').trim() === targetSubmenu)
+          .reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
+
+        if (eligibleTotal > 0) {
+          if (appliedCouponObj.discount_type === 'percentage') {
+            appliedCouponCut = (eligibleTotal * Number(appliedCouponObj.discount_value)) / 100;
+          } else {
+            appliedCouponCut = Number(appliedCouponObj.discount_value);
+          }
+
+          if (appliedCouponObj.max_discount && appliedCouponCut > Number(appliedCouponObj.max_discount)) {
+            appliedCouponCut = Number(appliedCouponObj.max_discount);
+          }
+
+          appliedCouponCut = Math.min(appliedCouponCut, finalPayable);
+          discount += appliedCouponCut;
+          finalPayable = Math.max(0, finalPayable - appliedCouponCut);
+        }
       }
 
       const delivery = finalPayable >= 1499 || finalPayable === 0 ? 0 : 1;
@@ -480,18 +623,19 @@
       const codOption = document.getElementById('codOptionWrapper');
       const noteEl = document.getElementById('codUnavailableNote');
 
-      // Check if text contains 829104
       const has829104 = addressVal.includes('829104');
 
       if (has829104) {
         codOption.classList.remove('hidden');
+        if (noteEl) noteEl.innerHTML = '';
       } else {
         codOption.classList.add('hidden');
-        // Reset to online if COD was previously selected
         const onlineRadio = document.querySelector('input[name="paymentMethod"][value="online"]');
         if (onlineRadio) onlineRadio.checked = true;
         togglePaymentSelection('online');
-        noteEl.innerHTML = `ℹ️ Cash on Delivery (COD) not available! Only for <b class="text-gold-400 font-mono">829104</b>Pin Code. Please make an online payment.`;
+        if (noteEl) {
+          noteEl.innerHTML = `ℹ️ Cash on Delivery (COD) not available! Only for <b class="text-gold-400 font-mono">829104</b> Pin Code. Please make an online payment.`;
+        }
       }
       refreshIcons();
     };
@@ -608,7 +752,7 @@
       document.getElementById('checkoutModal').classList.add('hidden');
     }
 
-    // FORM SUBMIT HANDLER (DISPATCHES ONLINE OR COD)
+    // FORM SUBMIT HANDLER
     function handleFinalCheckoutSubmit(e) {
       e.preventDefault();
 
@@ -648,16 +792,21 @@
           shipping_address: address,
           items: cart,
           amount: calculatedFinalPayable,
-          status: "placed" // Placed for COD
+          coupon_code: appliedCouponObj ? appliedCouponObj.code : null,
+          coupon_discount: Math.round(appliedCouponCut),
+          status: "placed"
         };
 
-        // Insert into Supabase
         if (db) {
           await db.from('orders').insert([orderPayload]);
           await db.from('users').update({ name: name, email: email }).eq('phone', phone);
+          if (appliedCouponObj && appliedCouponObj.id) {
+            await db.from('coupons').update({
+              times_used: (appliedCouponObj.times_used || 0) + 1
+            }).eq('id', appliedCouponObj.id);
+          }
         }
 
-        // Push to Shiprocket via super-function
         try {
           const shiprocketRes = await fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
             method: "POST",
@@ -681,9 +830,9 @@
           console.warn("Shiprocket COD dispatch sync notice:", srErr.message);
         }
 
-        // Clean Bag
         localStorage.setItem('zivara_session', JSON.stringify({ phone, name, email }));
         localStorage.removeItem('zivara_cart');
+        localStorage.removeItem('zivara_auto_coupon');
         closeCustomerDetailsModal();
 
         alert(`🎉 Cash on Delivery Order Placed Successfully!\n\nOrder ID: ${orderId}\nTotal to Pay at Delivery: ₹${Math.round(calculatedFinalPayable).toLocaleString('en-IN')}\nDestination: Pincode 829104\n\n`);
@@ -697,8 +846,7 @@
       }
     }
 
-    
-// 2. ONLINE RAZORPAY PAYMENT GATEWAY FLOW (ULTRA-FAST RESPONSE)
+    // 2. ONLINE RAZORPAY PAYMENT GATEWAY FLOW
     function startRazorpayPayment() {
       const name = document.getElementById('custName').value.trim();
       const phone = document.getElementById('custPhone').value.trim();
@@ -716,7 +864,6 @@
         description: "Bespoke Order Payment",
         image: "Logo.png",
         handler: async function (response) {
-          // 1. INSTANT FEEDBACK LOADER
           payBtn.disabled = true;
           payBtn.innerHTML = `
             <span class="inline-flex items-center gap-2">
@@ -739,16 +886,21 @@
               shipping_address: address,
               items: cart,
               amount: calculatedFinalPayable,
+              coupon_code: appliedCouponObj ? appliedCouponObj.code : null,
+              coupon_discount: Math.round(appliedCouponCut),
               status: "paid"
             };
 
-            // 2. DATABASE SAVE (Instant ~200ms)
             if (db) {
               await db.from('orders').insert([orderPayload]);
               await db.from('users').update({ name: name, email: email }).eq('phone', phone);
+              if (appliedCouponObj && appliedCouponObj.id) {
+                await db.from('coupons').update({
+                  times_used: (appliedCouponObj.times_used || 0) + 1
+                }).eq('id', appliedCouponObj.id);
+              }
             }
 
-            // 3. BACKGROUND SHIPROCKET DISPATCH (No blocking delay)
             fetch(`${SUPABASE_URL}/functions/v1/super-function`, {
               method: "POST",
               headers: {
@@ -772,12 +924,11 @@
               console.warn("Background Shiprocket sync notice:", srErr.message);
             });
 
-            // 4. CLEAN BAG & SESSION SAVE
             localStorage.setItem('zivara_session', JSON.stringify({ phone, name, email }));
             localStorage.removeItem('zivara_cart');
+            localStorage.removeItem('zivara_auto_coupon');
             closeCustomerDetailsModal();
 
-            // 5. INSTANT SUCCESS ALERT & REDIRECT TO ORDERS
             alert(`🎉 Payment Successful!\nOrder ID: ${orderId}\nPayment ID: ${response.razorpay_payment_id}\n\nYour order has been confirmed!`);
             window.location.href = "login.html";
 
@@ -810,7 +961,8 @@
       rzp.open();
     }
 
-window.addEventListener('DOMContentLoaded', () => {
+    // AUTO-LOAD SAVED COUPON FROM URL OR PRODUCT DETAIL PAGE
+    window.addEventListener('DOMContentLoaded', () => {
       renderCart();
       const urlParams = new URLSearchParams(window.location.search);
       const urlCoupon = urlParams.get('coupon');
