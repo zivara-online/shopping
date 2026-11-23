@@ -129,7 +129,7 @@
           <!-- Coupon Input -->
           <div class="pt-1">
             <div class="flex items-center justify-between mb-1.5">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Apply Promo Code</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Apply Offer Code</label>
               <button type="button" id="removeCouponBtn" onclick="removeAppliedCoupon()" class="hidden text-[10px] text-rose-400 hover:underline font-bold cursor-pointer">
                 Remove
               </button>
@@ -171,19 +171,19 @@
     
     <div class="flex items-center justify-between border-b border-gold-500/20 pb-3">
       <div>
-        <h3 id="modalFlowTitle" class="text-sm font-serif font-bold text-white uppercase tracking-wider">Member Verification</h3>
-        <p id="modalFlowSub" class="text-[10px] text-slate-400">Step 1: Verify mobile number to proceed</p>
+        <h3 id="modalFlowTitle" class="text-sm font-serif font-bold text-white uppercase tracking-wider">Member Identification</h3>
+        <p id="modalFlowSub" class="text-[10px] text-slate-400">Step 1: Enter mobile number to proceed</p>
       </div>
       <button onclick="closeCustomerDetailsModal()" class="text-slate-400 hover:text-white p-1">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
 
-    <!-- STEP A: GUEST / PHONE OTP VERIFICATION -->
+    <!-- STEP A: DIRECT MOBILE IDENTIFICATION (NO DEMO OTP) -->
     <div id="checkoutAuthStep" class="space-y-4 text-xs">
       <div class="p-3 bg-noir-950 border border-gold-500/20 rounded-2xl text-center space-y-1">
-        <span class="text-gold-400 font-bold uppercase tracking-widest text-[10px]">Secure Authentication</span>
-        <p class="text-slate-400 text-[11px]">VIP white-glove transit ke liye mobile number verify karein.</p>
+        <span class="text-gold-400 font-bold uppercase tracking-widest text-[10px]">Express Checkout</span>
+        <p class="text-slate-400 text-[11px]">VIP white-glove transit aur order tracking ke liye apna mobile number darj karein.</p>
       </div>
 
       <div class="space-y-3">
@@ -195,14 +195,8 @@
           </div>
         </div>
 
-        <div id="checkoutOtpBox" class="hidden space-y-2">
-          <label class="block text-slate-300 font-semibold mb-1">Enter 6-Digit OTP</label>
-          <input type="text" id="checkoutOtpInput" maxlength="6" placeholder="123456" class="w-full bg-noir-950 border border-gold-500/40 rounded-xl py-2 px-3 text-center text-base font-mono tracking-widest text-gold-400 font-bold focus:outline-none" />
-          <p class="text-[10px] text-center text-slate-400">Demo verification code: <b class="text-gold-400">123456</b></p>
-        </div>
-
-        <button type="button" id="btnCheckoutSendOtp" onclick="handleCheckoutOtpFlow()" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 font-bold uppercase tracking-widest py-3 rounded-xl transition shadow flex items-center justify-center gap-2">
-          <span>Continue with OTP</span>
+        <button type="button" id="btnCheckoutSendOtp" onclick="handleCheckoutPhoneContinue()" class="w-full bg-gradient-to-r from-gold-500 to-gold-400 text-noir-950 font-bold uppercase tracking-widest py-3 rounded-xl transition shadow flex items-center justify-center gap-2 cursor-pointer">
+          <span>Continue to Delivery</span>
           <i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>
         </button>
       </div>
@@ -296,7 +290,6 @@
     let appliedCouponObj = null;
     let appliedCouponCut = 0;
     let calculatedFinalPayable = 0;
-    let isOtpSentInModal = false;
     let currentPaymentMode = "online";
 
     const itemsContainer = document.getElementById('cartItemsList');
@@ -596,6 +589,7 @@
         authStep.classList.add('hidden');
         addrStep.classList.remove('hidden');
         document.getElementById('modalFlowTitle').innerText = "Delivery & Contact Details";
+        document.getElementById('modalFlowSub').innerText = "Insured white-glove dispatch information";
         
         document.getElementById('custName').value = localSession.name || '';
         document.getElementById('custPhone').value = localSession.phone;
@@ -604,11 +598,8 @@
       } else {
         authStep.classList.remove('hidden');
         addrStep.classList.add('hidden');
-        document.getElementById('checkoutOtpBox').classList.add('hidden');
-        document.getElementById('btnCheckoutSendOtp').innerHTML = `<span>Continue with OTP</span><i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>`;
-        isOtpSentInModal = false;
-        document.getElementById('modalFlowTitle').innerText = "Member Verification";
-        document.getElementById('modalFlowSub').innerText = "Step 1: Verify mobile number to proceed";
+        document.getElementById('modalFlowTitle').innerText = "Member Identification";
+        document.getElementById('modalFlowSub').innerText = "Step 1: Enter mobile number to proceed";
       }
 
       document.getElementById('checkoutModalBackdrop').classList.remove('hidden');
@@ -655,69 +646,67 @@
       refreshIcons();
     };
 
-    // MODAL OTP FLOW
-    async function handleCheckoutOtpFlow() {
+    // DIRECT MOBILE IDENTIFICATION & SUPABASE SYNC (NO DEMO OTP)
+    async function handleCheckoutPhoneContinue() {
       const phoneInput = document.getElementById('checkoutPhoneInput');
       const phone = phoneInput.value.trim();
 
-      if (phone.length !== 10) {
+      if (!/^\d{10}$/.test(phone)) {
         alert("Please enter a valid 10-digit mobile number.");
         return;
       }
 
-      const otpBox = document.getElementById('checkoutOtpBox');
       const btn = document.getElementById('btnCheckoutSendOtp');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>Checking Account...</span>`;
+      }
 
-      if (!isOtpSentInModal) {
-        otpBox.classList.remove('hidden');
-        btn.innerHTML = `<span>Verify & Proceed</span><i data-lucide="shield-check" class="w-4 h-4 text-noir-950"></i>`;
-        isOtpSentInModal = true;
-        refreshIcons();
-        alert(`OTP code dispatched to +91 ${phone}. Demo verification code: 123456`);
-      } else {
-        const otpVal = document.getElementById('checkoutOtpInput').value.trim();
-        if (otpVal === "123456") {
-          let userName = 'VIP Member';
-          let userEmail = '';
+      try {
+        let userName = 'VIP Member';
+        let userEmail = '';
 
-          if (db) {
-            try {
-              const { data: userRec } = await db.from('users').select('*').eq('phone', phone).single();
-              if (userRec) {
-                userName = userRec.name || userName;
-                userEmail = userRec.email || userEmail;
-              } else {
-                await db.from('users').insert([{
-                  phone: phone,
-                  name: userName,
-                  email: userEmail,
-                  addresses: []
-                }]);
-              }
-            } catch (err) {
-              console.warn("User sync notice:", err);
+        if (db) {
+          try {
+            const { data: userRec } = await db.from('users').select('*').eq('phone', phone).single();
+            if (userRec) {
+              userName = userRec.name || userName;
+              userEmail = userRec.email || userEmail;
+            } else {
+              await db.from('users').insert([{
+                phone: phone,
+                name: userName,
+                email: userEmail,
+                addresses: []
+              }]);
             }
+          } catch (err) {
+            console.warn("User sync notice:", err);
           }
+        }
 
-          localStorage.setItem('zivara_session', JSON.stringify({
-            phone: phone,
-            name: userName,
-            email: userEmail
-          }));
+        localStorage.setItem('zivara_session', JSON.stringify({
+          phone: phone,
+          name: userName,
+          email: userEmail
+        }));
 
-          document.getElementById('checkoutAuthStep').classList.add('hidden');
-          document.getElementById('checkoutAddressStep').classList.remove('hidden');
-          document.getElementById('modalFlowTitle').innerText = "Delivery & Contact Details";
-          document.getElementById('modalFlowSub').innerText = "Insured white-glove dispatch information";
-          
-          document.getElementById('custName').value = userName === 'VIP Member' ? '' : userName;
-          document.getElementById('custPhone').value = phone;
-          document.getElementById('custEmail').value = userEmail;
-          loadSavedAddressesDropdown(phone);
-          checkPincodeForCod();
+        document.getElementById('checkoutAuthStep').classList.add('hidden');
+        document.getElementById('checkoutAddressStep').classList.remove('hidden');
+        document.getElementById('modalFlowTitle').innerText = "Delivery & Contact Details";
+        document.getElementById('modalFlowSub').innerText = "Insured white-glove dispatch information";
+        
+        document.getElementById('custName').value = userName === 'VIP Member' ? '' : userName;
+        document.getElementById('custPhone').value = phone;
+        document.getElementById('custEmail').value = userEmail;
+        loadSavedAddressesDropdown(phone);
+        checkPincodeForCod();
+        refreshIcons();
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<span>Continue to Delivery</span><i data-lucide="arrow-right" class="w-4 h-4 text-noir-950"></i>`;
           refreshIcons();
-        } else {
-          alert("Invalid OTP! For demo verification, enter: 123456");
         }
       }
     }
