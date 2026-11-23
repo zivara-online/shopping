@@ -810,8 +810,19 @@
       rzp.open();
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', () => {
       renderCart();
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCoupon = urlParams.get('coupon');
+      const autoSavedCode = (urlCoupon || localStorage.getItem('zivara_auto_coupon') || '').trim().toUpperCase();
+
+      if (autoSavedCode && cart.length > 0) {
+        const inputEl = document.getElementById('couponInput');
+        if (inputEl) {
+          inputEl.value = autoSavedCode;
+          applyCoupon(true);
+        }
+      }
     });
   </script>
 </body>
